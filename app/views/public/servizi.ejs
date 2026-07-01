@@ -2,10 +2,14 @@
 <%- include('../partials/navbar') %>
 
 <!-- Page Header -->
-<section class="bg-gradient-to-br from-wes-50 to-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+<section class="relative overflow-hidden bg-gradient-to-br from-wes-50 to-white py-20">
+    <div class="absolute inset-0 opacity-10">
+        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&h=300&fit=crop&auto=format&q=80" 
+             alt="" class="w-full h-full object-cover">
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">I Nostri Servizi</h1>
-        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Soluzioni complete di automazione AI per la tua azienda</p>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Soluzioni complete di automazione AI per la tua azienda, pensate per ogni settore.</p>
     </div>
 </section>
 
@@ -14,88 +18,130 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-wes-500 transition-colors">
-                    <i class="fas fa-robot text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+            <!-- Chatbot AI -->
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group">
+                <div class="h-48 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1587614387466-0a72ebc2be4f?w=400&h=250&fit=crop&auto=format&q=80" 
+                         alt="Chatbot AI" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                 </div>
-                <h3 class="text-xl font-semibold mb-3">Chatbot AI Personalizzato</h3>
-                <p class="text-gray-600 mb-4">Un assistente virtuale intelligente che risponde ai tuoi clienti 24/7 su WhatsApp, sito web e social.</p>
-                <ul class="space-y-2 text-sm text-gray-500">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Risposte in tempo reale</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Tono personalizzabile</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Multi-lingua</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Apprendimento continuo</li>
-                </ul>
+                <div class="p-6">
+                    <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
+                        <i class="fas fa-robot text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Chatbot AI Personalizzato</h3>
+                    <p class="text-gray-600 mb-4">Un assistente virtuale intelligente che risponde ai tuoi clienti 24/7 su WhatsApp, sito web e social.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Risposte in tempo reale</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Tono personalizzabile</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Multi-lingua</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Apprendimento continuo</li>
+                    </ul>
+                </div>
             </div>
             
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-wes-500 transition-colors">
-                    <i class="fas fa-users text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+            <!-- Automazione Lead -->
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group">
+                <div class="h-48 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop&auto=format&q=80" 
+                         alt="Automazione Lead" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                 </div>
-                <h3 class="text-xl font-semibold mb-3">Automazione Lead</h3>
-                <p class="text-gray-600 mb-4">Cattura, qualifica e gestisci lead in automatico. L'AI fa le domande giuste al momento giusto.</p>
-                <ul class="space-y-2 text-sm text-gray-500">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Cattura lead multi-canale</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Qualificazione automatica</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Scoring intelligente</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Passaggio al venditore</li>
-                </ul>
+                <div class="p-6">
+                    <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
+                        <i class="fas fa-users text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Automazione Lead</h3>
+                    <p class="text-gray-600 mb-4">Cattura, qualifica e gestisci lead in automatico. L'AI fa le domande giuste al momento giusto.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Cattura lead multi-canale</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Qualificazione automatica</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Scoring intelligente</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Passaggio al venditore</li>
+                    </ul>
+                </div>
             </div>
             
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-wes-500 transition-colors">
-                    <i class="fab fa-whatsapp text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+            <!-- WhatsApp Business -->
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group">
+                <div class="h-48 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1611605698335-8b1569810432?w=400&h=250&fit=crop&auto=format&q=80" 
+                         alt="WhatsApp Business" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                 </div>
-                <h3 class="text-xl font-semibold mb-3">WhatsApp Business API</h3>
-                <p class="text-gray-600 mb-4">Integrazione completa con WhatsApp Business. Gestisci conversazioni, invia messaggi e automatizza.</p>
-                <ul class="space-y-2 text-sm text-gray-500">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Risposte automatiche</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Template messaggi</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Broadcast</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Analytics</li>
-                </ul>
+                <div class="p-6">
+                    <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
+                        <i class="fab fa-whatsapp text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">WhatsApp Business API</h3>
+                    <p class="text-gray-600 mb-4">Integrazione completa con WhatsApp Business. Gestisci conversazioni, invia messaggi e automatizza.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Risposte automatiche</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Template messaggi</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Broadcast</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Analytics</li>
+                    </ul>
+                </div>
             </div>
             
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-wes-500 transition-colors">
-                    <i class="fas fa-envelope text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+            <!-- Email Automation -->
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group">
+                <div class="h-48 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=400&h=250&fit=crop&auto=format&q=80" 
+                         alt="Email Automation" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                 </div>
-                <h3 class="text-xl font-semibold mb-3">Email Automation</h3>
-                <p class="text-gray-600 mb-4">Campagne email automatiche, follow-up e notifiche. Integrazione con Gmail e SMTP.</p>
-                <ul class="space-y-2 text-sm text-gray-500">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Sequenze automatiche</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Template personalizzati</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Report apertura</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Integrazione Gmail</li>
-                </ul>
+                <div class="p-6">
+                    <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
+                        <i class="fas fa-envelope text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Email Automation</h3>
+                    <p class="text-gray-600 mb-4">Campagne email automatiche, follow-up e notifiche. Integrazione con Gmail e SMTP.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Sequenze automatiche</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Template personalizzati</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Report apertura</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Integrazione Gmail</li>
+                    </ul>
+                </div>
             </div>
             
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-wes-500 transition-colors">
-                    <i class="fas fa-calendar text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+            <!-- Appuntamenti AI -->
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group">
+                <div class="h-48 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&h=250&fit=crop&auto=format&q=80" 
+                         alt="Appuntamenti AI" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                 </div>
-                <h3 class="text-xl font-semibold mb-3">Appuntamenti AI</h3>
-                <p class="text-gray-600 mb-4">Pianificazione automatica degli appuntamenti. Sincronizzazione con Google Calendar.</p>
-                <ul class="space-y-2 text-sm text-gray-500">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Proposta slot automatici</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Google Calendar sync</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Reminder automatici</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Conferma in chat</li>
-                </ul>
+                <div class="p-6">
+                    <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
+                        <i class="fas fa-calendar text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Appuntamenti AI</h3>
+                    <p class="text-gray-600 mb-4">Pianificazione automatica degli appuntamenti. Sincronizzazione con Google Calendar.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Proposta slot automatici</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Google Calendar sync</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Reminder automatici</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Conferma in chat</li>
+                    </ul>
+                </div>
             </div>
             
-            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
-                <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-5 group-hover:bg-wes-500 transition-colors">
-                    <i class="fas fa-chart-line text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+            <!-- CRM Intelligence -->
+            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group">
+                <div class="h-48 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=250&fit=crop&auto=format&q=80" 
+                         alt="CRM Intelligence" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                 </div>
-                <h3 class="text-xl font-semibold mb-3">CRM Intelligence</h3>
-                <p class="text-gray-600 mb-4">CRM automatico con AI. Tutti i lead, conversazioni e dati sincronizzati in tempo reale.</p>
-                <ul class="space-y-2 text-sm text-gray-500">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Salvataggio automatico</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Profilo lead completo</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Storico conversazioni</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Esportazione dati</li>
-                </ul>
+                <div class="p-6">
+                    <div class="w-14 h-14 bg-wes-100 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
+                        <i class="fas fa-chart-line text-2xl text-wes-500 group-hover:text-white transition-colors"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">CRM Intelligence</h3>
+                    <p class="text-gray-600 mb-4">CRM automatico con AI. Tutti i lead, conversazioni e dati sincronizzati in tempo reale.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Salvataggio automatico</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Profilo lead completo</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Storico conversazioni</li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-green-500"></i> Esportazione dati</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

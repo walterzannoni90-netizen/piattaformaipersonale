@@ -2,16 +2,20 @@
 <%- include('../partials/navbar') %>
 
 <!-- Header -->
-<section class="bg-gradient-to-br from-wes-50 to-white py-20">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+<section class="relative overflow-hidden bg-gradient-to-br from-wes-50 to-white py-20">
+    <div class="absolute inset-0 opacity-10">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1920&h=300&fit=crop&auto=format&q=80" 
+             alt="" class="w-full h-full object-cover">
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Casi d'Uso</h1>
-        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Scopri come WES AI Automation trasforma diversi settori</p>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Scopri come WES AI Automation trasforma diversi settori con risultati misurabili.</p>
     </div>
 </section>
 
 <!-- Use Cases -->
 <section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24">
         
         <!-- Caso 1: Real Estate -->
         <div class="grid lg:grid-cols-2 gap-12 items-center">
@@ -20,7 +24,7 @@
                     <i class="fas fa-building"></i> Settore Immobiliare
                 </div>
                 <h2 class="text-2xl font-bold text-gray-900 mb-4">Agenzia Immobiliare Milano</h2>
-                <p class="text-gray-600 mb-4">Un'agenzia immobiliare con 5 agenti gestiva manualmente chiamate, email e WhatsApp. Con WES AI Automation hanno automatizzato:</p>
+                <p class="text-gray-600 mb-4">Un'agenzia immobiliare con 5 agenti gestiva manualmente chiamate, email e WhatsApp. Con WES AI Automation hanno automatizzato l'intero processo di acquisizione clienti.</p>
                 <ul class="space-y-3">
                     <li class="flex items-start gap-3">
                         <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -50,29 +54,28 @@
                         </div>
                     </li>
                 </ul>
-                <div class="mt-6 p-4 bg-gray-50 rounded-xl">
+                <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
                     <p class="text-sm text-gray-500 italic">"Risparmiamo 20+ ore a settimana. I lead vengono qualificati prima ancora che li contattiamo."</p>
-                    <p class="text-sm font-medium mt-2">— Marco, Titolare Agenzia Immobiliare</p>
+                    <div class="flex items-center gap-3 mt-3">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&auto=format&q=80" 
+                             alt="Marco" class="w-8 h-8 rounded-full object-cover">
+                        <p class="text-sm font-medium">— Marco, Titolare Agenzia Immobiliare</p>
+                    </div>
                 </div>
             </div>
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8 text-center">
-                <div class="text-5xl mb-4">🏠</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-blue-600">+340%</div>
-                        <div class="text-sm text-gray-500">Lead qualificati</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-blue-600">-85%</div>
-                        <div class="text-sm text-gray-500">Tempo risposta</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-blue-600">+150%</div>
-                        <div class="text-sm text-gray-500">Appuntamenti fissati</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-blue-600">3x</div>
-                        <div class="text-sm text-gray-500">Tasso conversione</div>
+            <div class="relative">
+                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=600&h=450&fit=crop&auto=format&q=80" 
+                     alt="Agenzia Immobiliare" class="rounded-2xl shadow-xl w-full h-auto object-cover">
+                <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl border border-gray-100 p-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-blue-600">+340%</div>
+                            <div class="text-xs text-gray-500">Lead qualificati</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-blue-600">-85%</div>
+                            <div class="text-xs text-gray-500">Tempo risposta</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,24 +83,19 @@
         
         <!-- Caso 2: Automotive -->
         <div class="grid lg:grid-cols-2 gap-12 items-center">
-            <div class="order-2 lg:order-1 bg-gradient-to-br from-green-50 to-green-100 rounded-3xl p-8 text-center">
-                <div class="text-5xl mb-4">🚗</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-green-600">+200</div>
-                        <div class="text-sm text-gray-500">Lead/mese</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-green-600">24/7</div>
-                        <div class="text-sm text-gray-500">Copertura clienti</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-green-600">-70%</div>
-                        <div class="text-sm text-gray-500">Carico commerciale</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-green-600">+40%</div>
-                        <div class="text-sm text-gray-500">Test drive</div>
+            <div class="order-2 lg:order-1 relative">
+                <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&h=450&fit=crop&auto=format&q=80" 
+                     alt="Concessionaria Auto" class="rounded-2xl shadow-xl w-full h-auto object-cover">
+                <div class="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl border border-gray-100 p-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-green-600">24/7</div>
+                            <div class="text-xs text-gray-500">Copertura clienti</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-green-600">+200</div>
+                            <div class="text-xs text-gray-500">Lead/mese</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -177,24 +175,19 @@
                     </li>
                 </ul>
             </div>
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-3xl p-8 text-center">
-                <div class="text-5xl mb-4">💼</div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-purple-600">10x</div>
-                        <div class="text-sm text-gray-500">Lead processati</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-purple-600">-60%</div>
-                        <div class="text-sm text-gray-500">Costo acquisizione</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-purple-600">+90%</div>
-                        <div class="text-sm text-gray-500">Soddisfazione clienti</div>
-                    </div>
-                    <div class="bg-white rounded-xl p-4">
-                        <div class="text-2xl font-bold text-purple-600">4.9★</div>
-                        <div class="text-sm text-gray-500">Valutazione</div>
+            <div class="relative">
+                <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&h=450&fit=crop&auto=format&q=80" 
+                     alt="Studio di Consulenza" class="rounded-2xl shadow-xl w-full h-auto object-cover">
+                <div class="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl border border-gray-100 p-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-purple-600">10x</div>
+                            <div class="text-xs text-gray-500">Lead processati</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xl font-bold text-purple-600">-60%</div>
+                            <div class="text-xs text-gray-500">Costo acquisizione</div>
+                        </div>
                     </div>
                 </div>
             </div>
