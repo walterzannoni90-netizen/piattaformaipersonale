@@ -1,0 +1,65 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100">
+        <h2 class="font-bold">Gestione Utenti (<%= users.length %>)</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50 text-left text-sm text-gray-500">
+                    <th class="px-6 py-4 font-medium">Azienda</th>
+                    <th class="px-6 py-4 font-medium">Email</th>
+                    <th class="px-6 py-4 font-medium">Piano</th>
+                    <th class="px-6 py-4 font-medium">Ruolo</th>
+                    <th class="px-6 py-4 font-medium">Stato</th>
+                    <th class="px-6 py-4 font-medium">Registrato</th>
+                    <th class="px-6 py-4 font-medium">Azioni</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% users.forEach(function(u) { %>
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-sm font-medium"><%= u.company_name %></td>
+                        <td class="px-6 py-4 text-sm"><%= u.email %></td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs px-2 py-1 rounded-full 
+                                <%= u.plan === 'enterprise' ? 'bg-purple-100 text-purple-700' : u.plan === 'pro' ? 'bg-wes-100 text-wes-700' : 'bg-gray-100 text-gray-600' %>">
+                                <%= u.plan %>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm"><%= u.role %></td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs px-2 py-1 rounded-full <%= u.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                                <%= u.status %>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500"><%= new Date(u.created_at).toLocaleDateString('it-IT') %></td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <a href="/admin/utenti/<%= u.id %>" class="p-1.5 text-gray-400 hover:text-wes-500 transition"><i class="fas fa-eye"></i></a>
+                                <button onclick="deleteUser('<%= u.id %>')" class="p-1.5 text-gray-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function deleteUser(id) {
+    if (!confirm('Sei sicuro di voler eliminare questo utente?')) return;
+    await fetch('/api/admin/user/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    });
+    location.reload();
+}
+</script>
+
+</main></div>
+<%- include('../partials/footer') %>

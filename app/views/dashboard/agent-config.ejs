@@ -1,0 +1,190 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-xl border border-gray-100 p-8">
+        <h2 class="text-xl font-bold mb-6">Configura il tuo Agente AI</h2>
+        <p class="text-sm text-gray-500 mb-6">Personalizza come l'assistente virtuale interagisce con i tuoi lead.</p>
+        
+        <form id="agentForm" class="space-y-6">
+            <!-- Nome Agente -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome Agente</label>
+                <input type="text" name="name" value="<%= agent ? agent.name : 'Agente ' + (user ? user.company_name : 'WES') %>" required
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+            </div>
+            
+            <!-- Tono -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tono di Risposta</label>
+                <select name="tone"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+                    <option value="professionale" <%= agent && agent.tone === 'professionale' ? 'selected' : '' %>>Professionale</option>
+                    <option value="amichevole" <%= agent && agent.tone === 'amichevole' ? 'selected' : '' %>>Amichevole</option>
+                    <option value="formale" <%= agent && agent.tone === 'formale' ? 'selected' : '' %>>Formale</option>
+                    <option value="informale" <%= agent && agent.tone === 'informale' ? 'selected' : '' %>>Informale</option>
+                    <option value="entusiasta" <%= agent && agent.tone === 'entusiasta' ? 'selected' : '' %>>Entusiasta</option>
+                </select>
+            </div>
+            
+            <!-- Messaggio di Benvenuto -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Messaggio di Benvenuto</label>
+                <textarea name="welcome_message" rows="3"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition resize-none"><%= agent ? agent.welcome_message : 'Ciao! Sono l\'assistente virtuale di [azienda]. Come posso aiutarti oggi?' %></textarea>
+                <p class="text-xs text-gray-400 mt-1">Usa [azienda] per inserire automaticamente il nome della tua azienda</p>
+            </div>
+            
+            <!-- Domande di Qualificazione -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Domande per Qualificare i Lead</label>
+                <p class="text-xs text-gray-500 mb-3">Aggiungi le domande che l'agente farà per qualificare i lead.</p>
+                <div id="questionsContainer" class="space-y-3">
+                    <% if (agent && agent.qualification_questions) { 
+                        const questions = JSON.parse(agent.qualification_questions || '[]');
+                        if (questions.length > 0) {
+                            questions.forEach(function(q, i) { %>
+                                <div class="flex items-start gap-2 question-item">
+                                    <input type="text" name="questions[]" value="<%= q.question %>" placeholder="Domanda di qualificazione"
+                                        class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none">
+                                    <label class="flex items-center gap-1 text-xs text-gray-500 mt-2.5 flex-shrink-0">
+                                        <input type="checkbox" name="required[]" <%= q.required ? 'checked' : '' %>>
+                                        Richiesto
+                                    </label>
+                                    <button type="button" onclick="this.closest('.question-item').remove()" class="p-2 text-red-400 hover:text-red-600 mt-1">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            <% });
+                        }
+                    } %>
+                </div>
+                <button type="button" onclick="addQuestion()" class="mt-2 text-sm text-wes-500 hover:text-wes-600 font-medium">
+                    <i class="fas fa-plus mr-1"></i> Aggiungi domanda
+                </button>
+            </div>
+            
+            <!-- Condizioni di Trasferimento -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Quando passare il lead al commerciale</label>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
+                        <input type="checkbox" name="transfer_condition_score" value="1"
+                            <%= agent && JSON.parse(agent.transfer_conditions || '{}').min_score >= 7 ? 'checked' : '' %>>
+                        <span class="text-sm">Score ≥ 7</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
+                        <input type="checkbox" name="transfer_condition_email" value="1"
+                            <%= agent && JSON.parse(agent.transfer_conditions || '{}').has_email ? 'checked' : '' %>>
+                        <span class="text-sm">Ha fornito email</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
+                        <input type="checkbox" name="transfer_condition_phone" value="1"
+                            <%= agent && JSON.parse(agent.transfer_conditions || '{}').has_phone ? 'checked' : '' %>>
+                        <span class="text-sm">Ha fornito telefono</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
+                        <input type="checkbox" name="transfer_condition_interest" value="1"
+                            <%= agent && JSON.parse(agent.transfer_conditions || '{}').has_interest ? 'checked' : '' %>>
+                        <span class="text-sm">Mostrato interesse</span>
+                    </label>
+                </div>
+            </div>
+            
+            <button type="submit" class="w-full py-3 px-6 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-lg">
+                <i class="fas fa-save mr-2"></i> Salva Configurazione Agente
+            </button>
+        </form>
+    </div>
+    
+    <!-- Chat Preview -->
+    <div class="mt-6 bg-white rounded-xl border border-gray-100 p-6">
+        <h3 class="font-bold mb-4">Anteprima Chat</h3>
+        <div class="bg-gray-50 rounded-xl p-4">
+            <div id="chatPreview" class="space-y-4 min-h-[200px]">
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium">L</div>
+                    <div class="bg-white rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%] shadow-sm">
+                        <p class="text-sm">Buongiorno! Vorrei informazioni</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3 justify-end">
+                    <div class="bg-wes-500 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
+                        <p class="text-sm" id="previewResponse">Ciao! Sono l'assistente virtuale. Come posso aiutarti?</p>
+                    </div>
+                    <div class="w-8 h-8 bg-wes-500 rounded-full flex items-center justify-center text-white text-sm">
+                        <i class="fas fa-robot text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function addQuestion() {
+    const container = document.getElementById('questionsContainer');
+    const div = document.createElement('div');
+    div.className = 'flex items-start gap-2 question-item';
+    div.innerHTML = `
+        <input type="text" name="questions[]" placeholder="Domanda di qualificazione"
+            class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none">
+        <label class="flex items-center gap-1 text-xs text-gray-500 mt-2.5 flex-shrink-0">
+            <input type="checkbox" name="required[]">
+            Richiesto
+        </label>
+        <button type="button" onclick="this.closest('.question-item').remove()" class="p-2 text-red-400 hover:text-red-600 mt-1">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+document.getElementById('agentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = new FormData(this);
+    const questions = [];
+    const questionInputs = document.querySelectorAll('input[name="questions[]"]');
+    const requiredInputs = document.querySelectorAll('input[name="required[]"]');
+    
+    questionInputs.forEach((input, i) => {
+        if (input.value.trim()) {
+            questions.push({
+                question: input.value.trim(),
+                required: requiredInputs[i] ? requiredInputs[i].checked : false
+            });
+        }
+    });
+    
+    const transferConditions = {
+        min_score: form.get('transfer_condition_score') ? 7 : 0,
+        has_email: !!form.get('transfer_condition_email'),
+        has_phone: !!form.get('transfer_condition_phone'),
+        has_interest: !!form.get('transfer_condition_interest')
+    };
+    
+    const data = {
+        name: form.get('name'),
+        tone: form.get('tone'),
+        welcome_message: form.get('welcome_message'),
+        questions: questions,
+        transfer_conditions: transferConditions
+    };
+    
+    const res = await fetch('/api/agent/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    const result = await res.json();
+    if (result.success) {
+        document.getElementById('previewResponse').textContent = data.welcome_message.replace('[azienda]', '<%= user ? user.company_name : "" %>');
+        alert('Agente configurato con successo!');
+    }
+});
+</script>
+
+</main></div>
+<%- include('../partials/footer') %>

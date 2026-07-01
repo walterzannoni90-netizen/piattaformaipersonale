@@ -1,0 +1,151 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<!-- Header -->
+<section class="bg-gradient-to-br from-wes-50 to-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Piani e Prezzi</h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Scegli il piano più adatto alla tua azienda. Tutti i piani includono una configurazione iniziale personalizzata.
+        </p>
+    </div>
+</section>
+
+<!-- Pricing -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-3 gap-8">
+            
+            <!-- Starter -->
+            <div class="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-wes-200 transition-all relative">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold">Starter</h3>
+                    <p class="text-gray-500 text-sm mt-1">Per chi inizia con l'automazione</p>
+                </div>
+                <div class="mb-6">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold">297€</span>
+                        <span class="text-gray-500">/mese</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        <span class="font-medium text-gray-700">+ 1.000€</span> setup iniziale
+                    </div>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <% if (typeof plans !== 'undefined' && plans.starter) { %>
+                        <% plans.starter.features.forEach(function(feature) { %>
+                            <li class="flex items-center gap-3 text-sm">
+                                <i class="fas fa-check text-green-500 flex-shrink-0"></i>
+                                <span><%= feature %></span>
+                            </li>
+                        <% }); %>
+                    <% } %>
+                </ul>
+                <a href="/prenota-call" class="block w-full text-center py-3 px-6 border-2 border-wes-500 text-wes-600 font-semibold rounded-xl hover:bg-wes-50 transition">
+                    Inizia Ora
+                </a>
+            </div>
+            
+            <!-- Pro (Popular) -->
+            <div class="bg-gradient-to-b from-wes-500 to-purple-700 rounded-2xl p-8 shadow-xl relative transform lg:scale-105">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-6 py-1 rounded-full text-sm font-bold shadow-lg">
+                    Più scelto
+                </div>
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-white">Pro</h3>
+                    <p class="text-wes-100 text-sm mt-1">Per aziende in crescita</p>
+                </div>
+                <div class="mb-6">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold text-white">597€</span>
+                        <span class="text-wes-200">/mese</span>
+                    </div>
+                    <div class="mt-2 text-sm text-wes-100">
+                        <span class="font-medium text-white">+ 2.000€</span> setup iniziale
+                    </div>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <% if (typeof plans !== 'undefined' && plans.pro) { %>
+                        <% plans.pro.features.forEach(function(feature) { %>
+                            <li class="flex items-center gap-3 text-sm text-white">
+                                <i class="fas fa-check text-green-300 flex-shrink-0"></i>
+                                <span><%= feature %></span>
+                            </li>
+                        <% }); %>
+                    <% } %>
+                </ul>
+                <a href="/prenota-call" class="block w-full text-center py-3 px-6 bg-white text-wes-600 font-semibold rounded-xl hover:bg-gray-50 transition shadow-lg">
+                    Scegli Pro
+                </a>
+            </div>
+            
+            <!-- Enterprise -->
+            <div class="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-wes-200 transition-all">
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold">Enterprise</h3>
+                    <p class="text-gray-500 text-sm mt-1">Per grandi volumi e personalizzazione</p>
+                </div>
+                <div class="mb-6">
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-bold">1.500€</span>
+                        <span class="text-gray-500">/mese</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        <span class="font-medium text-gray-700">+ 5.000€</span> setup iniziale
+                    </div>
+                </div>
+                <ul class="space-y-3 mb-8">
+                    <% if (typeof plans !== 'undefined' && plans.enterprise) { %>
+                        <% plans.enterprise.features.forEach(function(feature) { %>
+                            <li class="flex items-center gap-3 text-sm">
+                                <i class="fas fa-check text-green-500 flex-shrink-0"></i>
+                                <span><%= feature %></span>
+                            </li>
+                        <% }); %>
+                    <% } %>
+                </ul>
+                <a href="/prenota-call" class="block w-full text-center py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-wes-500 hover:text-wes-600 transition">
+                    Contattaci
+                </a>
+            </div>
+        </div>
+        
+        <!-- Note -->
+        <div class="mt-12 p-6 bg-gray-50 rounded-2xl">
+            <div class="flex items-start gap-4">
+                <i class="fas fa-info-circle text-wes-500 text-xl mt-1"></i>
+                <div>
+                    <h4 class="font-semibold mb-1">Cosa include il setup iniziale?</h4>
+                    <p class="text-sm text-gray-600">Configurazione agente AI personalizzato, integrazione WhatsApp Business, connessione email/CRM, creazione automazioni su misura, formazione del team e supporto per il primo mese.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-center mb-12">Domande Frequenti</h2>
+        <div class="space-y-4">
+            <div class="bg-white rounded-xl p-6">
+                <h3 class="font-semibold mb-2">Posso cambiare piano quando voglio?</h3>
+                <p class="text-sm text-gray-600">Sì, puoi passare a un piano superiore o inferiore in qualsiasi momento. La differenza verrà calcolata in proporzione.</p>
+            </div>
+            <div class="bg-white rounded-xl p-6">
+                <h3 class="font-semibold mb-2">Quanto tempo per l'attivazione?</h3>
+                <p class="text-sm text-gray-600">Il setup iniziale richiede 3-5 giorni lavorativi. Durante questo periodo configuriamo l'agente AI, le integrazioni e le automazioni.</p>
+            </div>
+            <div class="bg-white rounded-xl p-6">
+                <h3 class="font-semibold mb-2">Posso integrare il mio CRM esistente?</h3>
+                <p class="text-sm text-gray-600">Sì, supportiamo l'integrazione con i principali CRM via API webhook. Nei piani Pro ed Enterprise includiamo l'integrazione personalizzata.</p>
+            </div>
+            <div class="bg-white rounded-xl p-6">
+                <h3 class="font-semibold mb-2">È previsto un periodo di prova?</h3>
+                <p class="text-sm text-gray-600">Offriamo una demo gratuita di 7 giorni per farti testare la piattaforma con dati reali. Prenota una call per attivarla.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

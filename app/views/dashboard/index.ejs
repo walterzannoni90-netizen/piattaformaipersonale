@@ -1,0 +1,225 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-users text-blue-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+                <%- stats.newLeads.count %> nuovi
+            </span>
+        </div>
+        <div class="text-2xl font-bold text-gray-900"><%= stats.leads.count %></div>
+        <div class="text-sm text-gray-500">Lead totali</div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-comments text-green-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+                attive
+            </span>
+        </div>
+        <div class="text-2xl font-bold text-gray-900"><%= stats.conversations.count %></div>
+        <div class="text-sm text-gray-500">Conversazioni</div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-calendar text-purple-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+                programmati
+            </span>
+        </div>
+        <div class="text-2xl font-bold text-gray-900"><%= stats.appointments.count %></div>
+        <div class="text-sm text-gray-500">Appuntamenti</div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                <i class="fas fa-bolt text-amber-600"></i>
+            </div>
+            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
+                attive
+            </span>
+        </div>
+        <div class="text-2xl font-bold text-gray-900"><%= stats.automations.count %></div>
+        <div class="text-sm text-gray-500">Automazioni</div>
+    </div>
+</div>
+
+<!-- Recent Leads & Conversations -->
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+    <!-- Recent Leads -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold">Lead Recenti</h2>
+            <a href="/dashboard/lead" class="text-sm text-wes-500 hover:text-wes-600">Vedi tutti <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        <% if (recentLeads.length > 0) { %>
+            <div class="space-y-3">
+                <% recentLeads.forEach(function(lead) { %>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 bg-wes-100 rounded-full flex items-center justify-center text-sm font-medium text-wes-600">
+                                <%= lead.name ? lead.name.charAt(0).toUpperCase() : '?' %>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium"><%= lead.name || 'Anonimo' %></p>
+                                <p class="text-xs text-gray-500"><%= lead.email || lead.phone || 'Nessun contatto' %></p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-xs px-2 py-1 rounded-full 
+                                <%= lead.status === 'qualified' ? 'bg-green-100 text-green-700' : lead.status === 'new' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' %>">
+                                <%= lead.status === 'qualified' ? 'Qualificato' : lead.status === 'new' ? 'Nuovo' : lead.status %>
+                            </span>
+                            <div class="text-xs text-gray-400 mt-1">
+                                <i class="fab fa-<%= lead.source === 'whatsapp' ? 'whatsapp' : lead.source === 'website' ? 'chrome' : 'envelope' %> mr-1"></i>
+                                <%= lead.source || 'sconosciuto' %>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-inbox text-4xl mb-3"></i>
+                <p>Nessun lead ancora</p>
+                <p class="text-xs">I lead appariranno qui quando arriveranno</p>
+            </div>
+        <% } %>
+    </div>
+    
+    <!-- Recent Conversations -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold">Conversazioni Recenti</h2>
+            <a href="/dashboard/conversazioni" class="text-sm text-wes-500 hover:text-wes-600">Vedi tutte <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+        <% if (recentConversations.length > 0) { %>
+            <div class="space-y-3">
+                <% recentConversations.forEach(function(conv) { %>
+                    <div class="p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition cursor-pointer">
+                        <div class="flex items-center justify-between mb-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-medium text-sm"><%= conv.lead_name || 'Lead sconosciuto' %></span>
+                                <span class="text-xs px-2 py-0.5 rounded-full 
+                                    <%= conv.channel === 'whatsapp' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' %>">
+                                    <i class="fab fa-<%= conv.channel === 'whatsapp' ? 'whatsapp' : 'chrome' %> mr-1"></i>
+                                    <%= conv.channel %>
+                                </span>
+                            </div>
+                            <span class="text-xs text-gray-400"><%= new Date(conv.updated_at).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) %></span>
+                        </div>
+                        <p class="text-xs text-gray-500 truncate"><%= conv.lead_email || '' %></p>
+                        <% if (conv.messages) { 
+                            const msgs = JSON.parse(conv.messages || '[]');
+                            if (msgs.length > 0) { %>
+                                <p class="text-xs text-gray-400 mt-1 truncate"><%= msgs[msgs.length-1].content %></p>
+                        <% } } %>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="text-center py-8 text-gray-400">
+                <i class="fas fa-comment-dots text-4xl mb-3"></i>
+                <p>Nessuna conversazione</p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Quick Actions & Usage -->
+<div class="grid lg:grid-cols-3 gap-6">
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="text-lg font-bold mb-4">Azioni Rapide</h2>
+        <div class="space-y-3">
+            <a href="/dashboard/agente" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-wes-50 transition group">
+                <div class="w-10 h-10 bg-wes-100 rounded-xl flex items-center justify-center group-hover:bg-wes-500 transition-colors">
+                    <i class="fas fa-robot text-wes-500 group-hover:text-white transition-colors"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium">Configura Agente AI</p>
+                    <p class="text-xs text-gray-500">Personalizza il tuo assistente virtuale</p>
+                </div>
+            </a>
+            <a href="/dashboard/automazioni" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-wes-50 transition group">
+                <div class="w-10 h-10 bg-wes-100 rounded-xl flex items-center justify-center group-hover:bg-wes-500 transition-colors">
+                    <i class="fas fa-bolt text-wes-500 group-hover:text-white transition-colors"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium">Gestisci Automazioni</p>
+                    <p class="text-xs text-gray-500">Attiva o disattiva le automazioni</p>
+                </div>
+            </a>
+            <a href="/dashboard/integrazioni" class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl hover:bg-wes-50 transition group">
+                <div class="w-10 h-10 bg-wes-100 rounded-xl flex items-center justify-center group-hover:bg-wes-500 transition-colors">
+                    <i class="fas fa-plug text-wes-500 group-hover:text-white transition-colors"></i>
+                </div>
+                <div>
+                    <p class="text-sm font-medium">Integrazioni</p>
+                    <p class="text-xs text-gray-500">Connetti WhatsApp, email e CRM</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Plan Info -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="text-lg font-bold mb-4">Piano Attivo</h2>
+        <div class="text-center p-4 bg-gradient-to-br from-wes-50 to-purple-50 rounded-xl">
+            <div class="text-3xl font-bold text-wes-600"><%= plan.name %></div>
+            <div class="text-sm text-gray-500 mt-1"><%= plan.price %>€/mese</div>
+            <div class="mt-3 text-xs text-gray-500">
+                <span class="font-medium"><%= plan.limits.leads_per_month === -1 ? 'Illimitati' : plan.limits.leads_per_month %></span> lead/mese
+                · 
+                <span class="font-medium"><%= plan.limits.agents === -1 ? 'Illimitati' : plan.limits.agents %></span> agenti
+            </div>
+            <a href="/prezzi" class="inline-block mt-3 text-xs text-wes-500 hover:text-wes-600 font-medium">Cambia piano <i class="fas fa-arrow-right ml-1"></i></a>
+        </div>
+    </div>
+    
+    <!-- AI Status -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="text-lg font-bold mb-4">Stato Agente AI</h2>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">Stato</span>
+                <span class="text-sm font-medium text-green-600 flex items-center gap-1">
+                    <i class="fas fa-circle text-xs"></i> Attivo
+                </span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">Lead qualificati</span>
+                <span class="text-sm font-medium"><%= stats.qualifiedLeads.count %></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">Follow-up in sospeso</span>
+                <span class="text-sm font-medium"><%= stats.followUps.count %></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div class="bg-wes-500 h-2 rounded-full" style="width: <%= stats.leads.count > 0 ? Math.round((stats.qualifiedLeads.count / stats.leads.count) * 100) : 0 %>%"></div>
+            </div>
+            <p class="text-xs text-gray-400 text-center">Tasso di qualificazione</p>
+        </div>
+    </div>
+</div>
+
+<%
+// Close the main and sidebar divs that were opened in dashboard-nav
+%>
+        </div>
+    </main>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,97 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="grid lg:grid-cols-3 gap-6">
+    <!-- Info Utente -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4"><%= user.company_name %></h2>
+        <div class="space-y-3 text-sm">
+            <div><span class="text-gray-500">Email:</span> <%= user.email %></div>
+            <div><span class="text-gray-500">Settore:</span> <%= user.sector || '-' %></div>
+            <div><span class="text-gray-500">Telefono:</span> <%= user.phone || '-' %></div>
+            <div><span class="text-gray-500">Piano:</span> <span class="font-medium"><%= user.plan %></span></div>
+            <div><span class="text-gray-500">Ruolo:</span> <%= user.role %></div>
+            <div><span class="text-gray-500">Stato:</span> <%= user.status %></div>
+            <div><span class="text-gray-500">Registrato:</span> <%= new Date(user.created_at).toLocaleDateString('it-IT') %></div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <div class="space-y-2">
+            <select id="planSelect" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm">
+                <option value="starter" <%= user.plan === 'starter' ? 'selected' : '' %>>Starter</option>
+                <option value="pro" <%= user.plan === 'pro' ? 'selected' : '' %>>Pro</option>
+                <option value="enterprise" <%= user.plan === 'enterprise' ? 'selected' : '' %>>Enterprise</option>
+            </select>
+            <button onclick="updateUser('<%= user.id %>')" class="w-full py-2 px-4 bg-wes-500 text-white text-sm font-medium rounded-xl hover:bg-wes-600 transition">
+                Aggiorna Piano
+            </button>
+        </div>
+    </div>
+    
+    <!-- Stats -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Statistiche</h2>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="p-3 bg-blue-50 rounded-xl text-center">
+                <div class="text-lg font-bold text-blue-600"><%= stats.leads.count %></div>
+                <div class="text-xs text-gray-500">Lead</div>
+            </div>
+            <div class="p-3 bg-green-50 rounded-xl text-center">
+                <div class="text-lg font-bold text-green-600"><%= stats.conversations.count %></div>
+                <div class="text-xs text-gray-500">Conversazioni</div>
+            </div>
+            <div class="p-3 bg-purple-50 rounded-xl text-center">
+                <div class="text-lg font-bold text-purple-600"><%= stats.appointments.count %></div>
+                <div class="text-xs text-gray-500">Appuntamenti</div>
+            </div>
+            <div class="p-3 bg-amber-50 rounded-xl text-center">
+                <div class="text-lg font-bold text-amber-600"><%= stats.automations.count %></div>
+                <div class="text-xs text-gray-500">Automazioni</div>
+            </div>
+        </div>
+        
+        <% if (subscription) { %>
+            <hr class="my-4">
+            <h3 class="font-semibold text-sm mb-2">Abbonamento</h3>
+            <div class="text-xs space-y-1">
+                <p>Stato: <%= subscription.status %></p>
+                <p>Inizio: <%= new Date(subscription.current_period_start).toLocaleDateString('it-IT') %></p>
+                <p>Fine: <%= new Date(subscription.current_period_end).toLocaleDateString('it-IT') %></p>
+            </div>
+        <% } %>
+    </div>
+    
+    <!-- Agent -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Agente AI</h2>
+        <% if (agent) { %>
+            <div class="space-y-3 text-sm">
+                <div><span class="text-gray-500">Nome:</span> <%= agent.name %></div>
+                <div><span class="text-gray-500">Tono:</span> <%= agent.tone %></div>
+                <div><span class="text-gray-500">Stato:</span> <%= agent.is_active ? 'Attivo' : 'Disattivo' %></div>
+                <div>
+                    <span class="text-gray-500">Messaggio:</span>
+                    <p class="text-xs text-gray-400 mt-1"><%= agent.welcome_message %></p>
+                </div>
+            </div>
+        <% } else { %>
+            <p class="text-sm text-gray-400">Nessun agente configurato</p>
+        <% } %>
+    </div>
+</div>
+
+<script>
+async function updateUser(id) {
+    const plan = document.getElementById('planSelect').value;
+    await fetch('/api/admin/user/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, plan })
+    });
+    location.reload();
+}
+</script>
+
+</main></div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,74 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="bg-white rounded-xl border border-gray-100 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold">Log di Sistema (<%= totalLogs %>)</h2>
+        <button onclick="if(confirm('Eliminare i log più vecchi di 30 giorni?')){ fetch('/api/admin/logs/clear', {method:'POST'}).then(()=>location.reload()) }" 
+            class="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-xl hover:bg-red-100 transition">
+            <i class="fas fa-trash mr-1"></i> Pulisci Log
+        </button>
+    </div>
+    
+    <!-- Filtri -->
+    <form class="flex flex-wrap gap-3 mb-4">
+        <select name="level" class="px-3 py-2 border border-gray-200 rounded-xl text-sm">
+            <option value="">Tutti i livelli</option>
+            <option value="info" <%= level === 'info' ? 'selected' : '' %>>Info</option>
+            <option value="error" <%= level === 'error' ? 'selected' : '' %>>Error</option>
+            <option value="admin" <%= level === 'admin' ? 'selected' : '' %>>Admin</option>
+        </select>
+        <input type="text" name="user_id" placeholder="User ID" value="<%= userId || '' %>"
+            class="px-3 py-2 border border-gray-200 rounded-xl text-sm">
+        <button type="submit" class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-200 transition">
+            Filtra
+        </button>
+    </form>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-gray-50 text-left text-xs text-gray-500">
+                    <th class="px-4 py-3">Data</th>
+                    <th class="px-4 py-3">Utente</th>
+                    <th class="px-4 py-3">Livello</th>
+                    <th class="px-4 py-3">Azione</th>
+                    <th class="px-4 py-3">Dettagli</th>
+                    <th class="px-4 py-3">IP</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% logs.forEach(function(log) { %>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3 text-xs text-gray-400"><%= new Date(log.created_at).toLocaleString('it-IT') %></td>
+                        <td class="px-4 py-3 text-xs"><%= log.company_name || log.user_id?.substring(0,8) || '-' %></td>
+                        <td class="px-4 py-3">
+                            <span class="text-xs px-2 py-0.5 rounded-full 
+                                <%= log.level === 'error' ? 'bg-red-100 text-red-700' : log.level === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' %>">
+                                <%= log.level %>
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 font-medium"><%= log.action %></td>
+                        <td class="px-4 py-3 text-xs text-gray-500 max-w-[300px] truncate"><%= log.details || '-' %></td>
+                        <td class="px-4 py-3 text-xs text-gray-400"><%= log.ip_address || '-' %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Paginazione -->
+    <% if (totalPages > 1) { %>
+        <div class="flex justify-center gap-2 mt-4">
+            <% for (let p = 1; p <= totalPages; p++) { %>
+                <a href="?page=<%= p %><%= level ? '&level='+level : '' %><%= userId ? '&user_id='+userId : '' %>" 
+                    class="px-3 py-1 rounded-lg text-sm <%= p === page ? 'bg-wes-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' %>">
+                    <%= p %>
+                </a>
+            <% } %>
+        </div>
+    <% } %>
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

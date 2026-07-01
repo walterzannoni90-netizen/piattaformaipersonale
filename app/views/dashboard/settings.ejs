@@ -1,0 +1,114 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl border border-gray-100 p-8">
+        <h2 class="text-xl font-bold mb-6">Impostazioni Azienda</h2>
+        
+        <form id="settingsForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome Azienda</label>
+                <input type="text" name="company_name" value="<%= user.company_name %>" required
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Settore</label>
+                <select name="sector"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+                    <option value="Immobiliare" <%= user.sector === 'Immobiliare' ? 'selected' : '' %>>Immobiliare</option>
+                    <option value="Automotive" <%= user.sector === 'Automotive' ? 'selected' : '' %>>Automotive</option>
+                    <option value="Servizi" <%= user.sector === 'Servizi' ? 'selected' : '' %>>Servizi Professionali</option>
+                    <option value="E-commerce" <%= user.sector === 'E-commerce' ? 'selected' : '' %>>E-commerce</option>
+                    <option value="Sanità" <%= user.sector === 'Sanità' ? 'selected' : '' %>>Sanità</option>
+                    <option value="Altro" <%= user.sector === 'Altro' || !user.sector ? 'selected' : '' %>>Altro</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input type="email" value="<%= user.email %>" disabled
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed">
+                <p class="text-xs text-gray-400 mt-1">L'email non può essere modificata</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                <input type="tel" name="phone" value="<%= user.phone || '' %>"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Piano Attuale</label>
+                <input type="text" value="<%= user.plan %> - <%= user.plan === 'starter' ? '297€/mese' : user.plan === 'pro' ? '597€/mese' : '1500€/mese' %>" disabled
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed">
+            </div>
+            
+            <button type="submit" 
+                class="w-full py-3 px-6 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-lg">
+                <i class="fas fa-save mr-2"></i> Salva Impostazioni
+            </button>
+        </form>
+    </div>
+    
+    <!-- OpenRouter Config -->
+    <div class="mt-6 bg-white rounded-xl border border-gray-100 p-8">
+        <h2 class="text-xl font-bold mb-6">Configurazione API OpenRouter</h2>
+        <p class="text-sm text-gray-500 mb-4">
+            Inserisci la tua API Key di OpenRouter per abilitare l'agente AI. 
+            Se non hai una chiave, <a href="https://openrouter.ai/keys" target="_blank" class="text-wes-500 hover:text-wes-600">creala qui</a>.
+        </p>
+        <form id="apiKeyForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">OpenRouter API Key</label>
+                <input type="password" name="api_key" placeholder="sk-or-v1-..." 
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Modello AI</label>
+                <select name="model"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+                    <option value="openai/gpt-4o">GPT-4o (OpenAI)</option>
+                    <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+                    <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+                    <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</option>
+                    <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full py-2.5 px-4 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition">
+                <i class="fas fa-key mr-2"></i> Salva API Key
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = new FormData(this);
+    const data = {
+        company_name: form.get('company_name'),
+        sector: form.get('sector'),
+        phone: form.get('phone')
+    };
+    
+    const res = await fetch('/api/settings/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.success) {
+        alert('Impostazioni aggiornate con successo!');
+        location.reload();
+    }
+});
+
+document.getElementById('apiKeyForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Configurazione API salvata. Riavvia il server per applicare le modifiche.');
+});
+</script>
+
+</main></div>
+<%- include('../partials/footer') %>

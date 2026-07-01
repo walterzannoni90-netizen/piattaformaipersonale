@@ -1,0 +1,106 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+        <h2 class="font-bold">Preventivi (<%= invoices.length %>)</h2>
+        <button onclick="document.getElementById('newInvoiceModal').classList.remove('hidden')"
+            class="px-4 py-2 bg-wes-500 text-white text-sm font-medium rounded-xl hover:bg-wes-600 transition">
+            <i class="fas fa-plus mr-1"></i> Nuovo Preventivo
+        </button>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50 text-left text-sm text-gray-500">
+                    <th class="px-6 py-4 font-medium">Numero</th>
+                    <th class="px-6 py-4 font-medium">Lead</th>
+                    <th class="px-6 py-4 font-medium">Importo</th>
+                    <th class="px-6 py-4 font-medium">Stato</th>
+                    <th class="px-6 py-4 font-medium">Data</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% if (invoices.length > 0) { %>
+                    <% invoices.forEach(function(inv) { %>
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 text-sm font-mono"><%= inv.invoice_number || inv.id.slice(0,8) %></td>
+                            <td class="px-6 py-4 text-sm"><%= inv.lead_name || '-' %></td>
+                            <td class="px-6 py-4 text-sm font-medium"><%= inv.amount.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' }) %></td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs px-2 py-1 rounded-full 
+                                    <%= inv.status === 'draft' ? 'bg-gray-100 text-gray-600' : inv.status === 'sent' ? 'bg-blue-100 text-blue-700' : inv.status === 'paid' ? 'bg-green-100 text-green-700' : '' %>">
+                                    <%= inv.status === 'draft' ? 'Bozza' : inv.status === 'sent' ? 'Inviato' : inv.status === 'paid' ? 'Pagato' : inv.status %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">
+                                <%= new Date(inv.created_at).toLocaleDateString('it-IT') %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                            <i class="fas fa-file-invoice text-4xl mb-3 block"></i>
+                            <p>Nessun preventivo ancora</p>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- New Invoice Modal -->
+<div id="newInvoiceModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold">Nuovo Preventivo</h3>
+            <button onclick="document.getElementById('newInvoiceModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+        <form id="invoiceForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium mb-1">Lead ID</label>
+                <input type="text" name="lead_id" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Importo (€)</label>
+                <input type="number" name="amount" step="0.01" required
+                    class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none">
+            </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Note</label>
+                <textarea name="notes" rows="3" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none resize-none"></textarea>
+            </div>
+            <button type="submit" class="w-full py-3 bg-wes-500 text-white font-medium rounded-xl hover:bg-wes-600 transition">
+                Crea Preventivo
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('invoiceForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = new FormData(this);
+    const data = {
+        lead_id: form.get('lead_id'),
+        amount: parseFloat(form.get('amount')),
+        notes: form.get('notes')
+    };
+    
+    const res = await fetch('/api/invoice/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.success) {
+        document.getElementById('newInvoiceModal').classList.add('hidden');
+        location.reload();
+    }
+});
+</script>
+
+</main></div>
+<%- include('../partials/footer') %>

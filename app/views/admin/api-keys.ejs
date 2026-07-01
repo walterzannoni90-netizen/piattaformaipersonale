@@ -1,0 +1,45 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100">
+        <h2 class="font-bold">API Keys (<%= keys.length %>)</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-gray-50 text-left text-xs text-gray-500">
+                    <th class="px-4 py-3">Azienda</th>
+                    <th class="px-4 py-3">Servizio</th>
+                    <th class="px-4 py-3">Key</th>
+                    <th class="px-4 py-3">Stato</th>
+                    <th class="px-4 py-3">Data</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% if (keys.length > 0) { %>
+                    <% keys.forEach(function(k) { %>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3"><%= k.company_name || k.user_id?.substring(0,8) %></td>
+                            <td class="px-4 py-3"><%= k.service %></td>
+                            <td class="px-4 py-3 font-mono text-xs">****<%= k.key_value.slice(-4) %></td>
+                            <td class="px-4 py-3">
+                                <span class="text-xs px-2 py-0.5 rounded-full <%= k.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                                    <%= k.is_active ? 'Attiva' : 'Disattiva' %>
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-gray-400"><%= new Date(k.created_at).toLocaleDateString('it-IT') %></td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">Nessuna API Key configurata</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

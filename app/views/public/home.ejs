@@ -1,0 +1,236 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<!-- Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-white via-wes-50 to-white">
+    <div class="absolute inset-0 opacity-30">
+        <div class="absolute top-20 -left-20 w-72 h-72 bg-wes-300 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-20 -right-20 w-96 h-96 bg-purple-300 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-wes-100 text-wes-700 rounded-full text-sm font-medium mb-6">
+                    <i class="fas fa-sparkles"></i>
+                    Automazione AI per la tua azienda
+                </div>
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+                    Automatizza lead, chat e 
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-wes-500 to-purple-600">vendite con l'AI</span>
+                </h1>
+                <p class="text-lg sm:text-xl text-gray-600 mb-8 leading-relaxed">
+                    WES AI Automation gestisce lead, WhatsApp, email, CRM, preventivi e follow-up 
+                    in modo automatico. Risparmia tempo e converti di più.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="/prenota-call" class="inline-flex items-center gap-2 px-8 py-4 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-xl shadow-wes-500/25 hover:shadow-wes-500/40">
+                        <i class="fas fa-calendar-check"></i>
+                        Prenota una Call Gratuita
+                    </a>
+                    <a href="/servizi" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:border-wes-300 hover:text-wes-600 transition shadow-sm">
+                        <i class="fas fa-play-circle"></i>
+                        Scopri i Servizi
+                    </a>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 transform lg:rotate-1 hover:rotate-0 transition-transform">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                        <span class="text-sm text-gray-400 ml-2">AI Chat - Demo</span>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0">M</div>
+                            <div class="bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%]">
+                                <p class="text-sm">Buongiorno! Vorrei informazioni sui vostri servizi di automazione</p>
+                                <span class="text-xs text-gray-400 mt-1 block">10:32</span>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 justify-end">
+                            <div class="bg-wes-500 text-white rounded-2xl rounded-tr-sm px-4 py-3 max-w-[80%]">
+                                <p class="text-sm">Buongiorno! Certamente! Siamo WES AI Automation, automatizziamo lead, WhatsApp e CRM. Che settore è il tuo?</p>
+                                <span class="text-xs text-wes-200 mt-1 block">10:32</span>
+                            </div>
+                            <div class="w-8 h-8 bg-wes-500 rounded-full flex items-center justify-center text-white text-sm flex-shrink-0">
+                                <i class="fas fa-robot text-xs"></i>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0">M</div>
+                            <div class="bg-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 max-w-[80%]">
+                                <p class="text-sm">Sono nel settore immobiliare. Quanto tempo ci vuole per partire?</p>
+                                <span class="text-xs text-gray-400 mt-1 block">10:33</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="text" placeholder="Scrivi un messaggio..." class="flex-1 px-4 py-2 bg-gray-50 rounded-xl text-sm border-0 focus:ring-2 focus:ring-wes-500" disabled>
+                            <button class="p-2 bg-wes-500 text-white rounded-xl"><i class="fas fa-paper-plane text-sm"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-16 bg-white border-y border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-wes-500">+500</div>
+                <div class="text-sm text-gray-500 mt-1">Aziende attive</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-wes-500">+50K</div>
+                <div class="text-sm text-gray-500 mt-1">Lead processati</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-wes-500">98%</div>
+                <div class="text-sm text-gray-500 mt-1">Tempo risparmiato</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-wes-500">4.9★</div>
+                <div class="text-sm text-gray-500 mt-1">Valutazione clienti</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Grid -->
+<section class="py-20 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Tutto ciò che serve per automatizzare la tua azienda
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Una piattaforma completa per gestire lead, conversazioni, appuntamenti e vendite.
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Feature 1 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:border-wes-200 transition-all group">
+                <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 group-hover:text-white transition-colors">
+                    <i class="fas fa-comments text-wes-600 group-hover:text-white text-xl transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Chatbot AI Intelligente</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">Risponde automaticamente ai lead su WhatsApp e sito web, 24/7, con un tono personalizzato per la tua azienda.</p>
+            </div>
+            
+            <!-- Feature 2 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:border-wes-200 transition-all group">
+                <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 group-hover:text-white transition-colors">
+                    <i class="fas fa-filter text-wes-600 group-hover:text-white text-xl transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Qualificazione Lead</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">L'AI fa domande mirate per qualificare i lead e passa solo quelli pronti al team commerciale.</p>
+            </div>
+            
+            <!-- Feature 3 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:border-wes-200 transition-all group">
+                <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 group-hover:text-white transition-colors">
+                    <i class="fas fa-database text-wes-600 group-hover:text-white text-xl transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">CRM Automatico</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">Salva automaticamente lead e conversazioni nel CRM. Tutte le informazioni sempre a portata di mano.</p>
+            </div>
+            
+            <!-- Feature 4 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:border-wes-200 transition-all group">
+                <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 group-hover:text-white transition-colors">
+                    <i class="fas fa-calendar text-wes-600 group-hover:text-white text-xl transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Appuntamenti Automatici</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">Propone e conferma appuntamenti in agenda in automatico. Sincronizzato con Google Calendar.</p>
+            </div>
+            
+            <!-- Feature 5 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:border-wes-200 transition-all group">
+                <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 group-hover:text-white transition-colors">
+                    <i class="fas fa-clock text-wes-600 group-hover:text-white text-xl transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Follow-up Automatici</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">Follow-up programmati dopo 1 e 3 giorni. Nessun lead viene dimenticato.</p>
+            </div>
+            
+            <!-- Feature 6 -->
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 hover:shadow-xl hover:border-wes-200 transition-all group">
+                <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 group-hover:text-white transition-colors">
+                    <i class="fas fa-chart-bar text-wes-600 group-hover:text-white text-xl transition-colors"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Report Settimanali</h3>
+                <p class="text-gray-600 text-sm leading-relaxed">Report automatici con statistiche, trend e performance delle automazioni via email.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                Come Funziona
+            </h2>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                In 3 semplici passaggi trasforma il modo in cui gestisci lead e clienti.
+            </p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-wes-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl font-bold text-wes-500">1</span>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Configura il tuo Agente</h3>
+                <p class="text-gray-600 text-sm">Scegli settore, tono di voce e domande da fare ai lead. L'AI si adatta alla tua azienda.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-wes-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl font-bold text-wes-500">2</span>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Connetti i tuoi canali</h3>
+                <p class="text-gray-600 text-sm">Collega WhatsApp, email, Google Calendar e CRM. L'AI lavora su tutti i canali.</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-wes-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl font-bold text-wes-500">3</span>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">Lascia lavorare l'AI</h3>
+                <p class="text-gray-600 text-sm">Nuovi lead vengono qualificati, ricevono risposte e appuntamenti in automatico. Tu vendi.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 bg-gradient-to-br from-wes-500 to-purple-700">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">
+            Pronto a trasformare la tua gestione lead?
+        </h2>
+        <p class="text-lg text-wes-100 mb-8 max-w-2xl mx-auto">
+            Prenota una call gratuita e scopri come WES AI Automation può automatizzare la tua azienda.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+            <a href="/prenota-call" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-wes-600 font-semibold rounded-xl hover:bg-gray-50 transition shadow-xl">
+                <i class="fas fa-calendar-check"></i>
+                Prenota Call Gratuita
+            </a>
+            <a href="/prezzi" class="inline-flex items-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition border border-white/20">
+                <i class="fas fa-tags"></i>
+                Vedi i Piani
+            </a>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

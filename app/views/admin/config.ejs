@@ -1,0 +1,55 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Configurazione Piattaforma</h2>
+        <div class="space-y-3 text-sm">
+            <div><span class="text-gray-500">App Name:</span> <%= config.name %></div>
+            <div><span class="text-gray-500">URL:</span> <%= config.url %></div>
+            <div><span class="text-gray-500">Email:</span> <%= config.email %></div>
+            <div><span class="text-gray-500">Telefono:</span> <%= config.phone %></div>
+        </div>
+        
+        <hr class="my-4">
+        
+        <h3 class="font-semibold text-sm mb-3">Piani Abbonamento</h3>
+        <% Object.entries(config.plans).forEach(function([key, plan]) { %>
+            <div class="p-3 bg-gray-50 rounded-xl mb-2">
+                <div class="font-medium"><%= plan.name %> - <%= plan.price %>€/mese</div>
+                <div class="text-xs text-gray-500">Setup: <%= plan.setupFee %>€ · Lead: <%= plan.limits.leads_per_month === -1 ? 'Illimitati' : plan.limits.leads_per_month %>/mese</div>
+            </div>
+        <% }); %>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Variabili d'Ambiente</h2>
+        <div class="space-y-2 text-sm">
+            <% Object.entries(env).forEach(function([key, value]) { %>
+                <div class="flex justify-between py-1 border-b border-gray-50">
+                    <span class="text-gray-500"><%= key %></span>
+                    <span class="font-mono text-xs"><%= value || 'Non impostato' %></span>
+                </div>
+            <% }); %>
+        </div>
+        
+        <hr class="my-4">
+        
+        <h3 class="font-semibold text-sm mb-3">API OpenRouter</h3>
+        <p class="text-xs text-gray-500 mb-2">
+            Stato: <span class="<%= env.OPENROUTER_API_KEY ? 'text-green-600' : 'text-red-600' %> font-medium">
+                <%= env.OPENROUTER_API_KEY ? 'Configurato' : 'Non configurato' %>
+            </span>
+        </p>
+        <p class="text-xs text-gray-500">Modello: <%= env.OPENROUTER_MODEL || 'Default (GPT-4o)' %></p>
+        <div class="mt-3">
+            <a href="https://openrouter.ai/keys" target="_blank" 
+                class="text-xs text-wes-500 hover:text-wes-600 font-medium">
+                <i class="fas fa-external-link-alt mr-1"></i> Ottieni API Key
+            </a>
+        </div>
+    </div>
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

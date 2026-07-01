@@ -1,0 +1,62 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+    <div class="p-4 border-b border-gray-100">
+        <h2 class="font-bold">Follow-up Programmanti</h2>
+        <p class="text-xs text-gray-500 mt-1"><%= followUps.length %> totali</p>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="bg-gray-50 text-left text-sm text-gray-500">
+                    <th class="px-6 py-4 font-medium">Lead</th>
+                    <th class="px-6 py-4 font-medium">Tipo</th>
+                    <th class="px-6 py-4 font-medium">Programmato per</th>
+                    <th class="px-6 py-4 font-medium">Stato</th>
+                    <th class="px-6 py-4 font-medium">Azioni</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% if (followUps.length > 0) { %>
+                    <% followUps.forEach(function(fu) { %>
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-medium text-sm"><%= fu.lead_name || 'N/D' %></span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm">
+                                <%= fu.type === '1day' ? '1 giorno' : fu.type === '3days' ? '3 giorni' : fu.type %>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500">
+                                <%= new Date(fu.scheduled_at).toLocaleString('it-IT') %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-xs px-2 py-1 rounded-full 
+                                    <%= fu.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : fu.status === 'sent' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                                    <%= fu.status === 'pending' ? 'In attesa' : fu.status === 'sent' ? 'Inviato' : 'Fallito' %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <button class="p-1.5 text-gray-400 hover:text-wes-500 transition" title="Visualizza">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                            <i class="fas fa-clock text-4xl mb-3 block"></i>
+                            <p>Nessun follow-up programmato</p>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

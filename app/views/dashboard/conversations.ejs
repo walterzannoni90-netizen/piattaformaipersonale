@@ -1,0 +1,72 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="grid lg:grid-cols-3 gap-6">
+    <!-- Lista conversazioni -->
+    <div class="lg:col-span-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div class="p-4 border-b border-gray-100">
+            <h2 class="font-bold">Conversazioni</h2>
+            <p class="text-xs text-gray-500 mt-1"><%= conversations.length %> totali</p>
+        </div>
+        <div class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+            <% if (conversations.length > 0) { %>
+                <% conversations.forEach(function(conv) { %>
+                    <div class="p-4 hover:bg-gray-50 cursor-pointer transition">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-medium text-sm"><%= conv.lead_name || 'Lead' %></span>
+                            <span class="text-xs text-gray-400"><%= new Date(conv.updated_at).toLocaleDateString('it-IT') %></span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <i class="fab fa-<%= conv.channel === 'whatsapp' ? 'whatsapp' : 'chrome' %>"></i>
+                            <span><%= conv.channel %></span>
+                            <span class="px-1.5 py-0.5 rounded-full <%= conv.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
+                                <%= conv.status %>
+                            </span>
+                        </div>
+                        <% if (conv.messages) { 
+                            const msgs = JSON.parse(conv.messages || '[]');
+                            if (msgs.length > 0) { %>
+                                <p class="text-xs text-gray-400 mt-2 truncate"><%= msgs[msgs.length-1].content %></p>
+                        <% } } %>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="p-8 text-center text-gray-400">
+                    <i class="fas fa-comment-dots text-4xl mb-3 block"></i>
+                    <p>Nessuna conversazione</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    
+    <!-- Chat simulata -->
+    <div class="lg:col-span-2 bg-white rounded-xl border border-gray-100 flex flex-col">
+        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">L</div>
+                <div>
+                    <p class="font-medium text-sm">Seleziona una conversazione</p>
+                    <p class="text-xs text-gray-400">Scegli una conversazione dalla lista</p>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1 p-8 flex items-center justify-center text-gray-400">
+            <div class="text-center">
+                <i class="fas fa-comment-dots text-6xl mb-4"></i>
+                <p>Seleziona una conversazione per vedere i messaggi</p>
+            </div>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center gap-2">
+                <input type="text" placeholder="Scrivi un messaggio..." disabled
+                    class="flex-1 px-4 py-2.5 bg-gray-50 rounded-xl text-sm border-0 focus:ring-2 focus:ring-wes-500">
+                <button disabled class="p-2.5 bg-gray-200 text-gray-400 rounded-xl">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

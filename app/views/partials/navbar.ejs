@@ -1,0 +1,78 @@
+<!-- Navigation -->
+<nav class="bg-white/80 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 group">
+                <div class="w-9 h-9 bg-wes-500 rounded-xl flex items-center justify-center group-hover:shadow-lg group-hover:shadow-wes-500/20 transition-all">
+                    <i class="fas fa-robot text-white text-sm"></i>
+                </div>
+                <span class="font-bold text-xl">WES <span class="text-wes-500">AI</span></span>
+            </a>
+            
+            <!-- Desktop Links -->
+            <div class="hidden md:flex items-center gap-8">
+                <a href="/" class="text-sm font-medium <%= currentPath === '/' ? 'text-wes-600' : 'text-gray-600 hover:text-gray-900' %> transition">Home</a>
+                <a href="/servizi" class="text-sm font-medium <%= currentPath === '/servizi' ? 'text-wes-600' : 'text-gray-600 hover:text-gray-900' %> transition">Servizi</a>
+                <a href="/casi-uso" class="text-sm font-medium <%= currentPath === '/casi-uso' ? 'text-wes-600' : 'text-gray-600 hover:text-gray-900' %> transition">Casi d'Uso</a>
+                <a href="/prezzi" class="text-sm font-medium <%= currentPath === '/prezzi' ? 'text-wes-600' : 'text-gray-600 hover:text-gray-900' %> transition">Prezzi</a>
+                <a href="/contatti" class="text-sm font-medium <%= currentPath === '/contatti' ? 'text-wes-600' : 'text-gray-600 hover:text-gray-900' %> transition">Contatti</a>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex items-center gap-3">
+                <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+                    <a href="/dashboard" class="hidden md:inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <form action="/auth/logout" method="POST" class="inline">
+                        <button type="submit" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span class="hidden md:inline">Esci</span>
+                        </button>
+                    </form>
+                <% } else { %>
+                    <a href="/login" class="hidden md:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition">
+                        <i class="fas fa-lock"></i> Accedi
+                    </a>
+                    <a href="/prenota-call" class="hidden md:flex items-center gap-2 px-5 py-2.5 bg-wes-500 text-white text-sm font-medium rounded-xl hover:bg-wes-600 transition shadow-lg shadow-wes-500/20">
+                        <i class="fas fa-calendar-check"></i> Prenota Call
+                    </a>
+                <% } %>
+                
+                <!-- Mobile menu button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-white border-t border-gray-100">
+        <div class="px-4 py-4 space-y-3">
+            <a href="/" class="block py-2 text-sm font-medium text-gray-600 hover:text-wes-500 transition">Home</a>
+            <a href="/servizi" class="block py-2 text-sm font-medium text-gray-600 hover:text-wes-500 transition">Servizi</a>
+            <a href="/casi-uso" class="block py-2 text-sm font-medium text-gray-600 hover:text-wes-500 transition">Casi d'Uso</a>
+            <a href="/prezzi" class="block py-2 text-sm font-medium text-gray-600 hover:text-wes-500 transition">Prezzi</a>
+            <a href="/contatti" class="block py-2 text-sm font-medium text-gray-600 hover:text-wes-500 transition">Contatti</a>
+            <hr class="my-2">
+            <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+                <a href="/dashboard" class="block py-2 text-sm font-medium text-wes-500">Dashboard</a>
+                <form action="/auth/logout" method="POST">
+                    <button type="submit" class="block w-full text-left py-2 text-sm font-medium text-red-500">Esci</button>
+                </form>
+            <% } else { %>
+                <a href="/login" class="block py-2 text-sm font-medium text-gray-600">Accedi</a>
+                <a href="/prenota-call" class="block py-2 text-sm font-medium text-wes-500">Prenota Call</a>
+            <% } %>
+        </div>
+    </div>
+</nav>
+
+<script>
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobileMenu');
+    menu.classList.toggle('hidden');
+}
+</script>

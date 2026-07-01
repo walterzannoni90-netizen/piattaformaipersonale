@@ -1,0 +1,96 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <div class="text-2xl font-bold text-wes-500"><%= stats.totalUsers.count %></div>
+        <div class="text-xs text-gray-500">Utenti totali</div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <div class="text-2xl font-bold text-blue-500"><%= stats.totalLeads.count %></div>
+        <div class="text-xs text-gray-500">Lead totali</div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <div class="text-2xl font-bold text-green-500"><%= stats.activeSubscriptions.count %></div>
+        <div class="text-xs text-gray-500">Abbonamenti attivi</div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 p-5">
+        <div class="text-2xl font-bold text-purple-500"><%= stats.totalRevenue %>€</div>
+        <div class="text-xs text-gray-500">Revenue mensile</div>
+    </div>
+</div>
+
+<!-- Lead Status -->
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Lead per Stato</h2>
+        <div class="grid grid-cols-4 gap-3 text-center">
+            <div class="p-3 bg-blue-50 rounded-xl">
+                <div class="text-lg font-bold text-blue-600"><%= leadsByStatus.new %></div>
+                <div class="text-xs text-gray-500">Nuovi</div>
+            </div>
+            <div class="p-3 bg-green-50 rounded-xl">
+                <div class="text-lg font-bold text-green-600"><%= leadsByStatus.qualified %></div>
+                <div class="text-xs text-gray-500">Qualificati</div>
+            </div>
+            <div class="p-3 bg-purple-50 rounded-xl">
+                <div class="text-lg font-bold text-purple-600"><%= leadsByStatus.contacted %></div>
+                <div class="text-xs text-gray-500">Contattati</div>
+            </div>
+            <div class="p-3 bg-amber-50 rounded-xl">
+                <div class="text-lg font-bold text-amber-600"><%= leadsByStatus.converted %></div>
+                <div class="text-xs text-gray-500">Convertiti</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Ultimi Accessi</h2>
+        <div class="space-y-2">
+            <% recentUsers.slice(0,5).forEach(function(u) { %>
+                <div class="flex items-center justify-between text-sm">
+                    <span><%= u.company_name %></span>
+                    <span class="text-xs text-gray-400"><%= u.last_login ? new Date(u.last_login).toLocaleString('it-IT') : 'Mai' %></span>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Logs -->
+<div class="bg-white rounded-xl border border-gray-100 p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold">Log Recenti</h2>
+        <a href="/admin/logs" class="text-sm text-wes-500 hover:text-wes-600">Vedi tutti</a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="bg-gray-50 text-left text-xs text-gray-500">
+                    <th class="px-3 py-2">Data</th>
+                    <th class="px-3 py-2">Livello</th>
+                    <th class="px-3 py-2">Azione</th>
+                    <th class="px-3 py-2">Dettagli</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                <% recentLogs.forEach(function(log) { %>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-3 py-2 text-xs text-gray-400"><%= new Date(log.created_at).toLocaleString('it-IT') %></td>
+                        <td class="px-3 py-2">
+                            <span class="text-xs px-2 py-0.5 rounded-full 
+                                <%= log.level === 'error' ? 'bg-red-100 text-red-700' : log.level === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' %>">
+                                <%= log.level %>
+                            </span>
+                        </td>
+                        <td class="px-3 py-2 font-medium"><%= log.action %></td>
+                        <td class="px-3 py-2 text-xs text-gray-500 truncate max-w-[200px]"><%= log.details ? log.details.substring(0, 80) : '-' %></td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

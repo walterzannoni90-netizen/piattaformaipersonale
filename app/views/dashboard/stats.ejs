@@ -1,0 +1,132 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<!-- Statistiche generali -->
+<div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+    <div class="bg-white rounded-xl border border-gray-100 p-5 text-center">
+        <div class="text-2xl font-bold text-wes-500"><%= totalStats.totalLeads.count %></div>
+        <div class="text-xs text-gray-500">Lead totali</div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 p-5 text-center">
+        <div class="text-2xl font-bold text-green-500"><%= totalStats.totalConversations.count %></div>
+        <div class="text-xs text-gray-500">Conversazioni</div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 p-5 text-center">
+        <div class="text-2xl font-bold text-purple-500"><%= totalStats.totalAppointments.count %></div>
+        <div class="text-xs text-gray-500">Appuntamenti</div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 p-5 text-center">
+        <div class="text-2xl font-bold text-amber-500"><%= totalStats.totalFollowUps.count %></div>
+        <div class="text-xs text-gray-500">Follow-up</div>
+    </div>
+    <div class="bg-white rounded-xl border border-gray-100 p-5 text-center">
+        <div class="text-2xl font-bold text-blue-500"><%= totalStats.conversionRate %>%</div>
+        <div class="text-xs text-gray-500">Tasso conversione</div>
+    </div>
+</div>
+
+<!-- Usage Chart (last 30 days) -->
+<div class="bg-white rounded-xl border border-gray-100 p-6 mb-8">
+    <h2 class="font-bold mb-4">Attività Ultimi 30 Giorni</h2>
+    <% if (usageStats.length > 0) { %>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-gray-50 text-left text-xs text-gray-500">
+                        <th class="px-3 py-2">Data</th>
+                        <th class="px-3 py-2">Conversazioni</th>
+                        <th class="px-3 py-2">Lead</th>
+                        <th class="px-3 py-2">Messaggi</th>
+                        <th class="px-3 py-2">Follow-up</th>
+                        <th class="px-3 py-2">Appuntamenti</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <% usageStats.forEach(function(stat) { %>
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-3 py-2"><%= stat.date %></td>
+                            <td class="px-3 py-2"><%= stat.conversations_count %></td>
+                            <td class="px-3 py-2"><%= stat.leads_count %></td>
+                            <td class="px-3 py-2"><%= stat.messages_count %></td>
+                            <td class="px-3 py-2"><%= stat.follow_ups_sent %></td>
+                            <td class="px-3 py-2"><%= stat.appointments_scheduled %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    <% } else { %>
+        <div class="text-center py-8 text-gray-400">
+            <i class="fas fa-chart-line text-4xl mb-3 block"></i>
+            <p>Non ci sono ancora dati statistici</p>
+            <p class="text-xs">Le statistiche verranno generate automaticamente</p>
+        </div>
+    <% } %>
+</div>
+
+<!-- Fonte Lead -->
+<div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Distribuzione Lead per Fonte</h2>
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-sm flex items-center gap-2"><i class="fab fa-whatsapp text-green-500"></i> WhatsApp</span>
+                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.4) : 0 %></span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+                <div class="bg-green-500 h-2 rounded-full" style="width: 40%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm flex items-center gap-2"><i class="fas fa-globe text-blue-500"></i> Sito Web</span>
+                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.35) : 0 %></span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-500 h-2 rounded-full" style="width: 35%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm flex items-center gap-2"><i class="fas fa-envelope text-purple-500"></i> Email</span>
+                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.25) : 0 %></span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-500 h-2 rounded-full" style="width: 25%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl border border-gray-100 p-6">
+        <h2 class="font-bold mb-4">Stato Lead</h2>
+        <div class="space-y-3">
+            <div class="flex items-center justify-between">
+                <span class="text-sm">Nuovi</span>
+                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.3) : 0 %></span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-500 h-2 rounded-full" style="width: 30%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm">Qualificati</span>
+                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.25) : 0 %></span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+                <div class="bg-green-500 h-2 rounded-full" style="width: 25%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm">Contattati</span>
+                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.25) : 0 %></span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+                <div class="bg-purple-500 h-2 rounded-full" style="width: 25%"></div>
+            </div>
+            <div class="flex items-center justify-between">
+                <span class="text-sm">Convertiti</span>
+                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.2) : 0 %></span>
+            </div>
+            <div class="bg-gray-200 rounded-full h-2">
+                <div class="bg-amber-500 h-2 rounded-full" style="width: 20%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

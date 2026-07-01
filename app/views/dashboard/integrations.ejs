@@ -1,0 +1,144 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+
+<div class="grid md:grid-cols-2 gap-6">
+    
+    <!-- WhatsApp -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                    <i class="fab fa-whatsapp text-2xl text-green-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">WhatsApp Business</h3>
+                    <p class="text-xs text-gray-500">Messaggistica automatica</p>
+                </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full 
+                <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
+                <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'Connesso' : 'Non connesso' %>
+            </span>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Collega WhatsApp Business API per gestire conversazioni, inviare messaggi automatici e ricevere notifiche in tempo reale.</p>
+        <button onclick="alert('Integrazione WhatsApp in fase di configurazione. Richiedi assistenza.')" 
+            class="w-full py-2.5 px-4 <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100' %> rounded-xl text-sm font-medium transition">
+            <i class="fab fa-whatsapp mr-2"></i>
+            <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'Disconnetti' : 'Connetti WhatsApp' %>
+        </button>
+    </div>
+    
+    <!-- Email -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-envelope text-2xl text-blue-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Email / Gmail</h3>
+                    <p class="text-xs text-gray-500">Automazione email</p>
+                </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full 
+                <%= integrations && integrations.find(i => i.service === 'email' && i.is_connected) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
+                <%= integrations && integrations.find(i => i.service === 'email' && i.is_connected) ? 'Connesso' : 'Non connesso' %>
+            </span>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Collega il tuo account Gmail o SMTP per inviare email automatiche, report e follow-up.</p>
+        <button onclick="alert('Integrazione Email in fase di configurazione. Richiedi assistenza.')" 
+            class="w-full py-2.5 px-4 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-sm font-medium transition">
+            <i class="fas fa-envelope mr-2"></i> Connetti Email
+        </button>
+    </div>
+    
+    <!-- Google Calendar -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <i class="fab fa-google text-2xl text-purple-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Google Calendar</h3>
+                    <p class="text-xs text-gray-500">Appuntamenti automatici</p>
+                </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Non connesso</span>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Sincronizza Google Calendar per proporre e confermare appuntamenti in automatico.</p>
+        <button onclick="alert('Integrazione Google Calendar in fase di sviluppo.')" 
+            class="w-full py-2.5 px-4 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-sm font-medium transition">
+            <i class="fab fa-google mr-2"></i> Connetti Calendar
+        </button>
+    </div>
+    
+    <!-- CRM -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-database text-2xl text-amber-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">CRM</h3>
+                    <p class="text-xs text-gray-500">Salvataggio automatico lead</p>
+                </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full <%= integrations && integrations.find(i => i.service === 'crm' && i.is_connected) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
+                <%= integrations && integrations.find(i => i.service === 'crm' && i.is_connected) ? 'Connesso' : 'Non connesso' %>
+            </span>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Salva automaticamente lead e conversazioni nel tuo CRM preferito via API webhook.</p>
+        <button onclick="alert('Integrazione CRM in fase di configurazione.')" 
+            class="w-full py-2.5 px-4 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-sm font-medium transition">
+            <i class="fas fa-plug mr-2"></i> Connetti CRM
+        </button>
+    </div>
+    
+    <!-- Stripe -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
+                    <i class="fab fa-stripe text-2xl text-indigo-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Stripe</h3>
+                    <p class="text-xs text-gray-500">Pagamenti e fatturazione</p>
+                </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Configurabile</span>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Accetta pagamenti con carte di credito, genera fatture e gestisci abbonamenti.</p>
+        <button onclick="alert('Integrazione Stripe disponibile nei piani Enterprise.')" 
+            class="w-full py-2.5 px-4 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-sm font-medium transition">
+            <i class="fab fa-stripe mr-2"></i> Connetti Stripe
+        </button>
+    </div>
+    
+    <!-- Webhook -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-network-wired text-2xl text-teal-600"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold">Webhook / API</h3>
+                    <p class="text-xs text-gray-500">n8n, Make, Zapier</p>
+                </div>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Configurabile</span>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Connetti WES AI Automation con n8n, Make, Zapier o qualsiasi altro servizio via webhook.</p>
+        <button onclick="alert('Webhook disponibile nei piani Pro ed Enterprise.')" 
+            class="w-full py-2.5 px-4 bg-teal-50 text-teal-700 hover:bg-teal-100 rounded-xl text-sm font-medium transition">
+            <i class="fas fa-plug mr-2"></i> Configura Webhook
+        </button>
+    </div>
+    
+</div>
+
+</main></div>
+<%- include('../partials/footer') %>

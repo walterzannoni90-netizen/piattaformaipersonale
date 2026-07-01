@@ -1,0 +1,76 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<section class="bg-gradient-to-br from-wes-50 to-white py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-12">
+            <div>
+                <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Contattaci</h1>
+                <p class="text-lg text-gray-600 mb-8">Hai domande? Vuoi saperne di più? Scrivici e ti risponderemo entro 24 ore.</p>
+                
+                <div class="space-y-6">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-envelope text-wes-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Email</h3>
+                            <a href="mailto:<%= contactEmail %>" class="text-gray-600 hover:text-wes-500 transition"><%= contactEmail %></a>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-phone text-wes-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Telefono</h3>
+                            <a href="tel:<%= contactPhone %>" class="text-gray-600 hover:text-wes-500 transition"><%= contactPhone %></a>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-map-marker-alt text-wes-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Sede</h3>
+                            <p class="text-gray-600">Milano, Italia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+                <h2 class="text-xl font-bold mb-6">Inviaci un messaggio</h2>
+                <form action="/contatti" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
+                        <input type="text" name="name" required 
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" name="email" required 
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
+                        <input type="tel" name="phone" 
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Messaggio *</label>
+                        <textarea name="message" rows="4" required 
+                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition resize-none"></textarea>
+                    </div>
+                    <button type="submit" 
+                        class="w-full py-3 px-6 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-lg shadow-wes-500/20">
+                        <i class="fas fa-paper-plane mr-2"></i>Invia Messaggio
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,15 @@
+<%- include('../partials/header') %>
+<%- include('../partials/navbar') %>
+
+<section class="min-h-[60vh] flex items-center justify-center py-20">
+    <div class="text-center">
+        <div class="text-8xl font-bold text-wes-200 mb-4">404</div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Pagina non trovata</h1>
+        <p class="text-gray-500 mb-8"><%= typeof message !== 'undefined' ? message : 'La pagina che cerchi non esiste.' %></p>
+        <a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-wes-500 text-white font-medium rounded-xl hover:bg-wes-600 transition">
+            <i class="fas fa-arrow-left"></i> Torna alla Home
+        </a>
+    </div>
+</section>
+
+<%- include('../partials/footer') %>
