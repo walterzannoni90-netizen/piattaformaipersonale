@@ -513,6 +513,27 @@ Response:
 
 ---
 
+## 🌐 Deploy su Render (gratuito)
+
+Questo progetto è configurato per il deploy su **Render**:
+
+1. **Crea account** su [Render.com](https://render.com) (gratis)
+2. **Collega GitHub**: Dashboard → **New +** → **Blueprint**
+3. **Seleziona** il repository `piattaformaipersonale`
+4. **Render legge** automaticamente il file `render.yaml`
+5. **Imposta manualmente** queste variabili d'ambiente su Render:
+   - `OPENROUTER_API_KEY` — Chiave API OpenRouter per AI agent
+   - `STRIPE_SECRET_KEY` — Chiave segreta Stripe per pagamenti
+   - `WHATSAPP_API_KEY` — API Key WhatsApp Business
+   - `GMAIL_USER` e `GMAIL_PASS` — Credenziali Gmail SMTP
+
+**Web Service manuale**:
+- **Build Command**: `npm install`
+- **Start Command**: `node server.js`
+- **Plan**: **Free** ✅
+
+---
+
 ## 📄 Licenza
 
 © 2026 WES AI Automation. Tutti i diritti riservati.
