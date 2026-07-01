@@ -272,9 +272,9 @@ async function startServer() {
 ╔══════════════════════════════════════════════════════╗
 ║          WES AI Automation - Server Active          ║
 ╠══════════════════════════════════════════════════════╣
-║  URL:     http://localhost:${PORT}                    ║
+║  URL:     ${process.env.APP_URL || 'http://localhost:' + PORT}                    ║
 ║  Status:  ${process.env.NODE_ENV || 'development'}                          ║
-║  API:     http://localhost:${PORT}/api/health         ║
+║  API:     ${(process.env.APP_URL || 'http://localhost:' + PORT) + '/api/health'}         ║
 ╠══════════════════════════════════════════════════════╣
 ║  📧 Sito Pubblico:   /                              ║
 ║  🔐 Login:           /login                         ║

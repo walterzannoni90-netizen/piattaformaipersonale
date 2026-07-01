@@ -4,19 +4,25 @@ services:
     runtime: node
     repo: https://github.com/walterzannoni90-netizen/piattaformaipersonale
     branch: master
-    plan: free
+    plan: starter # Minimo $7/mese per domini personalizzati
     buildCommand: npm install
     startCommand: node server.js
     healthCheckPath: /
+    domains:
+      - app.incontridibakeka.com
     envVars:
       - key: PORT
         value: "10000"
       - key: NODE_VERSION
         value: "22"
+      - key: NODE_ENV
+        value: production
       - key: JWT_SECRET
         generateValue: true
       - key: SESSION_SECRET
         generateValue: true
+      - key: APP_URL
+        value: https://app.incontridibakeka.com
       - key: OPENROUTER_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
