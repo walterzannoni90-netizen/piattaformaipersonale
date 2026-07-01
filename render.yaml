@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: wes-ai-automation
+    runtime: node
+    repo: https://github.com/walterzannoni90-netizen/piattaformaipersonale
+    branch: master
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: WHATSAPP_API_KEY
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_PASS
+        sync: false
