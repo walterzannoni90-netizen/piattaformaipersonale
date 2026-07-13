@@ -12,16 +12,7 @@ class CalendarService {
     `).get(userId);
     
     if (!integration) {
-      // Simulated calendar event
-      console.log(`[Calendar] Event created: ${title} at ${startTime}`);
-      
-      const appointmentId = uuidv4();
-      db.prepare(`
-        INSERT INTO appointments (id, user_id, title, description, start_time, end_time, status)
-        VALUES (?, ?, ?, ?, ?, ?, 'scheduled')
-      `).run(appointmentId, userId, title, description, startTime, endTime);
-      
-      return { success: true, appointmentId, simulated: true };
+      return { success: false, error: 'Google Calendar non configurato' };
     }
     
     // In production, use Google Calendar API
@@ -30,8 +21,7 @@ class CalendarService {
     // const calendar = google.calendar({ version: 'v3', auth });
     // const event = await calendar.events.insert({ ... });
     
-    console.log(`[Calendar] Google Calendar event created for ${userId}`);
-    return { success: true };
+    return { success: false, error: 'Connessione Google Calendar non ancora autorizzata' };
   }
 
   async getAvailability(userId, date) {

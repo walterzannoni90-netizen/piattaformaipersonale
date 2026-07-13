@@ -6,9 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "echo \"No tests yet\" && exit 0",
+    "test": "node --test test/*.test.js",
     "setup-db": "node database/setup.js",
-    "build": "echo \"Build complete\""
+    "build": "node --check server.js && node --check app/routes/auth.js && node --check app/routes/dashboard.js"
   },
   "keywords": ["ai", "automation", "whatsapp", "crm", "leads"],
   "license": "MIT",

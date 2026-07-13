@@ -9,6 +9,12 @@ const { v4: uuidv4 } = require('uuid');
 const { getDatabase } = require('../config/database');
 const { authLimiter } = require('../middleware/rateLimit');
 
+function safeRedirect(value, fallback) {
+  return typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') ? value : fallback;
+}
+
+const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
+
 // GET /login
 router.get('/login', (req, res) => {
   const { redirect } = req.query;
@@ -29,7 +35,8 @@ router.get('/register', (req, res) => {
 
 // POST /auth/login
 router.post('/auth/login', authLimiter, (req, res) => {
-  const { email, password, redirect } = req.body;
+  const email = normalizeEmail(req.body.email);
+  const { password, redirect } = req.body;
   const db = getDatabase();
   
   try {
@@ -69,7 +76,7 @@ router.post('/auth/login', authLimiter, (req, res) => {
       VALUES (?, ?, 'info', 'user_login', ?)
     `).run(uuidv4(), user.id, JSON.stringify({ ip: req.ip }));
     
-    const redirectUrl = redirect || (user.role === 'admin' ? '/admin' : '/dashboard');
+    const redirectUrl = safeRedirect(redirect, user.role === 'admin' ? '/admin' : '/dashboard');
     
     if (req.xhr) {
       return res.json({ success: true, redirect: redirectUrl, user: { id: user.id, name: user.company_name, role: user.role } });
@@ -91,11 +98,18 @@ router.post('/auth/login', authLimiter, (req, res) => {
 });
 
 // POST /auth/register
-router.post('/auth/register', async (req, res) => {
-  const { email, password, company_name, sector, phone } = req.body;
+router.post('/auth/register', authLimiter, async (req, res) => {
+  const email = normalizeEmail(req.body.email);
+  const company_name = String(req.body.company_name || '').trim();
+  const { password, sector, phone } = req.body;
   const db = getDatabase();
   
   try {
+    if (!/^\S+@\S+\.\S+$/.test(email) || company_name.length < 2 || typeof password !== 'string' || password.length < 8) {
+      const error = 'Inserisci un’email valida, un’azienda e una password di almeno 8 caratteri';
+      if (req.xhr) return res.status(422).json({ error });
+      return res.status(422).render('public/register', { title: 'Registrati - WES AI Automation', error });
+    }
     // Check existing user
     const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
     if (existing) {

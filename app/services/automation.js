@@ -213,7 +213,15 @@ class AutomationEngine {
       WHERE u.id = ?
     `).get(userId);
     
-    // In real implementation, this would send an email with the report
+    const user = db.prepare('SELECT email FROM users WHERE id = ?').get(userId);
+    if (!user?.email) throw new Error('Email utente non disponibile');
+    const result = await require('./email').sendWeeklyReport(userId, user.email, {
+      leads: stats.total_leads,
+      conversations: stats.total_conversations,
+      appointments: stats.total_appointments,
+      followups: stats.total_followups
+    });
+    if (!result.success) throw new Error(result.error);
     this.logAction(userId, 'weekly_report_generated', { stats });
   }
 
@@ -238,10 +246,20 @@ async function processPendingFollowUps() {
   
   for (const followUp of pending) {
     try {
-      // In real implementation: send the message via WhatsApp/email
+      const lead = db.prepare('SELECT phone, email FROM leads WHERE id = ? AND user_id = ?').get(followUp.lead_id, followUp.user_id);
+      if (followUp.channel === 'email') {
+        if (!lead?.email) throw new Error('Lead senza email');
+        const result = await require('./email').sendEmail(followUp.user_id, lead.email, 'Un messaggio per te', followUp.message_template);
+        if (!result.success) throw new Error(result.error);
+      } else {
+        if (!lead?.phone) throw new Error('Lead senza telefono');
+        await require('./whatsapp').sendMessage(followUp.user_id, lead.phone, followUp.message_template);
+      }
       db.prepare('UPDATE follow_ups SET status = "sent", executed_at = CURRENT_TIMESTAMP WHERE id = ?').run(followUp.id);
     } catch (error) {
       db.prepare('UPDATE follow_ups SET status = "failed" WHERE id = ?').run(followUp.id);
+      db.prepare(`INSERT INTO logs (id, user_id, level, action, details) VALUES (?, ?, 'error', 'followup_failed', ?)`)
+        .run(uuidv4(), followUp.user_id, JSON.stringify({ follow_up_id: followUp.id, error: error.message }));
     }
   }
 }

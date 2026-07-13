@@ -11,10 +11,17 @@ const session = require('express-session');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
+const crypto = require('crypto');
 const { limiter, apiLimiter } = require('./app/middleware/rateLimit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+if (process.env.NODE_ENV === 'production') {
+  const missing = ['JWT_SECRET', 'SESSION_SECRET'].filter((key) => !process.env[key]);
+  if (missing.length) throw new Error(`Configurazione di produzione incompleta: ${missing.join(', ')}`);
+  app.set('trust proxy', 1);
+}
 
 // ============ SECURITY & MIDDLEWARE ============
 app.use(helmet({
@@ -28,18 +35,26 @@ app.use(cors({
 // Request logging
 app.use(morgan('dev'));
 
+// Stripe requires the untouched body to verify webhook signatures.
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
 // Body parsing
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buffer) => { req.rawBody = buffer; }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Session (for flash messages, etc.)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'wes-session-secret',
+  secret: process.env.SESSION_SECRET || 'development-session-secret-change-me',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
   }
 }));
@@ -96,8 +111,55 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Meta verifies this endpoint when the WhatsApp webhook is connected.
+app.get('/api/whatsapp/webhook', (req, res) => {
+  const valid = req.query['hub.mode'] === 'subscribe' &&
+    req.query['hub.verify_token'] === process.env.WHATSAPP_VERIFY_TOKEN;
+  if (!process.env.WHATSAPP_VERIFY_TOKEN || !valid) return res.sendStatus(403);
+  return res.status(200).send(req.query['hub.challenge']);
+});
+
+app.post('/api/whatsapp/webhook', async (req, res) => {
+  const signature = req.get('x-hub-signature-256');
+  if (process.env.META_APP_SECRET) {
+    const expected = `sha256=${crypto.createHmac('sha256', process.env.META_APP_SECRET).update(req.rawBody || '').digest('hex')}`;
+    const validSignature = signature && signature.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    if (!validSignature) return res.sendStatus(401);
+  }
+  if (req.body?.object !== 'whatsapp_business_account') return res.sendStatus(400);
+  try {
+    const result = await require('./app/services/whatsapp').handleWebhook(req.body);
+    if (result) {
+      const { AutomationEngine } = require('./app/services/automation');
+      await AutomationEngine.trigger('first_message', {
+        user_id: result.userId,
+        lead: result.lead,
+        messages: JSON.parse(result.conversation.messages || '[]')
+      });
+      const db = require('./app/config/database').getDatabase();
+      const agent = db.prepare('SELECT * FROM agents WHERE user_id = ? AND is_active = 1').get(result.userId);
+      if (agent) {
+        const history = JSON.parse(result.conversation.messages || '[]').slice(-10).map((message) => ({
+          role: message.role === 'agent' ? 'assistant' : 'user',
+          content: message.content
+        }));
+        const ai = await require('./app/services/openrouter').generateResponse(history, {
+          ...agent,
+          company_name: db.prepare('SELECT company_name FROM users WHERE id = ?').get(result.userId)?.company_name
+        });
+        if (ai.success) await require('./app/services/whatsapp').sendMessage(result.userId, result.lead.phone, ai.content);
+      }
+    }
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error('WhatsApp webhook error:', error.message);
+    return res.sendStatus(500);
+  }
+});
+
 // Stripe Webhook (raw body needed)
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/stripe/webhook', async (req, res) => {
   const stripeService = require('./app/services/stripe');
   stripeService.init();
   
@@ -260,11 +322,8 @@ async function startServer() {
     const stripeService = require('./app/services/stripe');
     stripeService.init();
     
-    // Setup demo data
-    try {
+    if (process.env.SEED_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production') {
       await require('./database/setup')();
-    } catch (e) {
-      console.log('Setup script note:', e.message);
     }
     
     app.listen(PORT, () => {
@@ -289,6 +348,6 @@ async function startServer() {
   }
 }
 
-startServer();
+if (require.main === module) startServer();
 
-module.exports = app;
+module.exports = { app, startServer };

@@ -393,46 +393,4 @@ router.post('/api/settings/update', (req, res) => {
   res.json({ success: true, message: 'Impostazioni aggiornate!' });
 });
 
-// WhatsApp webhook receiver
-router.post('/api/whatsapp/webhook', (req, res) => {
-  const { userId, from, message } = req.body;
-  
-  // Process incoming WhatsApp message
-  const whatsappService = require('../services/whatsapp');
-  whatsappService.handleIncoming(userId, from, message)
-    .then(async ({ lead, conversation }) => {
-      // Trigger automation
-      const { AutomationEngine } = require('../services/automation');
-      await AutomationEngine.trigger('first_message', { 
-        user_id: userId, 
-        lead, 
-        messages: JSON.parse(conversation.messages || '[]') 
-      });
-      
-      // Generate AI response
-      const db = getDatabase();
-      const agent = db.prepare('SELECT * FROM agents WHERE user_id = ? AND is_active = 1').get(userId);
-      if (agent) {
-        const openrouter = require('../services/openrouter');
-        const messages = JSON.parse(conversation.messages || '[]');
-        const aiMessages = messages.slice(-10).map(m => ({
-          role: m.role === 'agent' ? 'assistant' : 'user',
-          content: m.content
-        }));
-        
-        const response = await openrouter.generateResponse(aiMessages, {
-          ...agent,
-          company_name: db.prepare('SELECT company_name FROM users WHERE id = ?').get(userId)?.company_name
-        });
-        
-        if (response.success) {
-          await whatsappService.sendMessage(userId, from, response.content);
-        }
-      }
-    })
-    .catch(err => console.error('Webhook error:', err));
-  
-  res.json({ success: true });
-});
-
 module.exports = router;

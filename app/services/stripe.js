@@ -14,7 +14,7 @@ class StripeService {
       try {
         this.stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
       } catch (e) {
-        console.warn('Stripe not available, using simulated payments');
+        console.warn('Stripe non disponibile');
       }
     }
   }
@@ -29,25 +29,7 @@ class StripeService {
     if (!planConfig) throw new Error('Piano non valido');
     
     if (!this.stripe) {
-      // Simulated checkout
-      const sessionId = uuidv4();
-      const subscriptionId = uuidv4();
-      
-      // Create subscription directly
-      db.prepare(`
-        INSERT OR REPLACE INTO subscriptions (id, user_id, plan, status, current_period_start, current_period_end)
-        VALUES (?, ?, ?, 'active', datetime('now'), datetime('now', '+1 month'))
-      `).run(subscriptionId, userId, plan);
-      
-      db.prepare('UPDATE users SET plan = ? WHERE id = ?').run(plan, userId);
-      
-      return { 
-        success: true, 
-        sessionId, 
-        subscriptionId,
-        url: '/dashboard?payment=success',
-        simulated: true 
-      };
+      throw new Error('Pagamenti Stripe non configurati');
     }
     
     // Real Stripe implementation
