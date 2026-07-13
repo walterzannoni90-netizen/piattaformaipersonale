@@ -11,6 +11,7 @@ const session = require('express-session');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
+const crypto = require('crypto');
 const { limiter, apiLimiter } = require('./app/middleware/rateLimit');
 
 const app = express();
@@ -38,7 +39,10 @@ app.use(morgan('dev'));
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 
 // Body parsing
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buffer) => { req.rawBody = buffer; }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -105,6 +109,53 @@ app.get('/api/health', (req, res) => {
     version: '1.0.0',
     uptime: process.uptime()
   });
+});
+
+// Meta verifies this endpoint when the WhatsApp webhook is connected.
+app.get('/api/whatsapp/webhook', (req, res) => {
+  const valid = req.query['hub.mode'] === 'subscribe' &&
+    req.query['hub.verify_token'] === process.env.WHATSAPP_VERIFY_TOKEN;
+  if (!process.env.WHATSAPP_VERIFY_TOKEN || !valid) return res.sendStatus(403);
+  return res.status(200).send(req.query['hub.challenge']);
+});
+
+app.post('/api/whatsapp/webhook', async (req, res) => {
+  const signature = req.get('x-hub-signature-256');
+  if (process.env.META_APP_SECRET) {
+    const expected = `sha256=${crypto.createHmac('sha256', process.env.META_APP_SECRET).update(req.rawBody || '').digest('hex')}`;
+    const validSignature = signature && signature.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    if (!validSignature) return res.sendStatus(401);
+  }
+  if (req.body?.object !== 'whatsapp_business_account') return res.sendStatus(400);
+  try {
+    const result = await require('./app/services/whatsapp').handleWebhook(req.body);
+    if (result) {
+      const { AutomationEngine } = require('./app/services/automation');
+      await AutomationEngine.trigger('first_message', {
+        user_id: result.userId,
+        lead: result.lead,
+        messages: JSON.parse(result.conversation.messages || '[]')
+      });
+      const db = require('./app/config/database').getDatabase();
+      const agent = db.prepare('SELECT * FROM agents WHERE user_id = ? AND is_active = 1').get(result.userId);
+      if (agent) {
+        const history = JSON.parse(result.conversation.messages || '[]').slice(-10).map((message) => ({
+          role: message.role === 'agent' ? 'assistant' : 'user',
+          content: message.content
+        }));
+        const ai = await require('./app/services/openrouter').generateResponse(history, {
+          ...agent,
+          company_name: db.prepare('SELECT company_name FROM users WHERE id = ?').get(result.userId)?.company_name
+        });
+        if (ai.success) await require('./app/services/whatsapp').sendMessage(result.userId, result.lead.phone, ai.content);
+      }
+    }
+    return res.sendStatus(200);
+  } catch (error) {
+    console.error('WhatsApp webhook error:', error.message);
+    return res.sendStatus(500);
+  }
 });
 
 // Stripe Webhook (raw body needed)

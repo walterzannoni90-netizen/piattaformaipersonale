@@ -47,8 +47,7 @@ class EmailService {
     try {
       const transporter = this.getTransporter(userId);
       if (!transporter) {
-        console.log(`[Email] Simulated send to ${to}: ${subject}`);
-        return { success: true, messageId: uuidv4(), simulated: true };
+        return { success: false, error: 'Email SMTP non configurata' };
       }
 
       const info = await transporter.sendMail({
