@@ -16,6 +16,12 @@ const { limiter, apiLimiter } = require('./app/middleware/rateLimit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+if (process.env.NODE_ENV === 'production') {
+  const missing = ['JWT_SECRET', 'SESSION_SECRET'].filter((key) => !process.env[key]);
+  if (missing.length) throw new Error(`Configurazione di produzione incompleta: ${missing.join(', ')}`);
+  app.set('trust proxy', 1);
+}
+
 // ============ SECURITY & MIDDLEWARE ============
 app.use(helmet({
   contentSecurityPolicy: false, // Disabled for development - enable in production with proper config
@@ -28,6 +34,9 @@ app.use(cors({
 // Request logging
 app.use(morgan('dev'));
 
+// Stripe requires the untouched body to verify webhook signatures.
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
 // Body parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -35,11 +44,13 @@ app.use(cookieParser());
 
 // Session (for flash messages, etc.)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'wes-session-secret',
+  secret: process.env.SESSION_SECRET || 'development-session-secret-change-me',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000
   }
 }));
@@ -97,7 +108,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Stripe Webhook (raw body needed)
-app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/api/stripe/webhook', async (req, res) => {
   const stripeService = require('./app/services/stripe');
   stripeService.init();
   
@@ -260,11 +271,8 @@ async function startServer() {
     const stripeService = require('./app/services/stripe');
     stripeService.init();
     
-    // Setup demo data
-    try {
+    if (process.env.SEED_DEMO_DATA === 'true' && process.env.NODE_ENV !== 'production') {
       await require('./database/setup')();
-    } catch (e) {
-      console.log('Setup script note:', e.message);
     }
     
     app.listen(PORT, () => {
@@ -289,6 +297,6 @@ async function startServer() {
   }
 }
 
-startServer();
+if (require.main === module) startServer();
 
-module.exports = app;
+module.exports = { app, startServer };

@@ -55,82 +55,82 @@
 
 /* Dashboard specific */
 .dashboard-card {
-    @apply bg-white rounded-xl border border-gray-100 p-6 transition-all;
+    background:#fff;border:1px solid #f3f4f6;border-radius:.75rem;padding:1.5rem;transition:all .2s;
 }
 
 .dashboard-card:hover {
-    @apply shadow-md;
+    box-shadow:0 10px 20px rgba(17,24,39,.08);
 }
 
 /* Table styles */
 .table-container {
-    @apply overflow-x-auto;
+    overflow-x:auto;
 }
 
 .table-container table {
-    @apply w-full;
+    width:100%;
 }
 
 .table-container th {
-    @apply px-6 py-4 text-left text-sm font-medium text-gray-500 bg-gray-50;
+    padding:1rem 1.5rem;text-align:left;font-size:.875rem;font-weight:500;color:#6b7280;background:#f9fafb;
 }
 
 .table-container td {
-    @apply px-6 py-4 text-sm border-t border-gray-100;
+    padding:1rem 1.5rem;font-size:.875rem;border-top:1px solid #f3f4f6;
 }
 
 .table-container tr:hover td {
-    @apply bg-gray-50;
+    background:#f9fafb;
 }
 
 /* Form styles */
 .form-input {
-    @apply w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition;
+    width:100%;padding:.75rem 1rem;border:1px solid #e5e7eb;border-radius:.75rem;outline:none;transition:.2s;
 }
 
 .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
+    display:block;font-size:.875rem;font-weight:500;color:#374151;margin-bottom:.25rem;
 }
 
 .btn-primary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-lg shadow-wes-500/20;
+    display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;background:#6c63ff;color:#fff;font-weight:600;border-radius:.75rem;transition:.2s;box-shadow:0 10px 20px rgba(108,99,255,.2);
 }
 
 .btn-secondary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:border-wes-300 hover:text-wes-600 transition shadow-sm;
+    display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;background:#fff;color:#374151;font-weight:600;border:1px solid #e5e7eb;border-radius:.75rem;transition:.2s;
 }
 
 /* Status badges */
 .badge {
-    @apply text-xs px-2 py-1 rounded-full font-medium;
+    font-size:.75rem;padding:.25rem .5rem;border-radius:9999px;font-weight:500;
 }
 
 .badge-new {
-    @apply bg-blue-100 text-blue-700;
+    background:#dbeafe;color:#1d4ed8;
 }
 
 .badge-qualified {
-    @apply bg-green-100 text-green-700;
+    background:#dcfce7;color:#15803d;
 }
 
 .badge-contacted {
-    @apply bg-purple-100 text-purple-700;
+    background:#f3e8ff;color:#7e22ce;
 }
 
 .badge-converted {
-    @apply bg-amber-100 text-amber-700;
+    background:#fef3c7;color:#b45309;
 }
 
 .badge-pending {
-    @apply bg-yellow-100 text-yellow-700;
+    background:#fef9c3;color:#a16207;
 }
 
 .badge-sent {
-    @apply bg-green-100 text-green-700;
+    background:#dcfce7;color:#15803d;
 }
 
 .badge-error {
-    @apply bg-red-100 text-red-700;
+    background:#fee2e2;color:#b91c1c;
 }
 
 /* Mobile menu */
@@ -161,7 +161,7 @@
 
 /* Toggle switch */
 .toggle-checkbox:checked + .toggle-label {
-    @apply bg-wes-500;
+    background:#6c63ff;
 }
 
 .toggle-checkbox:checked + .toggle-label::after {
@@ -170,22 +170,26 @@
 
 /* Card hover effects */
 .hover-lift {
-    @apply transition-all duration-200;
+    transition:all .2s;
 }
 
 .hover-lift:hover {
-    @apply -translate-y-1 shadow-lg;
+    transform:translateY(-.25rem);box-shadow:0 10px 20px rgba(17,24,39,.1);
 }
 
 /* Glass effect */
 .glass {
-    @apply bg-white/80 backdrop-blur-lg;
+    background:rgba(255,255,255,.8);backdrop-filter:blur(16px);
 }
 
 /* Gradient text */
 .gradient-text {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-wes-500 to-purple-600;
+    color:transparent;background:linear-gradient(90deg,#6c63ff,#9333ea);background-clip:text;-webkit-background-clip:text;
 }
+
+.form-input:focus{border-color:#6c63ff;box-shadow:0 0 0 3px rgba(108,99,255,.18)}
+.btn-primary:hover{background:#5a52d5;transform:translateY(-1px)}
+.btn-secondary:hover{border-color:#a0a0ff;color:#5a52d5}
 
 /* Responsive table */
 @media (max-width: 640px) {
