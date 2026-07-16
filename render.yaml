@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: wes-ai-automation
+    name: nummy-platform
     runtime: node
     repo: https://github.com/walterzannoni90-netizen/piattaformaipersonale
     branch: master

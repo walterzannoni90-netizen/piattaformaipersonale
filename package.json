@@ -1,7 +1,7 @@
 {
-  "name": "wes-ai-automation",
+  "name": "nummy-platform",
   "version": "1.0.0",
-  "description": "WES AI Automation - Piattaforma di automazione AI per lead, WhatsApp, email, CRM e preventivi",
+  "description": "NUMMY - Piattaforma di automazione AI per lead, WhatsApp, email, CRM e preventivi",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

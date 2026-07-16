@@ -1,8 +1,8 @@
-# 🤖 WES AI Automation
+# 🤖 NUMMY
 
-**Piattaforma SaaS di automazione AI per lead, WhatsApp, email, CRM e preventivi.**
+**Smart. Simple. For you.**
 
-WES AI Automation è una piattaforma completa che permette alle aziende di automatizzare l'intero processo di acquisizione e gestione clienti tramite intelligenza artificiale. Dall'accoglienza del lead alla qualificazione, dalla pianificazione appuntamenti ai follow-up automatici — tutto gestito da agenti AI configurabili.
+NUMMY è una piattaforma completa che permette alle aziende di automatizzare l'intero processo di acquisizione e gestione clienti tramite intelligenza artificiale. Dall'accoglienza del lead alla qualificazione, dalla pianificazione appuntamenti ai follow-up automatici — tutto gestito da agenti AI configurabili.
 
 ---
 
@@ -28,7 +28,7 @@ WES AI Automation è una piattaforma completa che permette alle aziende di autom
 
 ## 🎯 Panoramica
 
-WES AI Automation risolve un problema comune a molte aziende: **gestire manualmente lead, chat, email, appuntamenti e follow-up** è lento, inefficiente e fa perdere opportunità.
+NUMMY risolve un problema comune a molte aziende: **gestire manualmente lead, chat, email, appuntamenti e follow-up** è lento, inefficiente e fa perdere opportunità.
 
 La piattaforma mette un **agente AI** al centro del processo di acquisizione clienti, che:
 
@@ -169,7 +169,7 @@ PORT=3000
 NODE_ENV=development
 
 # Database
-DB_PATH=./database/wes.db
+DB_PATH=./database/nummy.db
 
 # JWT
 JWT_SECRET=your-super-secret-key-change-me
@@ -222,15 +222,17 @@ Dopo l'avvio, il server sarà disponibile su **http://localhost:3000**
 
 | Ruolo | Email | Password |
 |-------|-------|----------|
-| **Admin** | admin@wesautomation.com | admin123 |
-| **Cliente** | demo@azienda.it | admin123 |
+| **Admin** | admin@nummy.com | definita da `DEMO_PASSWORD` |
+| **Cliente** | demo@azienda.it | definita da `DEMO_PASSWORD` |
+
+Imposta `DEMO_PASSWORD` nel file `.env` prima del setup. Se non è valorizzata, il comando genera una password casuale e la mostra una sola volta nel terminale.
 
 ---
 
 ## 📁 Struttura del Progetto
 
 ```
-wes-ai-automation/
+nummy-platform/
 │
 ├── server.js                    # Entry point principale
 ├── package.json                 # Dipendenze e script
@@ -309,7 +311,7 @@ wes-ai-automation/
 │
 └── database/
     ├── setup.js                 # Script setup con dati demo
-    └── wes.db                   # Database SQLite (generato automaticamente)
+    └── nummy.db                   # Database SQLite (generato automaticamente)
 ```
 
 ---
@@ -536,12 +538,12 @@ Questo progetto è configurato per il deploy su **Render**:
 
 ## 📄 Licenza
 
-© 2026 WES AI Automation. Tutti i diritti riservati.
+© 2026 NUMMY. Tutti i diritti riservati.
 
 ---
 
 <p align="center">
-  <strong>WES AI Automation</strong> — <em>Automazione Intelligente per la Tua Azienda</em><br>
-  <a href="mailto:info@wesautomation.com">info@wesautomation.com</a> ·
+  <strong>NUMMY</strong> — <em>Automazione Intelligente per la Tua Azienda</em><br>
+  <a href="mailto:info@nummy.com">info@nummy.com</a> ·
   <a href="https://github.com/walterzannoni90-netizen/piattaformaipersonale">GitHub</a>
 </p>

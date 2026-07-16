@@ -9,7 +9,7 @@ const { optionalAuth } = require('../middleware/auth');
 // Home page
 router.get('/', (req, res) => {
   res.render('public/home', { 
-    title: 'WES AI Automation - Automazione Intelligente per la Tua Azienda',
+    title: 'NUMMY - Automazione Intelligente per la Tua Azienda',
     description: 'Automatizza lead, WhatsApp, email, CRM e preventivi con l\'intelligenza artificiale.'
   });
 });
@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
 // Servizi
 router.get('/servizi', (req, res) => {
   res.render('public/servizi', { 
-    title: 'Servizi - WES AI Automation',
+    title: 'Servizi - NUMMY',
     description: 'Scopri tutti i servizi di automazione AI per la tua azienda.'
   });
 });
@@ -25,7 +25,7 @@ router.get('/servizi', (req, res) => {
 // Casi d'uso
 router.get('/casi-uso', (req, res) => {
   res.render('public/casi-uso', { 
-    title: 'Casi d\'Uso - WES AI Automation',
+    title: 'Casi d\'Uso - NUMMY',
     description: 'Esempi reali di automazione AI per diversi settori.'
   });
 });
@@ -34,7 +34,7 @@ router.get('/casi-uso', (req, res) => {
 router.get('/prezzi', (req, res) => {
   const app = require('../config/app');
   res.render('public/prezzi', { 
-    title: 'Prezzi - WES AI Automation',
+    title: 'Prezzi - NUMMY',
     description: 'Piani e prezzi per ogni esigenza di automazione.',
     plans: app.plans
   });
@@ -43,15 +43,15 @@ router.get('/prezzi', (req, res) => {
 // Contatti
 router.get('/contatti', (req, res) => {
   res.render('public/contatti', { 
-    title: 'Contatti - WES AI Automation',
-    description: 'Contatta il team WES AI Automation.'
+    title: 'Contatti - NUMMY',
+    description: 'Contatta il team NUMMY.'
   });
 });
 
 // Prenota call
 router.get('/prenota-call', (req, res) => {
   res.render('public/prenota-call', { 
-    title: 'Prenota una Call - WES AI Automation',
+    title: 'Prenota una Call - NUMMY',
     description: 'Prenota una consulenza gratuita con il nostro team.'
   });
 });

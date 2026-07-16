@@ -44,7 +44,7 @@ router.get('/admin', (req, res) => {
   };
   
   res.render('admin/index', {
-    title: 'Admin - WES AI Automation',
+    title: 'Admin - NUMMY',
     stats,
     recentUsers,
     recentLogs,
@@ -59,7 +59,7 @@ router.get('/admin/utenti', (req, res) => {
   const users = db.prepare('SELECT * FROM users ORDER BY created_at DESC').all();
   
   res.render('admin/users', {
-    title: 'Gestione Utenti - WES AI Automation',
+    title: 'Gestione Utenti - NUMMY',
     users,
     adminPage: true
   });
@@ -83,7 +83,7 @@ router.get('/admin/utenti/:id', (req, res) => {
   const agent = db.prepare('SELECT * FROM agents WHERE user_id = ?').get(user.id);
   
   res.render('admin/user-detail', {
-    title: `Utente: ${user.company_name} - WES AI Automation`,
+    title: `Utente: ${user.company_name} - NUMMY`,
     user,
     stats,
     subscription,
@@ -126,7 +126,7 @@ router.get('/admin/logs', (req, res) => {
   const totalPages = Math.ceil(totalLogs / perPage);
   
   res.render('admin/logs', {
-    title: 'Log di Sistema - WES AI Automation',
+    title: 'Log di Sistema - NUMMY',
     logs,
     page: currentPage,
     totalPages,
@@ -147,7 +147,7 @@ router.get('/admin/api-keys', (req, res) => {
   `).all();
   
   res.render('admin/api-keys', {
-    title: 'API Keys - WES AI Automation',
+    title: 'API Keys - NUMMY',
     keys,
     adminPage: true
   });
@@ -158,7 +158,7 @@ router.get('/admin/config', (req, res) => {
   const app = require('../config/app');
   
   res.render('admin/config', {
-    title: 'Configurazione - WES AI Automation',
+    title: 'Configurazione - NUMMY',
     config: app,
     env: {
       PORT: process.env.PORT,

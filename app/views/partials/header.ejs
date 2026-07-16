@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= typeof title !== 'undefined' ? title : 'WES AI Automation' %></title>
-    <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'WES AI Automation - Automazione Intelligente per la Tua Azienda' %>">
+    <title><%= typeof title !== 'undefined' ? title : 'NUMMY' %></title>
+    <meta name="description" content="<%= typeof description !== 'undefined' ? description : 'NUMMY - Automazione Intelligente per la Tua Azienda' %>">
     
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,31 +14,31 @@
                 extend: {
                     colors: {
                         wes: {
-                            50: '#f0f0ff',
-                            100: '#e0e0ff',
-                            200: '#c0c0ff',
-                            300: '#a0a0ff',
-                            400: '#8080ff',
-                            500: '#6C63FF',
-                            600: '#5a52d5',
-                            700: '#4841ab',
-                            800: '#363181',
-                            900: '#242057',
-                            950: '#12102b'
+                            50: '#E6FAF7',
+                            100: '#BFF2EA',
+                            200: '#80E4D6',
+                            300: '#33D0BC',
+                            400: '#00BFA6',
+                            500: '#00BFA6',
+                            600: '#009F8B',
+                            700: '#007C87',
+                            800: '#075A65',
+                            900: '#0B3440',
+                            950: '#090B14'
                         }
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+                        sans: ['Manrope', 'system-ui', '-apple-system', 'sans-serif']
                     }
                 }
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css">
 </head>
-<body class="bg-white text-gray-900 font-sans antialiased">
+<body class="nummy-theme bg-[#090B14] text-white font-sans antialiased">
 
 <% if (typeof success !== 'undefined' && success) { %>
     <div id="successAlert" class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-bounce-in">

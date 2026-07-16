@@ -1,12 +1,13 @@
 /**
- * WES AI Automation - Database Setup Script
+ * NUMMY - Database Setup Script
  * Run: node database/setup.js
  */
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const path = require('path');
+const crypto = require('crypto');
 
 module.exports = async function setupDatabase() {
-  console.log('🔄 Inizializzazione database WES AI Automation...');
+  console.log('🔄 Inizializzazione database NUMMY...');
   
   try {
     const { initDatabase } = require('../app/config/database');
@@ -20,14 +21,15 @@ module.exports = async function setupDatabase() {
       
       const bcrypt = require('bcryptjs');
       const { v4: uuidv4 } = require('uuid');
-      const password = bcrypt.hashSync('admin123', 10);
+      const demoPassword = process.env.DEMO_PASSWORD || crypto.randomBytes(18).toString('base64url');
+      const password = bcrypt.hashSync(demoPassword, 10);
       
       // Demo admin
       const adminId = uuidv4();
       db.prepare(`
         INSERT INTO users (id, email, password, company_name, sector, role, plan)
         VALUES (?, ?, ?, ?, ?, ?, ?)
-      `).run(adminId, 'admin@wesautomation.com', password, 'WES AI Automation', 'Technology', 'admin', 'enterprise');
+      `).run(adminId, 'admin@nummy.com', password, 'NUMMY', 'Technology', 'admin', 'enterprise');
       
       // Demo client
       const clientId = uuidv4();
@@ -44,7 +46,7 @@ module.exports = async function setupDatabase() {
       `).run(
         agentId, 
         clientId, 
-        'Agente WES', 
+        'Agente NUMMY',
         'professionale', 
         'Ciao! Sono l\'assistente virtuale di Demo SRL. Come posso aiutarti oggi?',
         JSON.stringify([
@@ -60,12 +62,12 @@ module.exports = async function setupDatabase() {
       db.prepare(`
         INSERT INTO leads (id, user_id, name, email, phone, source, status, score)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(lead1Id, clientId, 'Mario Rossi', 'mario@example.com', '+39 333 1234567', 'whatsapp', 'qualified', 8);
+      `).run(lead1Id, clientId, 'Cliente Demo A', 'lead-a@example.invalid', '+39 000 0000001', 'whatsapp', 'qualified', 8);
       
       db.prepare(`
         INSERT INTO leads (id, user_id, name, email, phone, source, status, score)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(lead2Id, clientId, 'Laura Bianchi', 'laura@example.com', '+39 333 7654321', 'website', 'new', 3);
+      `).run(lead2Id, clientId, 'Cliente Demo B', 'lead-b@example.invalid', '+39 000 0000002', 'website', 'new', 3);
       
       // Demo conversations
       db.prepare(`
@@ -75,7 +77,7 @@ module.exports = async function setupDatabase() {
         uuidv4(), clientId, lead1Id, agentId, 'whatsapp',
         JSON.stringify([
           { role: 'lead', content: 'Buongiorno, vorrei informazioni sui vostri servizi', timestamp: new Date().toISOString() },
-          { role: 'agent', content: 'Buongiorno Mario! Certamente, quale servizio ti interessa?', timestamp: new Date().toISOString() }
+          { role: 'agent', content: 'Buongiorno! Certamente, quale servizio ti interessa?', timestamp: new Date().toISOString() }
         ]),
         'active'
       );
@@ -105,7 +107,7 @@ module.exports = async function setupDatabase() {
       db.prepare(`
         INSERT INTO appointments (id, user_id, lead_id, title, description, start_time, end_time, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(uuidv4(), clientId, lead1Id, 'Demo servizi', 'Presentazione servizi a Mario Rossi', 
+      `).run(uuidv4(), clientId, lead1Id, 'Demo servizi', 'Presentazione servizi al cliente demo',
         tomorrow.toISOString(), endTime.toISOString(), 'scheduled');
       
       // Demo usage stats
@@ -116,8 +118,9 @@ module.exports = async function setupDatabase() {
       `).run(uuidv4(), clientId, today, 15, 8, 47, 3, 2);
       
       console.log('✅ Dati demo inseriti con successo!');
-      console.log('   Admin: admin@wesautomation.com / admin123');
-      console.log('   Demo:  demo@azienda.it / admin123');
+      console.log('   Admin: admin@nummy.com');
+      console.log('   Demo:  demo@azienda.it');
+      console.log(`   Password demo: ${demoPassword}${process.env.DEMO_PASSWORD ? ' (da DEMO_PASSWORD)' : ' (generata per questa inizializzazione)'}`);
     } else {
       console.log('✅ Database già popolato. Saltato inserimento dati demo.');
     }
@@ -128,4 +131,3 @@ module.exports = async function setupDatabase() {
     process.exit(1);
   }
 }
-

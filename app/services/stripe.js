@@ -40,7 +40,7 @@ class StripeService {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `WES AI Automation - ${planConfig.name}`,
+              name: `NUMMY - ${planConfig.name}`,
               description: planConfig.features.join(', '),
             },
             unit_amount: planConfig.price * 100, // cents

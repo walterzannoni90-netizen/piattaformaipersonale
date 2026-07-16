@@ -19,7 +19,7 @@ const normalizeEmail = (value) => String(value || '').trim().toLowerCase();
 router.get('/login', (req, res) => {
   const { redirect } = req.query;
   res.render('public/login', { 
-    title: 'Accedi - WES AI Automation',
+    title: 'Accedi - NUMMY',
     redirect,
     error: null
   });
@@ -28,7 +28,7 @@ router.get('/login', (req, res) => {
 // GET /register
 router.get('/register', (req, res) => {
   res.render('public/register', { 
-    title: 'Registrati - WES AI Automation',
+    title: 'Registrati - NUMMY',
     error: null
   });
 });
@@ -47,7 +47,7 @@ router.post('/auth/login', authLimiter, (req, res) => {
         return res.status(401).json({ error: 'Email o password non validi' });
       }
       return res.render('public/login', { 
-        title: 'Accedi - WES AI Automation',
+        title: 'Accedi - NUMMY',
         redirect,
         error: 'Email o password non validi' 
       });
@@ -90,7 +90,7 @@ router.post('/auth/login', authLimiter, (req, res) => {
       return res.status(500).json({ error: 'Errore interno del server' });
     }
     res.render('public/login', { 
-      title: 'Accedi - WES AI Automation',
+      title: 'Accedi - NUMMY',
       redirect,
       error: 'Errore interno del server' 
     });
@@ -108,7 +108,7 @@ router.post('/auth/register', authLimiter, async (req, res) => {
     if (!/^\S+@\S+\.\S+$/.test(email) || company_name.length < 2 || typeof password !== 'string' || password.length < 8) {
       const error = 'Inserisci un’email valida, un’azienda e una password di almeno 8 caratteri';
       if (req.xhr) return res.status(422).json({ error });
-      return res.status(422).render('public/register', { title: 'Registrati - WES AI Automation', error });
+      return res.status(422).render('public/register', { title: 'Registrati - NUMMY', error });
     }
     // Check existing user
     const existing = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
@@ -117,7 +117,7 @@ router.post('/auth/register', authLimiter, async (req, res) => {
         return res.status(400).json({ error: 'Email già registrata' });
       }
       return res.render('public/register', { 
-        title: 'Registrati - WES AI Automation',
+        title: 'Registrati - NUMMY',
         error: 'Email già registrata' 
       });
     }
@@ -184,7 +184,7 @@ router.post('/auth/register', authLimiter, async (req, res) => {
       return res.status(500).json({ error: 'Errore durante la registrazione' });
     }
     res.render('public/register', { 
-      title: 'Registrati - WES AI Automation',
+      title: 'Registrati - NUMMY',
       error: 'Errore durante la registrazione' 
     });
   }

@@ -1,7 +1,7 @@
 module.exports = {
-  name: process.env.APP_NAME || 'WES AI Automation',
+  name: process.env.APP_NAME || 'NUMMY',
   url: process.env.APP_URL || 'http://localhost:3000',
-  email: process.env.CONTACT_EMAIL || 'info@wesautomation.com',
+  email: process.env.CONTACT_EMAIL || 'info@nummy.com',
   phone: process.env.CONTACT_PHONE || '+39 02 1234 5678',
   
   // Plan configuration

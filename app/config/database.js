@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
-const dbPath = path.resolve(__dirname, '../../', process.env.DB_PATH || './database/wes.db');
+const dbPath = path.resolve(__dirname, '../../', process.env.DB_PATH || './database/nummy.db');
 const dbDir = path.dirname(dbPath);
 
 if (!fs.existsSync(dbDir)) {

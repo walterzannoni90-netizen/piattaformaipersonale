@@ -1,5 +1,5 @@
 /**
- * WES AI Automation - Main JavaScript
+ * NUMMY - Main JavaScript
  */
 
 // Auto-hide alerts after 5 seconds

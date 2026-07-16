@@ -2,16 +2,13 @@
 // Set default page variable to avoid undefined errors
 if (typeof page === 'undefined') { page = ''; }
 %><!-- Dashboard Sidebar -->
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen nummy-dashboard-shell">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside class="w-64 nummy-sidebar flex flex-col">
         <!-- Logo -->
         <div class="p-4 border-b border-gray-100">
-            <a href="/dashboard" class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-wes-500 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-robot text-white text-sm"></i>
-                </div>
-                <span class="font-bold">WES <span class="text-wes-500">AI</span></span>
+            <a href="/dashboard" class="flex items-center gap-3" aria-label="NUMMY Dashboard">
+                <img src="/images/nummy-logo.png" alt="NUMMY" class="nummy-logo nummy-logo-dashboard">
             </a>
         </div>
         
@@ -76,7 +73,7 @@ if (typeof page === 'undefined') { page = ''; }
         <div class="p-4 border-t border-gray-100">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-wes-500 rounded-full flex items-center justify-center text-white font-medium">
-                    <%= (typeof currentUser !== 'undefined' && currentUser && currentUser.company) ? currentUser.company.charAt(0).toUpperCase() : 'W' %>
+                    <%= (typeof currentUser !== 'undefined' && currentUser && currentUser.company) ? currentUser.company.charAt(0).toUpperCase() : 'N' %>
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-medium truncate"><%= (typeof currentUser !== 'undefined' && currentUser) ? currentUser.company : 'Utente' %></p>
@@ -94,9 +91,9 @@ if (typeof page === 'undefined') { page = ''; }
     <!-- Main content -->
     <main class="flex-1 overflow-y-auto">
         <!-- Top bar -->
-        <div class="sticky top-0 bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+        <div class="sticky top-0 nummy-topbar px-6 py-4 flex items-center justify-between z-10">
             <div>
-                <h1 class="text-xl font-bold text-gray-900"><%= typeof title !== 'undefined' ? title.replace(' - WES AI Automation', '') : 'Dashboard' %></h1>
+                <h1 class="text-xl font-bold text-white"><%= typeof title !== 'undefined' ? title.replace(' - NUMMY', '') : 'Dashboard' %></h1>
             </div>
             <div class="flex items-center gap-3">
                 <span class="text-xs px-3 py-1 bg-wes-100 text-wes-600 rounded-full font-medium">

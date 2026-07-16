@@ -1,5 +1,5 @@
 /**
- * WES AI Automation - Main Server
+ * NUMMY - Main Server
  * Piattaforma di automazione AI per lead, WhatsApp, email, CRM e preventivi
  */
 require('dotenv').config();
@@ -16,6 +16,7 @@ const { limiter, apiLimiter } = require('./app/middleware/rateLimit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 if (process.env.NODE_ENV === 'production') {
   const missing = ['JWT_SECRET', 'SESSION_SECRET'].filter((key) => !process.env[key]);
@@ -25,7 +26,16 @@ if (process.env.NODE_ENV === 'production') {
 
 // ============ SECURITY & MIDDLEWARE ============
 app.use(helmet({
-  contentSecurityPolicy: false, // Disabled for development - enable in production with proper config
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.tailwindcss.com'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+      imgSrc: ["'self'", 'data:', 'https://images.unsplash.com'],
+      connectSrc: ["'self'"]
+    }
+  }
 }));
 app.use(cors({
   origin: process.env.APP_URL || 'http://localhost:3000',
@@ -48,7 +58,7 @@ app.use(cookieParser());
 
 // Session (for flash messages, etc.)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'development-session-secret-change-me',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -87,9 +97,9 @@ app.use((req, res, next) => {
 // Make user data available in all views
 app.use((req, res, next) => {
   res.locals.currentUser = req.user || null;
-  res.locals.appName = process.env.APP_NAME || 'WES AI Automation';
+  res.locals.appName = process.env.APP_NAME || 'NUMMY';
   res.locals.appUrl = process.env.APP_URL || 'http://localhost:3000';
-  res.locals.contactEmail = process.env.CONTACT_EMAIL || 'info@wesautomation.com';
+  res.locals.contactEmail = process.env.CONTACT_EMAIL || 'info@nummy.com';
   res.locals.contactPhone = process.env.CONTACT_PHONE || '+39 02 1234 5678';
   res.locals.currentPath = req.path;
   res.locals.success = req.query.success;
@@ -196,9 +206,9 @@ app.post('/api/chat/send', async (req, res) => {
     
     if (!agent) {
       agent = {
-        name: 'Agente WES',
+        name: 'Agente NUMMY',
         tone: 'professionale',
-        company_name: 'WES AI Automation',
+        company_name: 'NUMMY',
         qualification_questions: '[]',
         transfer_conditions: '{}'
       };
@@ -277,7 +287,7 @@ app.use((req, res) => {
     return res.status(404).json({ error: 'API endpoint non trovato' });
   }
   res.status(404).render('public/404', { 
-    title: 'Pagina non trovata - WES AI Automation',
+    title: 'Pagina non trovata - NUMMY',
     message: 'La pagina che cerchi non esiste o è stata spostata.'
   });
 });
@@ -306,7 +316,7 @@ app.use((err, req, res, next) => {
   }
   
   res.status(500).render('public/500', { 
-    title: 'Errore - WES AI Automation',
+    title: 'Errore - NUMMY',
     message: process.env.NODE_ENV === 'development' ? err.message : 'Si è verificato un errore interno.'
   });
 });
@@ -329,7 +339,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`
 ╔══════════════════════════════════════════════════════╗
-║          WES AI Automation - Server Active          ║
+║          NUMMY - Server Active          ║
 ╠══════════════════════════════════════════════════════╣
 ║  URL:     ${process.env.APP_URL || 'http://localhost:' + PORT}                    ║
 ║  Status:  ${process.env.NODE_ENV || 'development'}                          ║

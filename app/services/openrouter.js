@@ -38,7 +38,7 @@ async function generateResponse(messages, agent, userSettings = {}) {
         'Authorization': `Bearer ${config.apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': process.env.APP_URL || 'http://localhost:3000',
-        'X-Title': 'WES AI Automation'
+        'X-Title': 'NUMMY'
       },
       timeout: 15000
     });
@@ -61,7 +61,7 @@ async function generateResponse(messages, agent, userSettings = {}) {
 
 function buildSystemPrompt(agent) {
   const tone = agent.tone || 'professionale';
-  const name = agent.name || 'Agente WES';
+  const name = agent.name || 'Agente NUMMY';
   const company = agent.company_name || 'la nostra azienda';
   const sector = agent.sector || '';
   const services = agent.services || [];

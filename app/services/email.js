@@ -51,7 +51,7 @@ class EmailService {
       }
 
       const info = await transporter.sendMail({
-        from: from || `"WES AI Automation" <${process.env.SMTP_USER}>`,
+        from: from || `"NUMMY" <${process.env.SMTP_USER}>`,
         to,
         subject,
         html
@@ -74,7 +74,7 @@ class EmailService {
   async sendWelcomeEmail(userId, to, companyName) {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #6C63FF;">Benvenuto in ${companyName}!</h1>
+        <h1 style="color: #00BFA6;">Benvenuto in ${companyName}!</h1>
         <p>Grazie per averci contattato. Riceverai nostre notizie a breve.</p>
         <p>Il team di ${companyName}</p>
       </div>
@@ -85,7 +85,7 @@ class EmailService {
   async sendWeeklyReport(userId, to, stats) {
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h1 style="color: #6C63FF;">Report Settimanale</h1>
+        <h1 style="color: #00BFA6;">Report Settimanale</h1>
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="padding: 10px; border: 1px solid #ddd;">Lead ricevuti</td>
@@ -106,7 +106,7 @@ class EmailService {
         </table>
       </div>
     `;
-    return this.sendEmail(userId, to, 'Report Settimanale WES AI', html);
+    return this.sendEmail(userId, to, 'Report Settimanale NUMMY', html);
   }
 }
 

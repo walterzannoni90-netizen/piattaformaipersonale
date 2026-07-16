@@ -49,7 +49,7 @@ router.get('/dashboard', (req, res) => {
   const plan = appConfig.plans[user.plan] || appConfig.plans.starter;
   
   res.render('dashboard/index', {
-    title: 'Dashboard - WES AI Automation',
+    title: 'Dashboard - NUMMY',
     stats,
     recentLeads,
     recentConversations,
@@ -83,7 +83,7 @@ router.get('/dashboard/lead', (req, res) => {
   };
   
   res.render('dashboard/leads', {
-    title: 'Lead - WES AI Automation',
+    title: 'Lead - NUMMY',
     leads,
     stats,
     currentStatus: status,
@@ -105,7 +105,7 @@ router.get('/dashboard/conversazioni', (req, res) => {
   `).all(userId);
   
   res.render('dashboard/conversations', {
-    title: 'Conversazioni - WES AI Automation',
+    title: 'Conversazioni - NUMMY',
     conversations,
     page: 'conversations'
   });
@@ -125,7 +125,7 @@ router.get('/dashboard/appuntamenti', (req, res) => {
   `).all(userId);
   
   res.render('dashboard/appointments', {
-    title: 'Appuntamenti - WES AI Automation',
+    title: 'Appuntamenti - NUMMY',
     appointments,
     page: 'appointments'
   });
@@ -145,7 +145,7 @@ router.get('/dashboard/follow-up', (req, res) => {
   `).all(userId);
   
   res.render('dashboard/followup', {
-    title: 'Follow-up - WES AI Automation',
+    title: 'Follow-up - NUMMY',
     followUps,
     page: 'followup'
   });
@@ -165,7 +165,7 @@ router.get('/dashboard/preventivi', (req, res) => {
   `).all(userId);
   
   res.render('dashboard/preventivi', {
-    title: 'Preventivi - WES AI Automation',
+    title: 'Preventivi - NUMMY',
     invoices,
     page: 'preventivi'
   });
@@ -179,7 +179,7 @@ router.get('/dashboard/automazioni', (req, res) => {
   const automations = db.prepare('SELECT * FROM automations WHERE user_id = ? ORDER BY created_at DESC').all(userId);
   
   res.render('dashboard/automations', {
-    title: 'Automazioni - WES AI Automation',
+    title: 'Automazioni - NUMMY',
     automations,
     templates: appConfig.automationTemplates,
     page: 'automations'
@@ -196,7 +196,7 @@ router.get('/dashboard/agente', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
   
   res.render('dashboard/agent-config', {
-    title: 'Configura Agente AI - WES AI Automation',
+    title: 'Configura Agente AI - NUMMY',
     agent,
     user,
     page: 'agent'
@@ -211,7 +211,7 @@ router.get('/dashboard/integrazioni', (req, res) => {
   const integrations = db.prepare('SELECT * FROM integrations WHERE user_id = ?').all(userId);
   
   res.render('dashboard/integrations', {
-    title: 'Integrazioni - WES AI Automation',
+    title: 'Integrazioni - NUMMY',
     integrations,
     page: 'integrations'
   });
@@ -240,7 +240,7 @@ router.get('/dashboard/statistiche', (req, res) => {
   totalStats.conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
   
   res.render('dashboard/stats', {
-    title: 'Statistiche - WES AI Automation',
+    title: 'Statistiche - NUMMY',
     usageStats,
     totalStats,
     page: 'stats'
@@ -255,7 +255,7 @@ router.get('/dashboard/impostazioni', (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
   
   res.render('dashboard/settings', {
-    title: 'Impostazioni - WES AI Automation',
+    title: 'Impostazioni - NUMMY',
     user,
     page: 'settings'
   });
