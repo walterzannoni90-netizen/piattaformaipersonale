@@ -52,3 +52,19 @@ test('session command history is bounded and closing is idempotent', () => {
   assert.equal(manager.close({ sessionId: session.id, userId: 'u' }), true);
   assert.equal(manager.close({ sessionId: session.id, userId: 'u' }), true);
 });
+
+test('expired sessions do not consume the active session quota', () => {
+  const manager = new BrowserSessionManager({ maxSessionsPerUser: 1, sessionTtlMs: 60_000 });
+  const originalNow = Date.now;
+  let now = 1_000_000;
+  Date.now = () => now;
+  try {
+    const expired = manager.create({ userId: 'user-1', taskId: 'task-1' });
+    now += 60_001;
+    const replacement = manager.create({ userId: 'user-1', taskId: 'task-2' });
+    assert.notEqual(replacement.id, expired.id);
+    assert.ok(manager.get({ sessionId: expired.id, userId: 'user-1' }).closedAt);
+  } finally {
+    Date.now = originalNow;
+  }
+});
