@@ -16,10 +16,23 @@ async function runUnifiedTaskRuntime({
   onEvent,
   signal,
   maxReplans = 2,
+  operationalRuntime,
+  operationalContext = {},
   productionRuntime,
   productionOptions = {}
 }) {
   if (!task || !task.id) throw new Error('Task obbligatorio');
+
+  if (operationalRuntime && typeof operationalRuntime.execute === 'function') {
+    const health = typeof operationalRuntime.health === 'function' ? operationalRuntime.health() : { ready: true };
+    if (!health.ready) {
+      const error = new Error('Runtime operativo non pronto');
+      error.code = 'OPERATIONAL_RUNTIME_NOT_READY';
+      error.health = health;
+      throw error;
+    }
+    return operationalRuntime.execute({ ...operationalContext, task, goal: operationalContext.goal || task.goal || task.title, signal });
+  }
 
   if (productionRuntime && typeof productionRuntime.execute === 'function') {
     return productionRuntime.execute(task, {
