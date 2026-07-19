@@ -64,10 +64,10 @@ class TaskStateStore {
 }
 
 function currentStep(plan) {
-  const running = plan.steps.find((step) => plan.state[step.id]?.status === 'running');
-  if (running) return running.title;
-  const pending = plan.steps.find((step) => plan.state[step.id]?.status === 'pending');
-  return pending ? pending.title : null;
+  const runningIndex = plan.steps.findIndex((step) => plan.state[step.id]?.status === 'running');
+  if (runningIndex >= 0) return runningIndex;
+  const pendingIndex = plan.steps.findIndex((step) => plan.state[step.id]?.status === 'pending');
+  return pendingIndex >= 0 ? pendingIndex : plan.steps.length;
 }
 
 function progress(plan) {
