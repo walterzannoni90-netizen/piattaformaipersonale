@@ -2,6 +2,7 @@
 
 const os = require('os');
 const { runDurableTask } = require('./runtimeCoordinator');
+const { routeTaskExecution } = require('./runtimeCanaryRouter');
 const {
   inspectUntrustedWebContent,
   wrapUntrustedEvidence,
@@ -124,6 +125,65 @@ async function runOperationalTask({
   }
 }
 
+async function runRoutedOperationalTask({
+  task,
+  legacyRunner,
+  runtimeMode,
+  canaryPercent,
+  canarySalt,
+  isEligible,
+  telemetrySink,
+  ...durableOptions
+} = {}) {
+  if (typeof legacyRunner !== 'function') throw new Error('Legacy runner obbligatorio');
+  const routingTelemetry = new RuntimeTelemetry({ sink: telemetrySink });
+
+  return routeTaskExecution({
+    task,
+    mode: runtimeMode,
+    canaryPercent,
+    salt: canarySalt,
+    isEligible,
+    legacyRunner: async (context) => {
+      await routingTelemetry.record('routing_legacy_started', {
+        taskId: task.id,
+        reason: context?.decision?.reason,
+        fallback: Boolean(context?.fallbackError)
+      });
+      const result = await legacyRunner(context);
+      await routingTelemetry.record('routing_legacy_completed', { taskId: task.id });
+      return result;
+    },
+    durableRunner: async ({ recordEvent, decision }) => {
+      await routingTelemetry.record('routing_durable_started', { taskId: task.id, reason: decision.reason });
+      const result = await runOperationalTask({
+        task,
+        telemetrySink: async (event) => {
+          await routingTelemetry.record(event.type, event.data);
+          if (typeof telemetrySink === 'function') await telemetrySink(event);
+        },
+        ...durableOptions,
+        onEvent: async (event) => {
+          recordEvent(event);
+          if (typeof durableOptions.onEvent === 'function') await durableOptions.onEvent(event);
+        }
+      });
+      await routingTelemetry.record('routing_durable_completed', {
+        taskId: task.id,
+        status: result.status,
+        delivered: Boolean(result.delivered)
+      });
+      return result;
+    },
+    onDecision: (decision) => routingTelemetry.record('routing_decision', decision),
+    onFallback: ({ error, events }) => routingTelemetry.record('routing_fallback', {
+      taskId: task.id,
+      code: error?.code || 'ERROR',
+      observedEvents: events.length
+    })
+  });
+}
+
 async function benchmarkOperationalRunner(cases, runner, options = {}) {
   const report = await runBenchmarkSuite(cases, runner, options);
   return {
@@ -138,5 +198,6 @@ module.exports = {
   guardWebResult,
   protectWebHandlers,
   runOperationalTask,
+  runRoutedOperationalTask,
   benchmarkOperationalRunner
 };
