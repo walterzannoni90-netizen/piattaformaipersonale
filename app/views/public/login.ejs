@@ -1,52 +1,19 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
-<section class="min-h-[80vh] flex items-center py-20 bg-gradient-to-br from-wes-50 to-white">
-    <div class="max-w-md mx-auto px-4 w-full">
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-wes-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-lock text-2xl text-wes-500"></i>
-                </div>
-                <h1 class="text-2xl font-bold">Accedi</h1>
-                <p class="text-gray-500 text-sm mt-1">Inserisci le tue credenziali per accedere alla dashboard</p>
-            </div>
-            
-            <% if (typeof error !== 'undefined' && error) { %>
-                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm mb-6">
-                    <i class="fas fa-exclamation-circle mr-2"></i><%= error %>
-                </div>
-            <% } %>
-            
-            <form action="/auth/login" method="POST" class="space-y-4">
-                <% if (typeof redirect !== 'undefined' && redirect) { %>
-                    <input type="hidden" name="redirect" value="<%= redirect %>">
-                <% } %>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" name="email" required 
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition"
-                        placeholder="tua@email.com">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" name="password" required 
-                        class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition"
-                        placeholder="••••••••">
-                </div>
-                <button type="submit" 
-                    class="w-full py-3 px-6 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-lg shadow-wes-500/20">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Accedi
-                </button>
-            </form>
-            
-            <div class="mt-6 text-center text-sm text-gray-500">
-                Non hai un account? 
-                <a href="/register" class="text-wes-500 font-medium hover:text-wes-600">Registrati</a>
-            </div>
-            
-        </div>
-    </div>
-</section>
+<main class="product-page min-h-[calc(100vh-64px)] grid lg:grid-cols-2">
+  <section class="hidden lg:flex relative overflow-hidden items-end p-16 border-r border-slate-800 bg-[radial-gradient(circle_at_20%_20%,rgba(108,99,255,.28),transparent_40%)]"><div class="home-grid"></div><div class="relative max-w-xl"><div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 grid place-items-center shadow-2xl shadow-violet-900/50"><i class="fas fa-sparkles text-xl"></i></div><h1 class="text-6xl leading-[.95] tracking-[-.06em] font-semibold mt-7">Riprendi il lavoro<br><span class="text-violet-300">da dove era rimasto.</span></h1><p class="text-slate-400 leading-relaxed mt-6">Task, progetti, memoria, file e approvazioni restano nel workspace del tuo account.</p><div class="flex gap-6 mt-8 text-xs text-slate-500"><span><i class="fas fa-lock text-emerald-400 mr-2"></i>Sessione protetta</span><span><i class="fas fa-user-shield text-violet-400 mr-2"></i>Dati isolati</span></div></div></section>
+  <section class="flex items-center p-6 sm:p-12 lg:p-20"><div class="w-full max-w-md mx-auto"><div class="mb-8"><div class="text-[10px] uppercase tracking-[.22em] text-violet-300 font-bold">Accesso workspace</div><h2 class="text-4xl font-semibold tracking-tight mt-3">Bentornato.</h2><p class="text-sm text-slate-500 mt-2">Inserisci le credenziali del tuo account WES.</p></div>
+    <% if (typeof error !== 'undefined' && error) { %><div class="rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-200 px-4 py-3 text-sm mb-5"><i class="fas fa-circle-exclamation mr-2"></i><%= error %></div><% } %>
+    <form action="/auth/login" method="POST" class="space-y-4">
+      <% if (typeof redirect !== 'undefined' && redirect) { %><input type="hidden" name="redirect" value="<%= redirect %>"><% } %>
+      <label class="block text-xs text-slate-400">Email<input type="email" name="email" required maxlength="254" autocomplete="email" class="mt-2 w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3.5 text-sm text-white outline-none focus:border-violet-500" placeholder="nome@azienda.it"></label>
+      <label class="block text-xs text-slate-400">Password<input type="password" name="password" required maxlength="128" autocomplete="current-password" class="mt-2 w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3.5 text-sm text-white outline-none focus:border-violet-500" placeholder="••••••••••"></label>
+      <div class="text-right"><a href="/password-dimenticata" class="text-xs text-slate-400 hover:text-violet-300">Password dimenticata?</a></div>
+      <button class="w-full rounded-xl bg-white text-slate-950 py-3.5 text-sm font-bold hover:bg-violet-100 transition">Accedi <i class="fas fa-arrow-right ml-2"></i></button>
+    </form>
+    <p class="mt-7 text-center text-sm text-slate-500">Non hai un account? <a href="<%= signupUrl %>" class="text-violet-300 font-medium hover:text-white"><%= registrationOpen ? 'Crea il workspace' : 'Richiedi l’accesso' %></a></p>
+  </div></section>
+</main>
 
 <%- include('../partials/footer') %>

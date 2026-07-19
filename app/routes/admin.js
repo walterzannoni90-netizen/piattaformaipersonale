@@ -30,7 +30,7 @@ router.get('/admin', (req, res) => {
   stats.totalRevenue = subscriptions.reduce((sum, sub) => sum + (plans[sub.plan]?.price || 0), 0);
   
   // Recent registrations
-  const recentUsers = db.prepare('SELECT * FROM users ORDER BY created_at DESC LIMIT 10').all();
+  const recentUsers = db.prepare('SELECT id, email, company_name, role, plan, status, created_at, last_login FROM users ORDER BY created_at DESC LIMIT 10').all();
   
   // Recent logs
   const recentLogs = db.prepare('SELECT * FROM logs ORDER BY created_at DESC LIMIT 20').all();
@@ -56,7 +56,7 @@ router.get('/admin', (req, res) => {
 // Users management
 router.get('/admin/utenti', (req, res) => {
   const db = getDatabase();
-  const users = db.prepare('SELECT * FROM users ORDER BY created_at DESC').all();
+  const users = db.prepare('SELECT id, email, company_name, role, plan, status, created_at FROM users ORDER BY created_at DESC').all();
   
   res.render('admin/users', {
     title: 'Gestione Utenti - WES AI Automation',
@@ -68,7 +68,7 @@ router.get('/admin/utenti', (req, res) => {
 // User details
 router.get('/admin/utenti/:id', (req, res) => {
   const db = getDatabase();
-  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.params.id);
+  const user = db.prepare('SELECT id, email, company_name, sector, phone, role, plan, status, created_at FROM users WHERE id = ?').get(req.params.id);
   
   if (!user) return res.redirect('/admin/utenti');
   
@@ -88,7 +88,8 @@ router.get('/admin/utenti/:id', (req, res) => {
     stats,
     subscription,
     agent,
-    page: 'admin'
+    page: 'admin',
+    adminPage: true
   });
 });
 
@@ -97,7 +98,8 @@ router.get('/admin/logs', (req, res) => {
   const db = getDatabase();
   const level = req.query.level || '';
   const userId = req.query.user_id || '';
-  const currentPage = parseInt(req.query.page) || 1;
+  const requestedPage = Number.parseInt(req.query.page, 10);
+  const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, 10_000) : 1;
   const perPage = 50;
   
   let query = 'SELECT l.*, u.company_name FROM logs l LEFT JOIN users u ON u.id = l.user_id';
@@ -122,7 +124,9 @@ router.get('/admin/logs', (req, res) => {
   
   const logs = db.prepare(query).all(...params);
   
-  const totalLogs = db.prepare('SELECT COUNT(*) as count FROM logs').get().count;
+  let countQuery = 'SELECT COUNT(*) as count FROM logs l';
+  if (conditions.length > 0) countQuery += ' WHERE ' + conditions.join(' AND ');
+  const totalLogs = db.prepare(countQuery).get(...params.slice(0, conditions.length)).count;
   const totalPages = Math.ceil(totalLogs / perPage);
   
   res.render('admin/logs', {
@@ -132,7 +136,8 @@ router.get('/admin/logs', (req, res) => {
     totalPages,
     totalLogs,
     level,
-    userId
+    userId,
+    adminPage: true
   });
 });
 
@@ -140,7 +145,7 @@ router.get('/admin/logs', (req, res) => {
 router.get('/admin/api-keys', (req, res) => {
   const db = getDatabase();
   const keys = db.prepare(`
-    SELECT ak.*, u.company_name 
+    SELECT ak.id, ak.user_id, ak.service, ak.is_active, ak.created_at, u.company_name
     FROM api_keys ak 
     LEFT JOIN users u ON u.id = ak.user_id 
     ORDER BY ak.created_at DESC
@@ -164,7 +169,8 @@ router.get('/admin/config', (req, res) => {
       PORT: process.env.PORT,
       NODE_ENV: process.env.NODE_ENV,
       APP_URL: process.env.APP_URL,
-      OPENROUTER_MODEL: process.env.OPENROUTER_MODEL,
+      OPENROUTER_MODEL: process.env.OPENROUTER_MODEL || 'openrouter/auto',
+      OPENROUTER_CONFIGURED: Boolean(process.env.OPENROUTER_API_KEY),
       DB_PATH: process.env.DB_PATH
     },
     adminPage: true
@@ -175,6 +181,15 @@ router.get('/admin/config', (req, res) => {
 router.post('/api/admin/user/update', (req, res) => {
   const db = getDatabase();
   const { id, plan, role, status } = req.body;
+  const target = typeof id === 'string' && db.prepare('SELECT id, role FROM users WHERE id = ?').get(id);
+  if (!target) return res.status(404).json({ error: 'Utente non trovato' });
+  if (plan && !['starter', 'pro', 'enterprise'].includes(plan)) return res.status(422).json({ error: 'Piano non valido' });
+  if (role && !['client', 'admin'].includes(role)) return res.status(422).json({ error: 'Ruolo non valido' });
+  if (status && !['active', 'suspended', 'archived'].includes(status)) return res.status(422).json({ error: 'Stato non valido' });
+  if (!plan && !role && !status) return res.status(422).json({ error: 'Nessuna modifica valida richiesta' });
+  if (id === req.user.id && ((role && role !== 'admin') || (status && status !== 'active'))) {
+    return res.status(409).json({ error: 'Non puoi rimuovere il tuo accesso amministratore corrente.' });
+  }
   
   if (plan) db.prepare('UPDATE users SET plan = ? WHERE id = ?').run(plan, id);
   if (role) db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, id);
@@ -183,7 +198,7 @@ router.post('/api/admin/user/update', (req, res) => {
   db.prepare(`
     INSERT INTO logs (id, user_id, level, action, details)
     VALUES (?, ?, 'admin', 'user_updated', ?)
-  `).run(uuidv4(), req.user.id, JSON.stringify({ updatedUserId: id, changes: req.body }));
+  `).run(uuidv4(), req.user.id, JSON.stringify({ updatedUserId: id, changes: { plan, role, status } }));
   
   res.json({ success: true });
 });
@@ -191,9 +206,12 @@ router.post('/api/admin/user/update', (req, res) => {
 router.post('/api/admin/user/delete', (req, res) => {
   const db = getDatabase();
   const { id } = req.body;
-  
-  db.prepare('DELETE FROM users WHERE id = ?').run(id);
-  res.json({ success: true });
+  if (typeof id !== 'string' || id === req.user.id) return res.status(409).json({ error: 'Questo account non può essere archiviato.' });
+  const result = db.prepare("UPDATE users SET status = 'archived', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(id);
+  if (!result.changes) return res.status(404).json({ error: 'Utente non trovato' });
+  db.prepare("INSERT INTO logs (id, user_id, level, action, details) VALUES (?, ?, 'admin', 'user_archived', ?)")
+    .run(uuidv4(), req.user.id, JSON.stringify({ archivedUserId: id }));
+  res.json({ success: true, archived: true });
 });
 
 router.post('/api/admin/logs/clear', (req, res) => {

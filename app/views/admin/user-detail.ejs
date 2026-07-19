@@ -56,8 +56,8 @@
             <h3 class="font-semibold text-sm mb-2">Abbonamento</h3>
             <div class="text-xs space-y-1">
                 <p>Stato: <%= subscription.status %></p>
-                <p>Inizio: <%= new Date(subscription.current_period_start).toLocaleDateString('it-IT') %></p>
-                <p>Fine: <%= new Date(subscription.current_period_end).toLocaleDateString('it-IT') %></p>
+                <p>Inizio: <%= subscription.current_period_start ? new Date(subscription.current_period_start).toLocaleDateString('it-IT') : 'Gestito da Stripe' %></p>
+                <p>Fine: <%= subscription.current_period_end ? new Date(subscription.current_period_end).toLocaleDateString('it-IT') : 'Gestito da Stripe' %></p>
             </div>
         <% } %>
     </div>
@@ -84,12 +84,14 @@
 <script>
 async function updateUser(id) {
     const plan = document.getElementById('planSelect').value;
-    await fetch('/api/admin/user/update', {
+    const response = await fetch('/api/admin/user/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, plan })
     });
-    location.reload();
+    const result = await response.json();
+    if (result.success) location.reload();
+    else showToast(result.error || 'Account non aggiornato', 'error');
 }
 </script>
 

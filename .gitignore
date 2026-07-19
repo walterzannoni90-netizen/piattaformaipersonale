@@ -2,6 +2,10 @@ node_modules/
 database/*.db
 database/*.db-wal
 database/*.db-shm
+data/
+__pycache__/
+*.py[cod]
+coverage/
 .env
 *.log
 .DS_Store

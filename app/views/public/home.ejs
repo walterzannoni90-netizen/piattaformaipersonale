@@ -1,313 +1,64 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
-<!-- Hero Section -->
-<section class="relative overflow-hidden bg-gradient-to-br from-white via-wes-50 to-white">
-    <div class="absolute inset-0 opacity-20">
-        <div class="absolute top-20 -left-20 w-96 h-96 bg-wes-300 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-20 -right-20 w-96 h-96 bg-purple-300 rounded-full blur-3xl"></div>
-    </div>
-    
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-                <div class="inline-flex items-center gap-2 px-4 py-2 bg-wes-100 text-wes-700 rounded-full text-sm font-medium mb-6">
-                    <i class="fas fa-sparkles"></i>
-                    Automazione AI per la tua azienda
-                </div>
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
-                    Automatizza lead, chat e 
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-wes-500 to-purple-600">vendite con l'AI</span>
-                </h1>
-                <p class="text-lg sm:text-xl text-gray-600 mb-8 leading-relaxed">
-                    WES AI Automation gestisce lead, WhatsApp, email, CRM, preventivi e follow-up 
-                    in modo automatico. Risparmia tempo e converti di più.
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="/prenota-call" class="inline-flex items-center gap-2 px-8 py-4 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-xl shadow-wes-500/25 hover:shadow-wes-500/40">
-                        <i class="fas fa-calendar-check"></i>
-                        Prenota una Call Gratuita
-                    </a>
-                    <a href="/servizi" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border border-gray-200 hover:border-wes-300 hover:text-wes-600 transition shadow-sm">
-                        <i class="fas fa-play-circle"></i>
-                        Scopri i Servizi
-                    </a>
-                </div>
-            </div>
-            
-            <div class="relative">
-                <!-- Badge -->
-                <div class="absolute -top-4 -right-4 bg-yellow-400 text-yellow-900 px-4 py-1.5 rounded-full text-sm font-bold shadow-lg z-10 animate-bounce-in">
-                    <i class="fas fa-star mr-1"></i> Live Demo
-                </div>
-                
-                <!-- Main image -->
-                <div class="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-100 transform lg:rotate-1 hover:rotate-0 transition-transform duration-500">
-                    <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=600&h=400&fit=crop&auto=format&q=80" 
-                         alt="Dashboard WES AI Automation" 
-                         class="w-full h-auto object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-                
-                <!-- Floating stats card -->
-                <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 flex items-center gap-4 animate-fade-in">
-                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                        <i class="fas fa-check-circle text-2xl text-green-500"></i>
-                    </div>
-                    <div>
-                        <div class="text-sm font-bold text-gray-900">+2.347 lead</div>
-                        <div class="text-xs text-gray-500">processati questa settimana</div>
-                    </div>
-                </div>
-                
-                <!-- AI active badge -->
-                <div class="absolute top-8 -right-4 bg-white rounded-xl shadow-lg border border-gray-100 p-3 flex items-center gap-3 animate-fade-in">
-                    <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span class="text-sm font-medium text-gray-700">AI attivo 24/7</span>
-                </div>
-            </div>
+<main class="wes-home">
+  <section class="wes-hero">
+    <div class="home-grid"></div><div class="hero-glow one"></div><div class="hero-glow two"></div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div class="hero-copy">
+        <div class="home-badge"><span></span> WES Autonomous Intelligence</div>
+        <h1>Non chiedergli come.<br><em>Digli cosa ottenere.</em></h1>
+        <p>Un agente operativo per la tua azienda: comprende l’obiettivo, crea un piano, usa web, Python, file e CRM, poi ti consegna il lavoro finito.</p>
+        <div class="hero-actions">
+          <a href="<%= currentUser ? '/workspace' : signupUrl %>" class="home-primary"><i class="fas fa-sparkles"></i> <%= currentUser ? 'Apri WES Workspace' : signupLabel %> <i class="fas fa-arrow-right"></i></a>
+          <a href="#come-funziona" class="home-secondary"><i class="fas fa-play"></i> Guarda come lavora</a>
         </div>
-    </div>
-</section>
+        <div class="hero-trust"><span><i class="fas fa-shield-check"></i> Azioni sensibili approvate da te</span><span><i class="fab fa-python"></i> Python isolato</span><span><i class="fas fa-lock"></i> Workspace privato</span></div>
+      </div>
 
-<!-- Stats Section -->
-<section class="py-16 bg-white border-y border-gray-100">
+      <div class="product-stage" aria-label="Anteprima del workspace WES">
+        <div class="stage-top"><div class="stage-dots"><i></i><i></i><i></i></div><span><i class="fas fa-sparkles"></i> WES / Market intelligence</span><b><i></i> agente attivo</b></div>
+        <div class="stage-body">
+          <aside><div class="mini-logo"><i class="fas fa-sparkles"></i></div><i class="fas fa-plus active"></i><i class="fas fa-folder"></i><i class="fas fa-clock-rotate-left"></i><i class="fas fa-plug"></i><i class="fas fa-gear bottom"></i></aside>
+          <div class="stage-main">
+            <div class="stage-prompt"><span>Analizza il mercato, confronta i concorrenti e crea il piano di lancio più efficace.</span><button><i class="fas fa-arrow-up"></i></button></div>
+            <div class="stage-thinking"><div class="stage-orb"><i class="fas fa-sparkles"></i></div><div><b>Sto costruendo il piano operativo</b><span>5 strumenti selezionati · controllo fonti attivo</span></div><div class="mini-wave"><i></i><i></i><i></i><i></i></div></div>
+            <div class="stage-columns">
+              <div class="stage-plan"><h3>Piano di lavoro <span>4 / 6</span></h3><div class="mini-step done"><i class="fas fa-check"></i><span><b>Obiettivo e vincoli</b><small>Contesto organizzato</small></span></div><div class="mini-step done"><i class="fas fa-check"></i><span><b>Ricerca verificabile</b><small>Fonti e URL conservati</small></span></div><div class="mini-step done"><i class="fas fa-check"></i><span><b>Analisi dati con Python</b><small>Dataset elaborato</small></span></div><div class="mini-step live"><i class="fas fa-circle-notch fa-spin"></i><span><b>Strategia e priorità</b><small>In elaborazione…</small></span></div><div class="mini-step"><i>5</i><span><b>Controllo qualità</b><small>In attesa</small></span></div></div>
+              <div class="stage-output"><h3>Output <span>2 file</span></h3><div class="output-file"><i class="fas fa-file-lines"></i><span><b>Report strategico</b><small>Markdown · pronto</small></span><i class="fas fa-check"></i></div><div class="output-file"><i class="fas fa-file-pdf"></i><span><b>Documento finale</b><small>PDF · pronto</small></span><i class="fas fa-check"></i></div><div class="approval-mini"><i class="fas fa-shield-halved"></i><span><b>Controllo umano</b><small>WES chiede prima di agire fuori dal workspace.</small></span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-strip"><div><span>Un obiettivo</span><i class="fas fa-arrow-right"></i><span>Un piano verificabile</span><i class="fas fa-arrow-right"></i><span>Strumenti reali</span><i class="fas fa-arrow-right"></i><strong>Un risultato finito</strong></div></section>
+
+  <section id="come-funziona" class="home-section">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div class="text-center">
-                <div class="text-3xl font-bold text-wes-500">+500</div>
-                <div class="text-sm text-gray-500 mt-1">Aziende attive</div>
-            </div>
-            <div class="text-center">
-                <div class="text-3xl font-bold text-wes-500">+50K</div>
-                <div class="text-sm text-gray-500 mt-1">Lead processati</div>
-            </div>
-            <div class="text-center">
-                <div class="text-3xl font-bold text-wes-500">98%</div>
-                <div class="text-sm text-gray-500 mt-1">Tempo risparmiato</div>
-            </div>
-            <div class="text-center">
-                <div class="text-3xl font-bold text-wes-500">4.9★</div>
-                <div class="text-sm text-gray-500 mt-1">Valutazione clienti</div>
-            </div>
-        </div>
+      <div class="section-heading"><div class="home-badge"><span></span> Più di una chat</div><h2>Una squadra digitale.<br><em>Dentro un solo workspace.</em></h2><p>WES sceglie lo strumento giusto per ogni passaggio e registra ciò che fa. Tu vedi il piano, l’avanzamento, le fonti e i risultati.</p></div>
+      <div class="agent-bento">
+        <article class="bento-card wide violet"><div class="bento-icon"><i class="fas fa-globe"></i></div><span class="bento-number">01</span><h3>Ricerca web con fonti</h3><p>Raccoglie informazioni pubbliche, confronta risultati e mantiene i link usati. Le reti private e gli indirizzi pericolosi vengono bloccati.</p><div class="source-stack"><i>W</i><i>R</i><i>D</i><span>fonti verificate</span></div></article>
+        <article class="bento-card dark"><div class="bento-icon python"><i class="fab fa-python"></i></div><span class="bento-number">02</span><h3>Python protetto</h3><p>Analizza CSV e dati, calcola statistiche e crea artefatti in un ambiente isolato con timeout e limiti di memoria.</p><div class="code-line"><span>›</span> analyze_csv(<em>sales.csv</em>)<b>✓</b></div></article>
+        <article class="bento-card dark"><div class="bento-icon"><i class="fas fa-file-circle-check"></i></div><span class="bento-number">03</span><h3>Consegne, non risposte</h3><p>Report, tabelle, analisi e documenti restano nel workspace privato e possono essere scaricati.</p><div class="artifact-pills"><span>.MD</span><span>.CSV</span><span>.JSON</span><span>.PDF</span></div></article>
+        <article class="bento-card tall teal"><div class="bento-icon"><i class="fas fa-brain"></i></div><span class="bento-number">04</span><h3>Progetti con memoria</h3><p>Salva istruzioni, contesto e risultati. Il task successivo parte conoscendo già il progetto, senza ripetere tutto.</p><div class="memory-visual"><div><i class="fas fa-building"></i><span>Brand e azienda</span></div><div><i class="fas fa-bullseye"></i><span>Obiettivi</span></div><div><i class="fas fa-book-open"></i><span>Risultati precedenti</span></div></div></article>
+        <article class="bento-card wide dark"><div class="bento-icon"><i class="fas fa-users-gear"></i></div><span class="bento-number">05</span><h3>Il CRM diventa uno strumento dell’agente</h3><p>WES può leggere lead, punteggi e attività soltanto dell’account autorizzato, trovare priorità e preparare il lavoro commerciale.</p><div class="crm-line"><span><i></i> Lead qualificati</span><b>Analisi pronta</b><em>isolamento multiutente</em></div></article>
+        <article class="bento-card dark"><div class="bento-icon safe"><i class="fas fa-hand"></i></div><span class="bento-number">06</span><h3>Autonomia controllata</h3><p>Invii, pubblicazioni, modifiche esterne, cancellazioni e pagamenti si fermano davanti a una conferma chiara.</p><div class="approve-demo"><button>Rifiuta</button><button>Approva azione</button></div></article>
+      </div>
     </div>
-</section>
+  </section>
 
-<!-- Features Grid -->
-<section class="py-20 bg-gray-50">
+  <section class="workflow-section">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Tutto ciò che serve per automatizzare la tua azienda
-            </h2>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Una piattaforma completa per gestire lead, conversazioni, appuntamenti e vendite.
-            </p>
-        </div>
-        
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Feature 1 -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-wes-200 transition-all group">
-                <div class="h-44 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1531746790095-e5cb1582e5e3?w=400&h=200&fit=crop&auto=format&q=80" 
-                         alt="Chatbot AI" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                </div>
-                <div class="p-6">
-                    <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
-                        <i class="fas fa-comments text-wes-600 group-hover:text-white text-xl transition-colors"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">Chatbot AI Intelligente</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Risponde automaticamente ai lead su WhatsApp e sito web, 24/7, con un tono personalizzato per la tua azienda.</p>
-                </div>
-            </div>
-            
-            <!-- Feature 2 -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-wes-200 transition-all group">
-                <div class="h-44 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=200&fit=crop&auto=format&q=80" 
-                         alt="Qualificazione Lead" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                </div>
-                <div class="p-6">
-                    <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
-                        <i class="fas fa-filter text-wes-600 group-hover:text-white text-xl transition-colors"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">Qualificazione Lead</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">L'AI fa domande mirate per qualificare i lead e passa solo quelli pronti al team commerciale.</p>
-                </div>
-            </div>
-            
-            <!-- Feature 3 -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-wes-200 transition-all group">
-                <div class="h-44 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=200&fit=crop&auto=format&q=80" 
-                         alt="CRM Automatico" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                </div>
-                <div class="p-6">
-                    <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
-                        <i class="fas fa-database text-wes-600 group-hover:text-white text-xl transition-colors"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">CRM Automatico</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Salva automaticamente lead e conversazioni nel CRM. Tutte le informazioni sempre a portata di mano.</p>
-                </div>
-            </div>
-            
-            <!-- Feature 4 -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-wes-200 transition-all group">
-                <div class="h-44 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&h=200&fit=crop&auto=format&q=80" 
-                         alt="Appuntamenti Automatici" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                </div>
-                <div class="p-6">
-                    <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
-                        <i class="fas fa-calendar text-wes-600 group-hover:text-white text-xl transition-colors"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">Appuntamenti Automatici</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Propone e conferma appuntamenti in agenda in automatico. Sincronizzato con Google Calendar.</p>
-                </div>
-            </div>
-            
-            <!-- Feature 5 -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-wes-200 transition-all group">
-                <div class="h-44 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=400&h=200&fit=crop&auto=format&q=80" 
-                         alt="Follow-up Automatici" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                </div>
-                <div class="p-6">
-                    <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
-                        <i class="fas fa-clock text-wes-600 group-hover:text-white text-xl transition-colors"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">Follow-up Automatici</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Follow-up programmati dopo 1 e 3 giorni. Nessun lead viene dimenticato.</p>
-                </div>
-            </div>
-            
-            <!-- Feature 6 -->
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-wes-200 transition-all group">
-                <div class="h-44 overflow-hidden">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=200&fit=crop&auto=format&q=80" 
-                         alt="Report Settimanali" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                </div>
-                <div class="p-6">
-                    <div class="w-12 h-12 bg-wes-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-wes-500 transition-colors">
-                        <i class="fas fa-chart-bar text-wes-600 group-hover:text-white text-xl transition-colors"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold mb-2">Report Settimanali</h3>
-                    <p class="text-gray-600 text-sm leading-relaxed">Report automatici con statistiche, trend e performance delle automazioni via email.</p>
-                </div>
-            </div>
-        </div>
+      <div class="workflow-copy"><div class="home-badge"><span></span> Dal pensiero all’esecuzione</div><h2>Tu dai la direzione.<br><em>WES porta avanti il lavoro.</em></h2><p>Niente configurazioni complicate per iniziare. Scrivi il risultato che vuoi, allega i dati se servono e segui ogni passaggio.</p><a href="<%= currentUser ? '/workspace' : signupUrl %>" class="home-primary"><%= currentUser ? 'Avvia il primo task' : signupLabel %> <i class="fas fa-arrow-right"></i></a></div>
+      <div class="workflow-steps"><article><i>1</i><div><b>Descrivi l’obiettivo</b><p>Anche in linguaggio semplice, con file e progetto.</p></div></article><article><i>2</i><div><b>WES crea il piano</b><p>Passaggi, strumenti, criteri e punti di approvazione.</p></div></article><article><i>3</i><div><b>Guarda il lavoro avanzare</b><p>Timeline live, fonti, analisi Python e stato reale.</p></div></article><article><i class="fas fa-check"></i><div><b>Ricevi gli output</b><p>Risultati archiviati, privati e pronti da utilizzare.</p></div></article></div>
     </div>
-</section>
+  </section>
 
-<!-- How it works -->
-<section class="py-20 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Come Funziona
-            </h2>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                In 3 semplici passaggi trasforma il modo in cui gestisci lead e clienti.
-            </p>
-        </div>
-        
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="text-center group">
-                <div class="relative mx-auto mb-6 w-32 h-32 rounded-2xl overflow-hidden shadow-lg">
-                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=200&h=200&fit=crop&auto=format&q=80" 
-                         alt="Configura" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 bg-wes-500 rounded-full flex items-center justify-center shadow-lg">
-                        <span class="text-lg font-bold text-white">1</span>
-                    </div>
-                </div>
-                <h3 class="text-lg font-semibold mb-2">Configura il tuo Agente</h3>
-                <p class="text-gray-600 text-sm">Scegli settore, tono di voce e domande da fare ai lead. L'AI si adatta alla tua azienda.</p>
-            </div>
-            <div class="text-center group">
-                <div class="relative mx-auto mb-6 w-32 h-32 rounded-2xl overflow-hidden shadow-lg">
-                    <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?w=200&h=200&fit=crop&auto=format&q=80" 
-                         alt="Connetti" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 bg-wes-500 rounded-full flex items-center justify-center shadow-lg">
-                        <span class="text-lg font-bold text-white">2</span>
-                    </div>
-                </div>
-                <h3 class="text-lg font-semibold mb-2">Connetti i tuoi canali</h3>
-                <p class="text-gray-600 text-sm">Collega WhatsApp, email, Google Calendar e CRM. L'AI lavora su tutti i canali.</p>
-            </div>
-            <div class="text-center group">
-                <div class="relative mx-auto mb-6 w-32 h-32 rounded-2xl overflow-hidden shadow-lg">
-                    <img src="https://images.unsplash.com/photo-1559526323-cb2f2fe2591b?w=200&h=200&fit=crop&auto=format&q=80" 
-                         alt="Lascia lavorare l'AI" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                    <div class="absolute bottom-2 left-1/2 -translate-x-1/2 w-10 h-10 bg-wes-500 rounded-full flex items-center justify-center shadow-lg">
-                        <span class="text-lg font-bold text-white">3</span>
-                    </div>
-                </div>
-                <h3 class="text-lg font-semibold mb-2">Lascia lavorare l'AI</h3>
-                <p class="text-gray-600 text-sm">Nuovi lead vengono qualificati, ricevono risposte e appuntamenti in automatico. Tu vendi.</p>
-            </div>
-        </div>
-    </div>
-</section>
+  <section class="home-security"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div class="security-panel"><div><div class="home-badge"><span></span> Built for trust</div><h2>Potente per scelta.<br><em>Prudente per progetto.</em></h2><p>Ogni capacità parte dal principio del minimo privilegio. WES non riceve accesso illimitato e non finge di aver completato ciò che non può verificare.</p></div><div class="security-grid"><span><i class="fas fa-network-wired"></i><b>Protezione SSRF</b><small>Reti private bloccate</small></span><span><i class="fas fa-user-lock"></i><b>Dati separati</b><small>Controlli per proprietario</small></span><span><i class="fas fa-stopwatch"></i><b>Limiti di esecuzione</b><small>Timeout e memoria</small></span><span><i class="fas fa-list-check"></i><b>Audit completo</b><small>Ogni passaggio registrato</small></span></div></div></div></section>
 
-<!-- Testimonial -->
-<section class="py-20 bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-64 h-64 bg-wes-50 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-            <div class="relative">
-                <div class="flex items-center gap-2 mb-6">
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                    <i class="fas fa-star text-yellow-400"></i>
-                </div>
-                <blockquote class="text-xl md:text-2xl text-gray-700 leading-relaxed mb-8">
-                    "Da quando usiamo WES AI Automation, i lead vengono qualificati automaticamente. 
-                    Il nostro team commerciale riceve solo contatti pronti all'acquisto. 
-                    <strong class="text-gray-900">Risparmiamo 20+ ore a settimana</strong> e le vendite sono aumentate del 40%."
-                </blockquote>
-                <div class="flex items-center gap-4">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&auto=format&q=80" 
-                         alt="Marco Rossi" class="w-14 h-14 rounded-full object-cover">
-                    <div>
-                        <div class="font-semibold">Marco Rossi</div>
-                        <div class="text-sm text-gray-500">Titolare, Agenzia Immobiliare Milano</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- CTA Section -->
-<section class="py-20 bg-gradient-to-br from-wes-500 to-purple-700 relative overflow-hidden">
-    <div class="absolute inset-0 opacity-10">
-        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&h=400&fit=crop&auto=format" 
-             alt="" class="w-full h-full object-cover">
-    </div>
-    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">
-            Pronto a trasformare la tua gestione lead?
-        </h2>
-        <p class="text-lg text-wes-100 mb-8 max-w-2xl mx-auto">
-            Prenota una call gratuita e scopri come WES AI Automation può automatizzare la tua azienda.
-        </p>
-        <div class="flex flex-wrap justify-center gap-4">
-            <a href="/prenota-call" class="inline-flex items-center gap-2 px-8 py-4 bg-white text-wes-600 font-semibold rounded-xl hover:bg-gray-50 transition shadow-xl">
-                <i class="fas fa-calendar-check"></i>
-                Prenota Call Gratuita
-            </a>
-            <a href="/prezzi" class="inline-flex items-center gap-2 px-8 py-4 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition border border-white/20">
-                <i class="fas fa-tags"></i>
-                Vedi i Piani
-            </a>
-        </div>
-    </div>
-</section>
+  <section class="home-cta"><div class="cta-orb"></div><div class="max-w-4xl mx-auto px-4 text-center relative"><div class="mini-logo mx-auto"><i class="fas fa-sparkles"></i></div><h2>Il lavoro non deve fermarsi<br>alla risposta dell’AI.</h2><p>Portalo fino al risultato con WES.</p><div class="hero-actions justify-center"><a href="<%= currentUser ? '/workspace' : signupUrl %>" class="home-primary"><%= currentUser ? 'Entra nel workspace' : signupLabel %> <i class="fas fa-arrow-right"></i></a><a href="/prenota-call" class="home-secondary">Prenota una demo</a></div></div></section>
+</main>
 
 <%- include('../partials/footer') %>

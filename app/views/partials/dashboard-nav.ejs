@@ -1,112 +1,90 @@
 <%
-// Set default page variable to avoid undefined errors
 if (typeof page === 'undefined') { page = ''; }
-%><!-- Dashboard Sidebar -->
-<div class="flex h-screen bg-gray-50">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <!-- Logo -->
-        <div class="p-4 border-b border-gray-100">
-            <a href="/dashboard" class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-wes-500 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-robot text-white text-sm"></i>
+const isAdmin = typeof adminPage !== 'undefined' && adminPage;
+const pathNow = typeof currentPath === 'string' ? currentPath : '';
+const navItem = (active) => active
+    ? 'bg-white/10 text-white border border-white/10 shadow-lg shadow-black/20'
+    : 'text-slate-400 hover:text-white hover:bg-white/[.05] border border-transparent';
+%>
+<div class="flex h-screen bg-[#f4f5f8] overflow-hidden">
+    <button id="dashboardSidebarOverlay" type="button" class="fixed inset-0 z-30 hidden bg-slate-950/70 backdrop-blur-sm lg:hidden" aria-label="Chiudi menu"></button>
+
+    <aside id="dashboardSidebar" class="fixed inset-y-0 left-0 z-40 w-72 -translate-x-full bg-[#090b11] border-r border-slate-800/80 text-white flex flex-col transition-transform duration-200 lg:static lg:w-64 lg:translate-x-0">
+        <div class="px-5 h-[69px] border-b border-slate-800/80 flex items-center">
+            <a href="<%= isAdmin ? '/admin' : '/workspace' %>" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/20 group-hover:scale-105 transition">
+                    <i class="fas fa-sparkles text-white text-sm"></i>
                 </div>
-                <span class="font-bold">WES <span class="text-wes-500">AI</span></span>
+                <div><span class="font-bold tracking-tight">WES <span class="text-violet-400">AI</span></span><span class="block text-[9px] uppercase tracking-[.22em] text-slate-600"><%= isAdmin ? 'Control room' : 'Autonomous OS' %></span></div>
             </a>
         </div>
-        
-        <!-- Navigation -->
-        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-            <% if (typeof adminPage !== 'undefined' && adminPage) { %>
-                <div class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pannello Admin</div>
+
+        <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+            <% if (isAdmin) { %>
+                <div class="px-3 pt-3 pb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[.2em]">Amministrazione</div>
+                <a href="/admin" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(pathNow === '/admin') %>"><i class="fas fa-command w-5 text-center"></i><span>Control room</span></a>
+                <a href="/admin/utenti" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(pathNow.startsWith('/admin/utenti')) %>"><i class="fas fa-users-gear w-5 text-center"></i><span>Account</span></a>
+                <a href="/admin/logs" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(pathNow === '/admin/logs') %>"><i class="fas fa-list-check w-5 text-center"></i><span>Audit log</span></a>
+                <a href="/admin/api-keys" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(pathNow === '/admin/api-keys') %>"><i class="fas fa-key w-5 text-center"></i><span>Registry chiavi</span></a>
+                <a href="/admin/config" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(pathNow === '/admin/config') %>"><i class="fas fa-sliders w-5 text-center"></i><span>Configurazione</span></a>
+                <div class="my-3 border-t border-slate-800/80"></div>
+                <a href="/workspace" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-white hover:bg-white/[.05] transition"><i class="fas fa-arrow-left w-5 text-center"></i><span>Workspace</span></a>
+            <% } else { %>
+                <div class="px-3 pt-3 pb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[.2em]">Intelligence</div>
+                <a href="/workspace" class="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold <%= page === 'workspace' ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-950/50 border border-violet-400/20' : 'bg-white text-slate-950 hover:bg-violet-50 border border-white' %> transition">
+                    <i class="fas fa-sparkles w-5 text-center"></i><span>Nuovo task AI</span><i class="fas fa-plus ml-auto text-[10px]"></i>
+                </a>
+                <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'dashboard') %>"><i class="fas fa-gauge-high w-5 text-center"></i><span>Panoramica</span></a>
+
+                <div class="px-3 pt-5 pb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[.2em]">Operations</div>
+                <a href="/dashboard/lead" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'leads') %>"><i class="fas fa-users w-5 text-center"></i><span>Lead</span></a>
+                <a href="/dashboard/conversazioni" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'conversations') %>"><i class="fas fa-comments w-5 text-center"></i><span>Conversazioni</span></a>
+                <a href="/dashboard/appuntamenti" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'appointments') %>"><i class="fas fa-calendar w-5 text-center"></i><span>Appuntamenti</span></a>
+                <a href="/dashboard/follow-up" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'followup') %>"><i class="fas fa-clock w-5 text-center"></i><span>Follow-up</span></a>
+                <a href="/dashboard/preventivi" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'preventivi') %>"><i class="fas fa-file-invoice w-5 text-center"></i><span>Preventivi</span></a>
+
+                <div class="px-3 pt-5 pb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[.2em]">System</div>
+                <a href="/dashboard/automazioni" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'automations') %>"><i class="fas fa-bolt w-5 text-center"></i><span>Automazioni</span></a>
+                <a href="/dashboard/agente" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'agent') %>"><i class="fas fa-robot w-5 text-center"></i><span>Agente commerciale</span></a>
+                <a href="/dashboard/integrazioni" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'integrations') %>"><i class="fas fa-plug w-5 text-center"></i><span>Integrazioni</span></a>
+                <a href="/dashboard/statistiche" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'stats') %>"><i class="fas fa-chart-simple w-5 text-center"></i><span>Statistiche</span></a>
+                <a href="/dashboard/impostazioni" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'settings') %>"><i class="fas fa-gear w-5 text-center"></i><span>Impostazioni</span></a>
             <% } %>
-            <a href="/dashboard" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'dashboard' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-chart-pie w-5 text-center"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="/dashboard/lead" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'leads' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-users w-5 text-center"></i>
-                <span>Lead</span>
-            </a>
-            <a href="/dashboard/conversazioni" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'conversations' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-comments w-5 text-center"></i>
-                <span>Conversazioni</span>
-            </a>
-            <a href="/dashboard/appuntamenti" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'appointments' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-calendar w-5 text-center"></i>
-                <span>Appuntamenti</span>
-            </a>
-            <a href="/dashboard/follow-up" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'followup' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-clock w-5 text-center"></i>
-                <span>Follow-up</span>
-            </a>
-            <a href="/dashboard/preventivi" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'preventivi' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-file-invoice w-5 text-center"></i>
-                <span>Preventivi</span>
-            </a>
-            
-            <hr class="my-3">
-            
-            <a href="/dashboard/automazioni" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'automations' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-bolt w-5 text-center"></i>
-                <span>Automazioni</span>
-            </a>
-            <a href="/dashboard/agente" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'agent' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-robot w-5 text-center"></i>
-                <span>Agente AI</span>
-            </a>
-            <a href="/dashboard/integrazioni" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'integrations' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-plug w-5 text-center"></i>
-                <span>Integrazioni</span>
-            </a>
-            <a href="/dashboard/statistiche" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'stats' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-chart-bar w-5 text-center"></i>
-                <span>Statistiche</span>
-            </a>
-            
-            <hr class="my-3">
-            
-            <a href="/dashboard/impostazioni" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium <%= page === 'settings' ? 'bg-wes-50 text-wes-600' : 'text-gray-600 hover:bg-gray-50' %> transition">
-                <i class="fas fa-cog w-5 text-center"></i>
-                <span>Impostazioni</span>
-            </a>
         </nav>
-        
-        <!-- User info -->
-        <div class="p-4 border-t border-gray-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-wes-500 rounded-full flex items-center justify-center text-white font-medium">
-                    <%= (typeof currentUser !== 'undefined' && currentUser && currentUser.company) ? currentUser.company.charAt(0).toUpperCase() : 'W' %>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium truncate"><%= (typeof currentUser !== 'undefined' && currentUser) ? currentUser.company : 'Utente' %></p>
-                    <p class="text-xs text-gray-500 truncate"><%= (typeof currentUser !== 'undefined' && currentUser) ? currentUser.email : '' %></p>
-                </div>
-                <form action="/auth/logout" method="POST" class="inline">
-                    <button type="submit" class="p-2 text-gray-400 hover:text-red-500 transition" title="Esci">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </form>
+
+        <div class="p-3 border-t border-slate-800/80">
+            <div class="flex items-center gap-3 rounded-xl bg-white/[.035] border border-white/[.05] p-2.5">
+                <div class="w-9 h-9 bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg flex items-center justify-center text-white font-semibold"><%= currentUser?.company ? currentUser.company.charAt(0).toUpperCase() : 'W' %></div>
+                <div class="flex-1 min-w-0"><p class="text-xs font-semibold truncate"><%= currentUser?.company || 'Utente' %></p><p class="text-[10px] text-slate-500 truncate"><%= currentUser?.email || '' %></p></div>
+                <form action="/auth/logout" method="POST"><button type="submit" class="p-2 text-slate-600 hover:text-rose-400 transition" title="Esci" aria-label="Esci"><i class="fas fa-arrow-right-from-bracket"></i></button></form>
             </div>
         </div>
     </aside>
-    
-    <!-- Main content -->
+
     <main class="flex-1 overflow-y-auto">
-        <!-- Top bar -->
-        <div class="sticky top-0 bg-white/80 backdrop-blur-sm border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-            <div>
-                <h1 class="text-xl font-bold text-gray-900"><%= typeof title !== 'undefined' ? title.replace(' - WES AI Automation', '') : 'Dashboard' %></h1>
+        <div class="sticky top-0 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 px-4 sm:px-6 py-3.5 flex items-center justify-between z-20">
+            <div class="flex items-center gap-3 min-w-0">
+                <button id="dashboardMenuButton" type="button" class="lg:hidden w-9 h-9 grid place-items-center rounded-lg border border-slate-200 text-slate-600" aria-label="Apri menu"><i class="fas fa-bars"></i></button>
+                <div><p class="text-[9px] uppercase tracking-[.22em] font-bold text-violet-500"><%= isAdmin ? 'WES Control' : 'Private workspace' %></p><h1 class="text-lg font-bold text-slate-950 truncate"><%= typeof title !== 'undefined' ? title.replace(' - WES AI Automation', '') : 'Dashboard' %></h1></div>
             </div>
             <div class="flex items-center gap-3">
-                <span class="text-xs px-3 py-1 bg-wes-100 text-wes-600 rounded-full font-medium">
-                    <%= typeof plan !== 'undefined' ? plan.name + ' - ' + plan.price + '€/mese' : '' %>
-                </span>
-                <a href="/" class="p-2 text-gray-400 hover:text-wes-500 transition" title="Vai al sito">
-                    <i class="fas fa-external-link-alt"></i>
-                </a>
+                <% if (typeof plan !== 'undefined' && plan) { %><span class="hidden sm:inline text-[10px] px-3 py-1.5 bg-slate-950 text-white rounded-full font-semibold"><%= plan.name %> · <%= plan.price %>€/mese</span><% } %>
+                <a href="/" class="w-9 h-9 grid place-items-center rounded-xl border border-slate-200 text-slate-400 hover:text-violet-600 hover:border-violet-200 transition" title="Vai al sito" aria-label="Vai al sito"><i class="fas fa-arrow-up-right-from-square text-xs"></i></a>
             </div>
         </div>
-        
-        <!-- Page content -->
-        <div class="p-6">
+
+        <div class="p-4 sm:p-6">
+<script>
+(() => {
+    const sidebar = document.getElementById('dashboardSidebar');
+    const overlay = document.getElementById('dashboardSidebarOverlay');
+    const toggle = open => {
+        sidebar?.classList.toggle('-translate-x-full', !open);
+        overlay?.classList.toggle('hidden', !open);
+        document.body.classList.toggle('overflow-hidden', open);
+    };
+    document.getElementById('dashboardMenuButton')?.addEventListener('click', () => toggle(true));
+    overlay?.addEventListener('click', () => toggle(false));
+    sidebar?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => { if (window.innerWidth < 1024) toggle(false); }));
+})();
+</script>

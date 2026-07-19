@@ -1,57 +1,88 @@
 <%- include('../partials/header') %>
 <%- include('../partials/dashboard-nav') %>
 
-<div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
-    <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="font-bold">Appuntamenti (<%= appointments.length %>)</h2>
-        <button onclick="alert('Funzionalità di creazione appuntamento in arrivo!')" 
-            class="px-4 py-2 bg-wes-500 text-white text-sm font-medium rounded-xl hover:bg-wes-600 transition">
-            <i class="fas fa-plus mr-1"></i> Nuovo Appuntamento
-        </button>
+<section class="-m-6 min-h-[calc(100vh-73px)] bg-slate-950 text-white p-5 lg:p-8">
+  <div class="mx-auto max-w-6xl">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8">
+      <div>
+        <div class="text-[10px] uppercase tracking-[.24em] text-violet-400 font-bold mb-2">Agenda operativa</div>
+        <h2 class="text-3xl font-semibold tracking-tight">Ogni impegno, sotto controllo.</h2>
+        <p class="text-sm text-slate-400 mt-2">Crea appuntamenti reali nel CRM WES, rileva i conflitti e registra ogni cambio di stato.</p>
+      </div>
+      <button id="openAppointmentModal" class="rounded-xl bg-white text-slate-950 px-5 py-3 text-sm font-bold hover:bg-violet-100 transition"><i class="fas fa-plus mr-2"></i>Nuovo appuntamento</button>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead>
-                <tr class="bg-gray-50 text-left text-sm text-gray-500">
-                    <th class="px-6 py-4 font-medium">Titolo</th>
-                    <th class="px-6 py-4 font-medium">Lead</th>
-                    <th class="px-6 py-4 font-medium">Data/Ora</th>
-                    <th class="px-6 py-4 font-medium">Stato</th>
-                    <th class="px-6 py-4 font-medium">Azioni</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-                <% if (appointments.length > 0) { %>
-                    <% appointments.forEach(function(app) { %>
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="px-6 py-4 text-sm font-medium"><%= app.title %></td>
-                            <td class="px-6 py-4 text-sm"><%= app.lead_name || '-' %></td>
-                            <td class="px-6 py-4 text-sm">
-                                <%= new Date(app.start_time).toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) %>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="text-xs px-2 py-1 rounded-full 
-                                    <%= app.status === 'scheduled' ? 'bg-blue-100 text-blue-700' : app.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
-                                    <%= app.status === 'scheduled' ? 'Programmato' : app.status === 'completed' ? 'Completato' : 'Cancellato' %>
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <button class="p-1.5 text-gray-400 hover:text-wes-500 transition"><i class="fas fa-eye"></i></button>
-                            </td>
-                        </tr>
-                    <% }); %>
-                <% } else { %>
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                            <i class="fas fa-calendar text-4xl mb-3 block"></i>
-                            <p>Nessun appuntamento</p>
-                        </td>
-                    </tr>
-                <% } %>
-            </tbody>
-        </table>
+
+    <div class="grid sm:grid-cols-3 gap-3 mb-6">
+      <% const scheduledCount = appointments.filter(item => item.status === 'scheduled').length; %>
+      <% const completedCount = appointments.filter(item => item.status === 'completed').length; %>
+      <% const cancelledCount = appointments.filter(item => item.status === 'cancelled').length; %>
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5"><div class="text-3xl font-semibold"><%= scheduledCount %></div><div class="text-xs text-blue-300 mt-1">Programmato</div></div>
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5"><div class="text-3xl font-semibold"><%= completedCount %></div><div class="text-xs text-emerald-300 mt-1">Completato</div></div>
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5"><div class="text-3xl font-semibold"><%= cancelledCount %></div><div class="text-xs text-rose-300 mt-1">Annullato</div></div>
     </div>
+
+    <div class="rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden">
+      <% if (appointments.length) { %>
+        <div class="divide-y divide-slate-800">
+          <% appointments.forEach(function(appointment) { %>
+            <article class="p-5 flex flex-col lg:flex-row lg:items-center gap-4 hover:bg-slate-800/35 transition">
+              <div class="w-12 h-12 rounded-xl bg-violet-500/15 text-violet-300 grid place-items-center shrink-0"><i class="fas fa-calendar-day"></i></div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap"><h3 class="font-semibold truncate"><%= appointment.title %></h3><span class="text-[10px] px-2 py-1 rounded-full <%= appointment.status === 'scheduled' ? 'bg-blue-500/15 text-blue-300' : appointment.status === 'completed' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300' %>"><%= appointment.status === 'scheduled' ? 'PROGRAMMATO' : appointment.status === 'completed' ? 'COMPLETATO' : 'ANNULLATO' %></span></div>
+                <p class="text-sm text-slate-400 mt-1"><%= appointment.lead_name || 'Nessun lead associato' %><% if (appointment.description) { %> · <%= appointment.description %><% } %></p>
+              </div>
+              <div class="lg:text-right shrink-0"><div class="text-sm font-medium"><%= new Date(appointment.start_time).toLocaleString('it-IT', { timeZone: 'Europe/Rome', weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) %></div><div class="text-xs text-slate-500 mt-1">Ora italiana</div></div>
+              <% if (appointment.status === 'scheduled') { %>
+                <div class="flex gap-2 shrink-0"><button data-appointment-status="completed" data-id="<%= appointment.id %>" class="rounded-lg border border-slate-700 px-3 py-2 text-xs text-emerald-300 hover:bg-emerald-500/10">Completa</button><button data-appointment-status="cancelled" data-id="<%= appointment.id %>" class="rounded-lg border border-slate-700 px-3 py-2 text-xs text-rose-300 hover:bg-rose-500/10">Annulla</button></div>
+              <% } %>
+            </article>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="py-20 text-center"><div class="w-16 h-16 mx-auto rounded-2xl bg-slate-800 text-slate-500 grid place-items-center text-2xl"><i class="fas fa-calendar-plus"></i></div><h3 class="font-semibold mt-5">Agenda vuota</h3><p class="text-sm text-slate-500 mt-1">Crea il primo appuntamento quando hai una disponibilità confermata.</p></div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<div id="appointmentModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm p-4 place-items-center">
+  <div class="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-700 p-6 text-white shadow-2xl">
+    <div class="flex items-center justify-between mb-6"><div><div class="text-[10px] uppercase tracking-[.2em] text-violet-400">Nuovo evento</div><h3 class="text-xl font-semibold mt-1">Aggiungi all’agenda</h3></div><button type="button" data-close-appointment class="w-9 h-9 rounded-lg bg-slate-800 text-slate-400"><i class="fas fa-xmark"></i></button></div>
+    <form id="appointmentForm" class="space-y-4">
+      <label class="block text-xs text-slate-400">Titolo<input name="title" minlength="2" maxlength="160" required class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500" placeholder="Es. Call strategica"></label>
+      <label class="block text-xs text-slate-400">Lead<select name="lead_id" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"><option value="">Nessun lead associato</option><% leads.forEach(function(lead) { %><option value="<%= lead.id %>"><%= lead.name || lead.email || lead.phone || 'Lead' %></option><% }); %></select></label>
+      <div class="grid grid-cols-3 gap-3"><label class="col-span-2 block text-xs text-slate-400">Data e ora<input id="appointmentStart" name="start_local" type="datetime-local" required class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"></label><label class="block text-xs text-slate-400">Durata<select name="duration_minutes" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-3 text-sm text-white"><option value="30">30 min</option><option value="60">1 ora</option><option value="90">90 min</option><option value="120">2 ore</option></select></label></div>
+      <label class="block text-xs text-slate-400">Note<textarea name="description" maxlength="2000" rows="3" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500 resize-none" placeholder="Contesto utile per la call"></textarea></label>
+      <button class="w-full rounded-xl bg-white text-slate-950 py-3 text-sm font-bold">Crea appuntamento</button>
+    </form>
+  </div>
 </div>
+
+<script>
+(() => {
+  const modal = document.getElementById('appointmentModal');
+  const setOpen = open => { modal.classList.toggle('hidden', !open); modal.classList.toggle('grid', open); };
+  document.getElementById('openAppointmentModal')?.addEventListener('click', () => setOpen(true));
+  document.querySelector('[data-close-appointment]')?.addEventListener('click', () => setOpen(false));
+  modal?.addEventListener('click', event => { if (event.target === modal) setOpen(false); });
+  const start = document.getElementById('appointmentStart');
+  const nextHour = new Date(Date.now() + 60 * 60 * 1000); nextHour.setMinutes(0, 0, 0);
+  start.min = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  start.value = new Date(nextHour.getTime() - nextHour.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  document.getElementById('appointmentForm')?.addEventListener('submit', async function(event) {
+    event.preventDefault(); const button = this.querySelector('button'); button.disabled = true;
+    const data = Object.fromEntries(new FormData(this)); data.start_time = new Date(data.start_local).toISOString(); delete data.start_local;
+    const result = await apiCall('/api/appointments', 'POST', data);
+    if (result.success) location.reload(); else { showToast(result.error || 'Appuntamento non creato', 'error'); button.disabled = false; }
+  });
+  document.querySelectorAll('[data-appointment-status]').forEach(button => button.addEventListener('click', async function() {
+    const label = this.dataset.appointmentStatus === 'cancelled' ? 'annullare' : 'completare';
+    if (!confirm(`Vuoi ${label} questo appuntamento?`)) return;
+    this.disabled = true; const result = await apiCall(`/api/appointments/${this.dataset.id}/status`, 'POST', { status: this.dataset.appointmentStatus });
+    if (result.success) location.reload(); else { showToast(result.error || 'Stato non aggiornato', 'error'); this.disabled = false; }
+  }));
+})();
+</script>
 
 </main></div>
 <%- include('../partials/footer') %>

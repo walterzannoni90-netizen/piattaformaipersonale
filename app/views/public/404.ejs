@@ -1,15 +1,15 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
-<section class="min-h-[60vh] flex items-center justify-center py-20">
-    <div class="text-center">
-        <div class="text-8xl font-bold text-wes-200 mb-4">404</div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Pagina non trovata</h1>
-        <p class="text-gray-500 mb-8"><%= typeof message !== 'undefined' ? message : 'La pagina che cerchi non esiste.' %></p>
-        <a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-wes-500 text-white font-medium rounded-xl hover:bg-wes-600 transition">
-            <i class="fas fa-arrow-left"></i> Torna alla Home
-        </a>
-    </div>
-</section>
+<main class="product-page min-h-[calc(100vh-64px)] flex items-center py-20">
+  <div class="home-grid"></div>
+  <div class="relative w-full max-w-3xl mx-auto px-4 text-center">
+    <div class="mx-auto w-16 h-16 rounded-2xl border border-violet-500/30 bg-violet-500/10 text-violet-300 grid place-items-center shadow-2xl shadow-violet-950"><i class="fas fa-route text-xl"></i></div>
+    <div class="mt-7 text-[10px] uppercase tracking-[.35em] font-bold text-violet-400">Errore 404</div>
+    <h1 class="mt-4 text-5xl sm:text-7xl font-semibold tracking-tight text-white">Questa rotta non porta<br><em class="text-violet-300 not-italic">a nessun workspace.</em></h1>
+    <p class="mt-6 text-slate-400 max-w-xl mx-auto"><%= typeof message !== 'undefined' ? message : 'La pagina richiesta non esiste oppure è stata spostata.' %></p>
+    <div class="mt-9 flex flex-wrap justify-center gap-3"><a href="<%= currentUser ? '/workspace' : '/' %>" class="rounded-xl bg-white text-slate-950 px-5 py-3 text-sm font-bold"><i class="fas fa-arrow-left mr-2"></i><%= currentUser ? 'Torna al workspace' : 'Torna alla home' %></a><a href="/contatti" class="rounded-xl border border-slate-700 text-slate-300 px-5 py-3 text-sm font-semibold hover:border-slate-500">Segnala un problema</a></div>
+  </div>
+</main>
 
 <%- include('../partials/footer') %>

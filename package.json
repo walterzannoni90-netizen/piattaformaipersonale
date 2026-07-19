@@ -1,37 +1,53 @@
 {
   "name": "wes-ai-automation",
   "version": "1.0.0",
-  "description": "WES AI Automation - Piattaforma di automazione AI per lead, WhatsApp, email, CRM e preventivi",
+  "description": "WES Autonomous Intelligence - workspace operativo con agenti AI, Python protetto, ricerca e CRM",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "node --test test/*.test.js",
     "setup-db": "node database/setup.js",
-    "build": "node --check server.js && node --check app/routes/auth.js && node --check app/routes/dashboard.js"
+    "create-admin": "node database/create-admin.js",
+    "build:css": "tailwindcss -c tailwind.config.js -i app/public/css/tailwind-input.css -o app/public/css/tailwind.css --minify",
+    "check": "node --check server.js && node --check database/setup.js && node --check database/create-admin.js && node --check app/config/app.js && node --check app/config/database.js && node --check app/utils/contact.js && node --check app/routes/auth.js && node --check app/routes/public.js && node --check app/routes/dashboard.js && node --check app/routes/workspace.js && node --check app/routes/admin.js && node --check app/middleware/auth.js && node --check app/middleware/rateLimit.js && node --check app/services/agentOrchestrator.js && node --check app/services/automation.js && node --check app/services/dataRetention.js && node --check app/services/fileStore.js && node --check app/services/pythonRunner.js && node --check app/services/safeWeb.js && node --check app/services/secretVault.js && node --check app/services/scheduleService.js && node --check app/services/markdown.js && node --check app/services/openrouter.js && node --check app/services/stripe.js && node --check app/services/email.js && node --check app/services/whatsapp.js && node --check app/public/js/main.js && node --check app/public/js/workspace.js",
+    "build": "npm run build:css && npm run check"
   },
-  "keywords": ["ai", "automation", "whatsapp", "crm", "leads"],
+  "keywords": [
+    "ai",
+    "ai-agent",
+    "autonomous-agent",
+    "python",
+    "automation",
+    "whatsapp",
+    "crm",
+    "leads"
+  ],
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "ejs": "^3.1.9",
-    "sql.js": "^1.9.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "cookie-parser": "^1.4.6",
-    "express-session": "^1.17.3",
-    
-    "dotenv": "^16.3.1",
+    "@fortawesome/fontawesome-free": "^6.7.2",
     "axios": "^1.6.2",
-    "uuid": "^9.0.0",
-    "helmet": "^7.1.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "morgan": "^1.10.0",
+    "croner": "^10.0.1",
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
     "express-rate-limit": "^7.1.4",
     "express-validator": "^7.0.1",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.7",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "markdown-it": "^14.3.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.2.0",
+    "nodemailer": "^9.0.3",
+    "socket.io": "^4.7.2",
+    "sql.js": "^1.9.0",
     "stripe": "^14.5.0",
-    "socket.io": "^4.7.2"
+    "uuid": "^11.1.1"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   }
 }

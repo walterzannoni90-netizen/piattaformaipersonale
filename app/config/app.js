@@ -1,8 +1,16 @@
+function isRegistrationOpen() {
+  const configured = String(process.env.ALLOW_PUBLIC_REGISTRATION || '').toLowerCase();
+  if (configured === 'true') return true;
+  if (configured === 'false') return false;
+  return process.env.NODE_ENV !== 'production';
+}
+
 module.exports = {
+  isRegistrationOpen,
   name: process.env.APP_NAME || 'WES AI Automation',
   url: process.env.APP_URL || 'http://localhost:3000',
   email: process.env.CONTACT_EMAIL || 'info@wesautomation.com',
-  phone: process.env.CONTACT_PHONE || '+39 02 1234 5678',
+  phone: process.env.CONTACT_PHONE || '',
   
   // Plan configuration
   plans: {
@@ -11,14 +19,14 @@ module.exports = {
       price: 297,
       setupFee: 1000,
       features: [
-        'Fino a 500 lead/mese',
-        '1 agente AI',
-        'Risposta automatica WhatsApp',
-        'Qualificazione lead',
-        'Salvataggio CRM',
-        'Follow-up automatici',
-        'Report settimanale',
-        'Email di base',
+        '20 task autonomi al giorno',
+        '2 task contemporanei',
+        'Workspace privato con file',
+        'Python per fogli, documenti e dati',
+        'Ricerca web con fonti',
+        'CRM e agente commerciale',
+        'Progetti con memoria',
+        'Approvazioni di sicurezza',
         'Supporto email'
       ],
       limits: {
@@ -34,16 +42,15 @@ module.exports = {
       price: 597,
       setupFee: 2000,
       features: [
-        'Fino a 2.000 lead/mese',
-        '3 agenti AI',
+        '100 task autonomi al giorno',
+        '5 task contemporanei',
         'Tutto dello Starter',
-        'Google Calendar integrato',
-        'CRM avanzato',
-        'Appuntamento automatico',
-        'Integrazione webhook',
-        'Notifiche commerciale in tempo reale',
-        'Template personalizzati',
-        'API access',
+        'Memoria avanzata per progetto',
+        'CRM e automazioni complete',
+        'WhatsApp Cloud API e SMTP verificati',
+        'Output e template personalizzati',
+        'Fino a 20 task pianificati',
+        'Agenda e conversation center',
         'Supporto prioritario'
       ],
       limits: {
@@ -51,7 +58,7 @@ module.exports = {
         agents: 3,
         conversations: 5000,
         api_calls: 20000,
-        integrations: ['whatsapp', 'email', 'calendar', 'crm', 'webhook']
+        integrations: ['whatsapp', 'email']
       }
     },
     enterprise: {
@@ -59,25 +66,24 @@ module.exports = {
       price: 1500,
       setupFee: 5000,
       features: [
-        'Lead illimitati',
-        'Agenti AI illimitati',
+        'Fino a 500 task al giorno',
+        '10 task contemporanei',
         'Tutto del Pro',
-        'Integrazione n8n/Make',
-        'Stripe integrato',
-        'White label',
-        'SLA garantito',
-        'Account manager dedicato',
+        'Connettori personalizzati su progetto',
+        'Branding e distribuzione su progetto',
+        'Ambienti e policy dedicate',
+        'Responsabile tecnico dedicato',
         'Formazione team',
         'Personalizzazione avanzata',
-        'Backup e disaster recovery',
-        'Supporto 24/7'
+        'Piano di backup concordato',
+        'Canale di supporto dedicato'
       ],
       limits: {
         leads_per_month: -1, // unlimited
         agents: -1,
         conversations: -1,
         api_calls: -1,
-        integrations: ['whatsapp', 'email', 'calendar', 'crm', 'webhook', 'stripe', 'n8n']
+        integrations: ['whatsapp', 'email']
       }
     }
   },
@@ -99,13 +105,13 @@ module.exports = {
     {
       id: 'save-crm',
       name: 'Salvataggio nel CRM',
-      description: 'Salva automaticamente lead e conversazioni nel CRM aziendale',
+      description: 'Conferma e aggiorna lead e conversazioni nel CRM interno WES',
       icon: 'database'
     },
     {
       id: 'auto-appointment',
       name: 'Appuntamento automatico',
-      description: 'Propone e conferma appuntamenti in agenda in base alla disponibilità',
+      description: 'Registra una richiesta di appuntamento da verificare prima della conferma',
       icon: 'calendar'
     },
     {

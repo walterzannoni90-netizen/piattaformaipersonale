@@ -1,3 +1,5 @@
+<% const compactShell = typeof currentPath === 'string' && (currentPath.startsWith('/dashboard') || currentPath.startsWith('/workspace') || currentPath.startsWith('/admin')); %>
+<% if (!compactShell) { %>
 <!-- Footer -->
 <footer class="bg-gray-900 text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -5,22 +7,22 @@
             <div>
                 <div class="flex items-center gap-2 mb-4">
                     <div class="w-8 h-8 bg-wes-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-robot text-white text-sm"></i>
+                        <i class="fas fa-sparkles text-white text-sm"></i>
                     </div>
                     <span class="font-bold text-lg">WES AI</span>
                 </div>
                 <p class="text-gray-400 text-sm leading-relaxed">
-                    Automazione intelligente per la tua azienda. Lead, WhatsApp, email, CRM e preventivi gestiti dall'AI.
+                    L’agente autonomo che pianifica, usa strumenti e porta il lavoro aziendale fino al risultato.
                 </p>
             </div>
             
             <div>
                 <h3 class="font-semibold mb-4">Servizi</h3>
                 <ul class="space-y-2 text-sm text-gray-400">
-                    <li><a href="/servizi" class="hover:text-wes-400 transition">Chatbot AI</a></li>
-                    <li><a href="/servizi" class="hover:text-wes-400 transition">Automazione Lead</a></li>
-                    <li><a href="/servizi" class="hover:text-wes-400 transition">WhatsApp Business</a></li>
-                    <li><a href="/servizi" class="hover:text-wes-400 transition">CRM Intelligence</a></li>
+                    <li><a href="/servizi" class="hover:text-wes-400 transition">Ricerca autonoma</a></li>
+                    <li><a href="/servizi" class="hover:text-wes-400 transition">Python e analisi dati</a></li>
+                    <li><a href="/servizi" class="hover:text-wes-400 transition">Progetti con memoria</a></li>
+                    <li><a href="/servizi" class="hover:text-wes-400 transition">Agente commerciale</a></li>
                 </ul>
             </div>
             
@@ -41,31 +43,27 @@
                         <i class="fas fa-envelope text-wes-400"></i>
                         <a href="mailto:<%= contactEmail %>" class="hover:text-wes-400 transition"><%= contactEmail %></a>
                     </li>
-                    <li class="flex items-center gap-2">
+                    <% if (typeof contactPhone !== 'undefined' && contactPhone) { %><li class="flex items-center gap-2">
                         <i class="fas fa-phone text-wes-400"></i>
                         <a href="tel:<%= contactPhone %>" class="hover:text-wes-400 transition"><%= contactPhone %></a>
-                    </li>
-                    <li class="flex items-center gap-2">
+                    </li><% } %>
+                    <% if (typeof contactLocation !== 'undefined' && contactLocation) { %><li class="flex items-center gap-2">
                         <i class="fas fa-map-marker-alt text-wes-400"></i>
-                        <span>Milano, Italia</span>
-                    </li>
+                        <span><%= contactLocation %></span>
+                    </li><% } %>
                 </ul>
             </div>
         </div>
         
         <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p class="text-gray-500 text-sm">
-                &copy; <%= new Date().getFullYear() %> WES AI Automation. Tutti i diritti riservati.
+                &copy; <%= new Date().getFullYear() %> WES Autonomous Intelligence. Tutti i diritti riservati.
             </p>
-            <div class="flex items-center gap-4">
-                <a href="#" class="text-gray-400 hover:text-wes-400 transition"><i class="fab fa-linkedin"></i></a>
-                <a href="#" class="text-gray-400 hover:text-wes-400 transition"><i class="fab fa-facebook"></i></a>
-                <a href="#" class="text-gray-400 hover:text-wes-400 transition"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="text-gray-400 hover:text-wes-400 transition"><i class="fab fa-youtube"></i></a>
-            </div>
+            <div class="flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500"><a href="/privacy" class="hover:text-white">Privacy</a><a href="/cookie" class="hover:text-white">Cookie</a><a href="/termini" class="hover:text-white">Termini</a><span><i class="fas fa-shield-halved text-wes-400 mr-1"></i>Human approval by design</span></div>
         </div>
     </div>
 </footer>
+<% } %>
 
 <!-- Scripts -->
 <script src="/js/main.js"></script>

@@ -181,7 +181,7 @@ document.getElementById('agentForm').addEventListener('submit', async function(e
     const result = await res.json();
     if (result.success) {
         document.getElementById('previewResponse').textContent = data.welcome_message.replace('[azienda]', '<%= user ? user.company_name : "" %>');
-        alert('Agente configurato con successo!');
+        showToast('Agente configurato con successo!');
     }
 });
 </script>

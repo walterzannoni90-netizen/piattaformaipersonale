@@ -49,10 +49,11 @@ function showToast(message, type = 'success') {
         type === 'error' ? 'bg-red-500 text-white' : 
         'bg-gray-800 text-white'
     }`;
-    toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-        <span>${message}</span>
-    `;
+    const icon = document.createElement('i');
+    icon.className = `fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}`;
+    const label = document.createElement('span');
+    label.textContent = String(message || '');
+    toast.append(icon, label);
     document.body.appendChild(toast);
     
     setTimeout(() => {
@@ -157,6 +158,7 @@ function exportToCSV(data, filename = 'export.csv') {
         headers.join(','),
         ...data.map(row => headers.map(h => {
             let val = row[h]?.toString() || '';
+            if (/^[=+\-@]/.test(val)) val = `'${val}`;
             if (val.includes(',') || val.includes('"') || val.includes('\n')) {
                 val = '"' + val.replace(/"/g, '""') + '"';
             }

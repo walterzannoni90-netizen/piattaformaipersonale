@@ -1,547 +1,206 @@
-# 🤖 WES AI Automation
+# WES Autonomous Intelligence
 
-**Piattaforma SaaS di automazione AI per lead, WhatsApp, email, CRM e preventivi.**
+WES è un workspace operativo per agenti AI: riceve un obiettivo, crea un piano, usa soltanto strumenti autorizzati, registra ogni passaggio e consegna file verificabili. Include inoltre CRM, WhatsApp, email, agenda, automazioni e pianificazioni ricorrenti.
 
-WES AI Automation è una piattaforma completa che permette alle aziende di automatizzare l'intero processo di acquisizione e gestione clienti tramite intelligenza artificiale. Dall'accoglienza del lead alla qualificazione, dalla pianificazione appuntamenti ai follow-up automatici — tutto gestito da agenti AI configurabili.
+Non è una semplice chat e non dichiara capacità inesistenti. La versione corrente esegue ricerca web sicura, analisi documentale con Python, lettura CRM, creazione di report Markdown/PDF e flussi commerciali sui connettori realmente configurati.
 
----
+## Capacità disponibili
 
-## 📋 Indice
+- task autonomi con piano, timeline, stop, retry e ripresa dopo riavvio;
+- progetti con istruzioni permanenti e memoria dei risultati;
+- allegati privati con controllo proprietario, hash SHA-256 e firma del formato;
+- analisi Python di CSV, TSV, XLSX, PDF, DOCX, PPTX, TXT, Markdown, JSON e immagini;
+- report finali Markdown e PDF reali;
+- ricerca Tavily con URL e lettura web protetta da SSRF e DNS rebinding;
+- CRM multi-account con lead, conversazioni, score, follow-up e preventivi;
+- WhatsApp Cloud API e SMTP verificati prima del salvataggio;
+- agenda con rilevamento conflitti e audit degli stati;
+- azioni task su email, WhatsApp, agenda e stato lead con approvazione del payload esatto;
+- task pianificati per frequenza e fuso orario;
+- segreti cifrati AES-256-GCM;
+- recupero password con token monouso, scadenza di 30 minuti e revoca delle sessioni precedenti;
+- export portabile dei dati account senza password, segreti o percorsi interni;
+- pagine commerciali, privacy, cookie e termini configurabili.
 
-- [Panoramica](#-panoramica)
-- [Funzionalità](#-funzionalità)
-- [Architettura](#-architettura)
-- [Tecnologie](#-tecnologie)
-- [Installazione](#-installazione)
-- [Configurazione](#-configurazione)
-- [Avvio](#-avvio)
-- [Struttura del Progetto](#-struttura-del-progetto)
-- [Pagine e Route](#-pagine-e-route)
-- [API](#-api)
-- [Piani e Prezzi](#-piani-e-prezzi)
-- [Integrazioni](#-integrazioni)
-- [Automazioni](#-automazioni)
-- [Sicurezza](#-sicurezza)
-- [Licenza](#-licenza)
+## Architettura
 
----
-
-## 🎯 Panoramica
-
-WES AI Automation risolve un problema comune a molte aziende: **gestire manualmente lead, chat, email, appuntamenti e follow-up** è lento, inefficiente e fa perdere opportunità.
-
-La piattaforma mette un **agente AI** al centro del processo di acquisizione clienti, che:
-
-1. **Accoglie** ogni nuovo lead 24/7 su qualsiasi canale (WhatsApp, sito web, email)
-2. **Qualifica** il lead con domande mirate
-3. **Salva** automaticamente nel CRM
-4. **Propone e fissa** appuntamenti in agenda
-5. **Invia follow-up** programmati (1 giorno, 3 giorni)
-6. **Notifica** il team commerciale solo per lead qualificati
-7. **Genera report** settimanali con statistiche
-
----
-
-## ✨ Funzionalità
-
-### 🌐 Sito Pubblico
-| Pagina | Descrizione |
-|--------|-------------|
-| **Home** | Hero section, features, stats, CTA |
-| **Servizi** | Tutti i servizi di automazione offerti |
-| **Casi d'Uso** | Esempi reali per immobiliare, automotive, consulenza |
-| **Prezzi** | Piani Starter, Pro, Enterprise con dettagli |
-| **Contatti** | Form di contatto con salvataggio lead automatico |
-| **Prenota Call** | Booking call con selezione data/ora |
-| **Login / Register** | Autenticazione utenti |
-
-### 📊 Dashboard Clienti
-| Sezione | Descrizione |
-|---------|-------------|
-| **Dashboard** | Statistiche in tempo reale, lead recenti, conversazioni |
-| **Lead** | Gestione lead con filtro per stato e score |
-| **Conversazioni** | Storico chat con lead |
-| **Appuntamenti** | Calendario appuntamenti programmati |
-| **Follow-up** | Monitoraggio follow-up automatici |
-| **Preventivi** | Creazione e gestione preventivi |
-| **Automazioni** | Attivazione/disattivazione automazioni |
-| **Agente AI** | Configurazione completa dell'agente virtuale |
-| **Integrazioni** | Collegamento WhatsApp, Email, Calendar, CRM, Stripe |
-| **Statistiche** | Grafici e trend di performance |
-| **Impostazioni** | Profilo azienda e configurazioni |
-
-### 🧠 Agente AI Configurabile
-- **Nome personalizzato** dell'agente
-- **Tono di risposta**: professionale, amichevole, formale, informale, entusiasta
-- **Messaggio di benvenuto** personalizzabile
-- **Domande di qualificazione** configurabili (con flag "richiesto")
-- **Condizioni di trasferimento** al commerciale (score, email, telefono, interesse)
-- **Anteprima chat** in tempo reale
-
-### ⚙️ Backend Admin
-- Pannello di amministrazione completo
-- Gestione utenti e piani
-- Log di sistema con filtri e paginazione
-- Configurazione piattaforma
-- Gestione API keys
-- Revenue tracking
-
----
-
-## 🏗 Architettura
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Browser (Client)                         │
-│         HTML + EJS + Tailwind CSS + JavaScript              │
-└──────────────────────────┬──────────────────────────────────┘
-                           │ HTTP
-┌──────────────────────────▼──────────────────────────────────┐
-│                  Express.js Server                          │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐ │
-│  │  Public  │  │   Auth   │  │Dashboard │  │   Admin    │ │
-│  │  Routes  │  │  Routes  │  │  Routes  │  │  Routes    │ │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────┘ │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐ │
-│  │   AI     │  │Automation│  │WhatsApp  │  │   Email    │ │
-│  │ Service  │  │  Engine  │  │ Service  │  │  Service   │ │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────┘ │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐ │
-│  │ Calendar │  │  Stripe  │  │Middleware│  │  Database  │ │
-│  │ Service  │  │  Service │  │(Auth,JWT)│  │  (SQLite)  │ │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    UI[Workspace EJS] --> API[Express API]
+    API --> ORCH[Agent orchestrator]
+    ORCH --> AI[OpenRouter]
+    ORCH --> WEB[Tavily + safe fetch]
+    ORCH --> PY[Python restricted worker]
+    ORCH --> CRM[(SQLite / sql.js)]
+    PY --> FILES[Private task files]
+    API --> CHANNELS[WhatsApp / SMTP / Stripe webhook]
 ```
 
----
+Il processo web non esegue codice Python generato dal modello. Il worker espone una lista chiusa di operazioni deterministiche, parte con modalità isolata, limiti CPU/memoria/file e rete disabilitata.
 
-## 🛠 Tecnologie
+## Requisiti
 
-| Categoria | Tecnologia |
-|-----------|-----------|
-| **Runtime** | Node.js 22 |
-| **Framework** | Express.js 4 |
-| **Database** | SQLite (sql.js) |
-| **Templating** | EJS |
-| **CSS** | Tailwind CSS (CDN) |
-| **UI Icons** | Font Awesome 6 |
-| **Autenticazione** | JWT + bcryptjs |
-| **AI** | OpenRouter API (GPT-4o, Claude, Gemini) |
-| **Email** | Nodemailer (SMTP/Gmail) |
-| **Pagamenti** | Stripe |
-| **WebSocket** | Socket.io (opzionale) |
+- Node.js 22+
+- Python 3.12+
+- dipendenze Python in [requirements.txt](requirements.txt)
 
----
-
-## 📦 Installazione
-
-### Prerequisiti
-- [Node.js](https://nodejs.org/) v18 o superiore
-- npm (incluso con Node.js)
-
-### Passi
+## Avvio locale
 
 ```bash
-# 1. Clona il repository
-git clone https://github.com/walterzannoni90-netizen/piattaformaipersonale.git
-cd piattaformaipersonale
-
-# 2. Installa le dipendenze
-npm install
-
-# 3. Configura le variabili d'ambiente
-cp .env .env.local
-# Modifica .env.local con i tuoi valori
-
-# 4. Avvia il server
+cp .env.example .env
+npm ci
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+npm run build
+npm test
 npm start
 ```
 
----
-
-## ⚙️ Configurazione
-
-### File `.env`
-
-```env
-# Server
-PORT=3000
-NODE_ENV=development
-
-# Database
-DB_PATH=./database/wes.db
-
-# JWT
-JWT_SECRET=your-super-secret-key-change-me
-JWT_EXPIRES_IN=7d
-
-# OpenRouter AI (obbligatorio per agente funzionante)
-OPENROUTER_API_KEY=sk-or-v1-your-key-here
-OPENROUTER_MODEL=openai/gpt-4o
-
-# WhatsApp Business API
-WHATSAPP_API_KEY=
-WHATSAPP_PHONE_ID=
-
-# Email SMTP (Gmail)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=tua.email@gmail.com
-SMTP_PASS=la-tua-app-password
-
-# Google Calendar OAuth
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-GOOGLE_REDIRECT_URI=http://localhost:3000/integrations/google/callback
-
-# Stripe
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-```
-
-> **Nota:** Senza `OPENROUTER_API_KEY` l'agente AI non può generare risposte. Puoi ottenere una chiave gratuitamente su [openrouter.ai/keys](https://openrouter.ai/keys).
-
----
-
-## 🚀 Avvio
+Genera segreti diversi per JWT e cifratura, per esempio:
 
 ```bash
-# Ambiente di sviluppo (con hot-reload)
-npm run dev
-
-# Produzione
-npm start
-
-# Setup database manuale
-npm run setup-db
+openssl rand -hex 32
+openssl rand -hex 32
 ```
 
-Dopo l'avvio, il server sarà disponibile su **http://localhost:3000**
+Il server è disponibile su `http://localhost:3000`. La registrazione crea un account client e il relativo workspace; i dati demo sono disattivati per impostazione predefinita.
 
-### Demo Accessibile
+Per creare il primo amministratore usa credenziali monouso esplicite (non vengono stampate):
 
-| Ruolo | Email | Password |
-|-------|-------|----------|
-| **Admin** | admin@wesautomation.com | admin123 |
-| **Cliente** | demo@azienda.it | admin123 |
-
----
-
-## 📁 Struttura del Progetto
-
-```
-wes-ai-automation/
-│
-├── server.js                    # Entry point principale
-├── package.json                 # Dipendenze e script
-├── .env                         # Variabili d'ambiente
-├── .gitignore                   # File ignorati da git
-├── README.md                    # Questa documentazione
-│
-├── app/
-│   ├── config/
-│   │   ├── database.js          # Inizializzazione e schema SQLite
-│   │   └── app.js               # Configurazione piani e template automazioni
-│   │
-│   ├── middleware/
-│   │   ├── auth.js              # JWT authentication (authenticate, optionalAuth, requireAdmin)
-│   │   └── rateLimit.js         # Rate limiting per route pubbliche/API/auth
-│   │
-│   ├── routes/
-│   │   ├── public.js            # Route pubbliche (/, /servizi, /prezzi, etc.)
-│   │   ├── auth.js              # Login, registrazione, logout
-│   │   ├── dashboard.js         # Dashboard clienti + API interne
-│   │   └── admin.js             # Pannello admin + API di amministrazione
-│   │
-│   ├── services/
-│   │   ├── openrouter.js        # Integrazione AI (OpenRouter API)
-│   │   ├── automation.js        # Motore automazioni (trigger/action)
-│   │   ├── whatsapp.js          # WhatsApp Business API
-│   │   ├── email.js             # Servizio email (nodemailer)
-│   │   ├── calendar.js          # Google Calendar integration
-│   │   └── stripe.js            # Pagamenti e abbonamenti Stripe
-│   │
-│   ├── views/
-│   │   ├── partials/
-│   │   │   ├── header.ejs       # Head HTML, meta, CSS
-│   │   │   ├── navbar.ejs       # Navbar sito pubblico
-│   │   │   ├── dashboard-nav.ejs # Sidebar dashboard
-│   │   │   └── footer.ejs       # Footer completo
-│   │   │
-│   │   ├── public/              # Pagine sito pubblico (10 pagine)
-│   │   │   ├── home.ejs
-│   │   │   ├── servizi.ejs
-│   │   │   ├── casi-uso.ejs
-│   │   │   ├── prezzi.ejs
-│   │   │   ├── contatti.ejs
-│   │   │   ├── prenota-call.ejs
-│   │   │   ├── login.ejs
-│   │   │   ├── register.ejs
-│   │   │   ├── 404.ejs
-│   │   │   └── 500.ejs
-│   │   │
-│   │   ├── dashboard/           # Pagine dashboard (11 pagine)
-│   │   │   ├── index.ejs
-│   │   │   ├── leads.ejs
-│   │   │   ├── conversations.ejs
-│   │   │   ├── appointments.ejs
-│   │   │   ├── followup.ejs
-│   │   │   ├── preventivi.ejs
-│   │   │   ├── automations.ejs
-│   │   │   ├── agent-config.ejs
-│   │   │   ├── integrations.ejs
-│   │   │   ├── stats.ejs
-│   │   │   └── settings.ejs
-│   │   │
-│   │   └── admin/               # Pagine admin (6 pagine)
-│   │       ├── index.ejs
-│   │       ├── users.ejs
-│   │       ├── user-detail.ejs
-│   │       ├── logs.ejs
-│   │       ├── api-keys.ejs
-│   │       └── config.ejs
-│   │
-│   └── public/
-│       ├── css/
-│       │   └── style.css        # Stili personalizzati
-│       └── js/
-│           └── main.js          # JavaScript utility lato client
-│
-└── database/
-    ├── setup.js                 # Script setup con dati demo
-    └── wes.db                   # Database SQLite (generato automaticamente)
+```bash
+ADMIN_EMAIL=admin@tuodominio.it \
+ADMIN_PASSWORD='una-password-unica-di-almeno-12-caratteri' \
+ADMIN_COMPANY='La tua azienda' npm run create-admin
 ```
 
----
+`npm run setup-db` inizializza soltanto lo schema. Il seed locale richiede sia `SEED_DEMO_DATA=true` sia una `DEMO_PASSWORD` di almeno 10 caratteri ed è rifiutato in produzione.
 
-## 🧭 Pagine e Route
+## Configurazione
 
-### Pubbliche (nessuna autenticazione)
+| Variabile | Obbligatoria in produzione | Uso |
+|---|---:|---|
+| `APP_URL` | sì | URL HTTPS canonico |
+| `JWT_SECRET` | sì | firma sessioni, minimo 32 caratteri |
+| `APP_ENCRYPTION_KEY` | sì | cifratura segreti, minimo 32 caratteri |
+| `DB_PATH` | sì | file SQLite persistente |
+| `AGENT_WORKSPACE_ROOT` | sì | directory privata dei task |
+| `PYTHON_BIN` | sì | interprete del worker ristretto |
+| `ALLOW_PUBLIC_REGISTRATION` | no | in produzione è chiusa per default; abilitala solo quando onboarding e costi sono pronti |
+| `OPENROUTER_API_KEY` | no | chiave AI di piattaforma; ogni utente può salvarne una propria |
+| `OPENROUTER_MODEL` | no | modello predefinito, default `openrouter/auto` |
+| `TAVILY_API_KEY` | no | ricerca web di piattaforma |
+| `SMTP_HOST/PORT/USER/PASS` | per email di sistema | reset password e comunicazioni di piattaforma |
+| `SMTP_FROM` | no | mittente email di sistema |
+| `WHATSAPP_*` + `META_APP_SECRET` | per WhatsApp globale | webhook Meta firmato e invio |
+| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` | per Stripe | accettazione webhook firmati |
+| `LEGAL_NAME/ADDRESS`, `VAT_NUMBER`, `PRIVACY_EMAIL` | sì | dati pubblici del titolare |
+| `DATA_RETENTION_DAYS` | no | retention log/richieste, 30–3650 giorni |
 
-| Metodo | Path | Descrizione |
-|--------|------|-------------|
-| GET | `/` | Homepage |
-| GET | `/servizi` | Elenco servizi |
-| GET | `/casi-uso` | Casi d'uso reali |
-| GET | `/prezzi` | Piani e prezzi |
-| GET | `/contatti` | Form contatti |
-| POST | `/contatti` | Invio form contatti |
-| GET | `/prenota-call` | Prenota call |
-| POST | `/prenota-call` | Invia richiesta call |
-| GET | `/login` | Pagina login |
-| GET | `/register` | Pagina registrazione |
-| POST | `/auth/login` | Login (JWT) |
-| POST | `/auth/register` | Registrazione nuovo utente |
-| POST | `/auth/logout` | Logout |
-| GET | `/api/health` | Health check |
+Vedi [.env.example](.env.example) per l’elenco completo. In produzione il processo rifiuta l’avvio se mancano configurazioni critiche o se `APP_URL` non usa HTTPS.
 
-### Dashboard (autenticazione richiesta)
+Le registrazioni pubbliche sono abilitate di default soltanto in sviluppo. In produzione, senza `ALLOW_PUBLIC_REGISTRATION=true`, le call to action portano alla richiesta di accesso: evita che un’istanza appena pubblicata consumi chiavi AI globali prima che billing e onboarding siano pronti.
 
-| Metodo | Path | Descrizione |
-|--------|------|-------------|
-| GET | `/dashboard` | Dashboard principale |
-| GET | `/dashboard/lead` | Gestione lead |
-| GET | `/dashboard/conversazioni` | Conversazioni |
-| GET | `/dashboard/appuntamenti` | Appuntamenti |
-| GET | `/dashboard/follow-up` | Follow-up |
-| GET | `/dashboard/preventivi` | Preventivi |
-| GET | `/dashboard/automazioni` | Automazioni |
-| GET | `/dashboard/agente` | Configura agente AI |
-| GET | `/dashboard/integrazioni` | Integrazioni |
-| GET | `/dashboard/statistiche` | Statistiche |
-| GET | `/dashboard/impostazioni` | Impostazioni |
+## Connettori
 
-### API (autenticazione richiesta via cookie JWT)
+### OpenRouter
 
-| Metodo | Path | Descrizione |
-|--------|------|-------------|
-| GET | `/api/stats` | Statistiche in tempo reale |
-| POST | `/api/agent/save` | Salva configurazione agente |
-| POST | `/api/automation/toggle` | Attiva/disattiva automazione |
-| POST | `/api/automation/create` | Crea automazione da template |
-| POST | `/api/automation/delete` | Elimina automazione |
-| POST | `/api/invoice/create` | Crea preventivo |
-| POST | `/api/lead/update-status` | Aggiorna stato lead |
-| POST | `/api/settings/update` | Aggiorna impostazioni |
-| POST | `/api/chat/send` | Invia messaggio all'AI |
-| POST | `/api/whatsapp/webhook` | Webhook WhatsApp |
+La chiave può essere impostata nell’ambiente oppure cifrata per singolo account da **Integrazioni**. La chiave personale ha precedenza. Senza chiave AI il task si ferma in `waiting_configuration` invece di simulare un risultato.
 
-### Admin (ruolo admin richiesto)
+### Tavily
 
-| Metodo | Path | Descrizione |
-|--------|------|-------------|
-| GET | `/admin` | Dashboard admin |
-| GET | `/admin/utenti` | Gestione utenti |
-| GET | `/admin/utenti/:id` | Dettaglio utente |
-| GET | `/admin/logs` | Log di sistema |
-| GET | `/admin/api-keys` | API keys |
-| GET | `/admin/config` | Configurazione |
-| POST | `/api/admin/user/update` | Modifica utente |
-| POST | `/api/admin/user/delete` | Elimina utente |
-| POST | `/api/admin/logs/clear` | Pulisci log |
+Serve per la ricerca autonoma. La lettura di URL pubblici applica controllo protocollo/porta, DNS pubblico, blocco reti private, redirect limitati, timeout e limite di risposta.
 
----
+### WhatsApp Cloud API
 
-## 🔌 API
+Il pannello verifica token e Phone Number ID tramite Meta prima di salvarli. Il webhook in ingresso accetta solo payload con firma `X-Hub-Signature-256` valida rispetto a `META_APP_SECRET`.
 
-### Health Check
-```http
-GET /api/health
-```
-Response:
-```json
-{
-  "status": "ok",
-  "timestamp": "2026-07-01T12:00:00.000Z",
-  "version": "1.0.0",
-  "uptime": 123.45
-}
+### SMTP
+
+Sono consentite solo le porte 465 e 587. Hostname e certificato TLS vengono verificati e le credenziali devono superare `SMTP verify` prima del salvataggio.
+
+### Stripe
+
+La base corrente gestisce esclusivamente webhook firmati. Checkout, catalogo, imposte e ciclo commerciale vanno configurati nel progetto di vendita; non sono simulati nell’interfaccia.
+
+## Sicurezza
+
+- cookie di autenticazione `HttpOnly`, `SameSite=Lax` e `Secure` in produzione;
+- JWT HS256 con account riletto dal database a ogni richiesta;
+- origin check sulle mutazioni autenticate;
+- rate limit globali, API, chat, autenticazione e moduli pubblici;
+- CSP senza CDN e senza `unsafe-eval`;
+- segreti applicativi cifrati e mai rimostrati;
+- query e download sempre filtrati per proprietario;
+- file con limite 10 MB, allowlist MIME/estensione e firma binaria;
+- Python senza shell arbitraria, rete disabilitata e limiti di risorse;
+- fetch web protetto da SSRF, redirect e DNS rebinding;
+- webhook Stripe e Meta verificati crittograficamente;
+- log di accessi, decisioni, invii, appuntamenti ed errori;
+- pulizia automatica di token scaduti, log e richieste in ingresso.
+
+Per segnalazioni di sicurezza usa una [GitHub private security advisory](https://github.com/walterzannoni90-netizen/piattaformaipersonale/security/advisories/new). Non pubblicare segreti o vulnerabilità sfruttabili in una issue.
+
+## Test e build
+
+```bash
+npm run build      # compila Tailwind locale e valida la sintassi JS
+npm test           # worker Python, file, SSRF, cifratura, DB e viste
+npm audit --omit=dev
 ```
 
-### Chat AI
-```http
-POST /api/chat/send
-Content-Type: application/json
+La CI esegue gli stessi controlli, installa le dipendenze Python e costruisce anche l’immagine Docker.
 
-{
-  "messages": [
-    { "role": "user", "content": "Buongiorno, vorrei informazioni" }
-  ],
-  "agentId": "optional-agent-id"
-}
+## Docker
+
+```bash
+docker build -t wes-autonomous .
+docker run --rm -p 3000:10000 --env-file .env \
+  -v wes-data:/var/data wes-autonomous
 ```
 
-### Statistiche
-```http
-GET /api/stats
-Cookie: token=<jwt>
-```
-Response:
-```json
-{
-  "leads": 42,
-  "conversations": 18,
-  "appointments": 5,
-  "followUps": 12,
-  "newLeads": 8,
-  "qualifiedLeads": 3
-}
-```
+L’immagine usa Node 22, un virtualenv Python, `tini` e un utente non root. Database e workspace devono vivere su un volume persistente.
 
----
+## Render
 
-## 💰 Piani e Prezzi
+[render.yaml](render.yaml) definisce un servizio Docker con disco persistente montato su `/var/data`. Compila tutti i campi `sync: false` prima del deploy.
 
-| Caratteristica | Starter | Pro | Enterprise |
-|----------------|---------|-----|------------|
-| **Prezzo/mese** | 297€ | 597€ | 1.500€ |
-| **Setup iniziale** | 1.000€ | 2.000€ | 5.000€ |
-| **Lead/mese** | 500 | 2.000 | Illimitati |
-| **Agenti AI** | 1 | 3 | Illimitati |
-| **Conversazioni** | 1.000 | 5.000 | Illimitate |
-| **Risposta WhatsApp** | ✅ | ✅ | ✅ |
-| **Qualificazione lead** | ✅ | ✅ | ✅ |
-| **Salvataggio CRM** | ✅ | ✅ | ✅ |
-| **Follow-up automatici** | ✅ | ✅ | ✅ |
-| **Report settimanale** | ✅ | ✅ | ✅ |
-| **Google Calendar** | ❌ | ✅ | ✅ |
-| **Appuntamento auto** | ❌ | ✅ | ✅ |
-| **Webhook** | ❌ | ✅ | ✅ |
-| **Notifiche real-time** | ❌ | ✅ | ✅ |
-| **Stripe** | ❌ | ❌ | ✅ |
-| **n8n/Make** | ❌ | ❌ | ✅ |
-| **White label** | ❌ | ❌ | ✅ |
-| **Supporto** | Email | Prioritario | 24/7 |
+Questa architettura usa un singolo file SQLite e deve essere eseguita con una sola istanza applicativa. Per replica orizzontale, zero-downtime multiistanza o volumi elevati è necessario migrare il database a PostgreSQL e lo storage a oggetti.
 
----
+## API principali
 
-## 🔗 Integrazioni
+| Metodo | Endpoint | Funzione |
+|---|---|---|
+| `GET` | `/api/health` | salute del processo e database |
+| `POST` | `/api/tasks` | crea un task con massimo 5 allegati |
+| `GET` | `/api/tasks/:id/state` | stato, eventi, output e approvazioni |
+| `POST` | `/api/tasks/:id/stop` | interrompe il task |
+| `POST` | `/api/tasks/:id/retry` | riprende un task fermo/configurabile |
+| `POST` | `/api/projects` | crea un progetto con memoria |
+| `POST` | `/api/schedules` | pianifica task ricorrenti |
+| `POST` | `/api/appointments` | crea un appuntamento con controllo conflitti |
+| `POST` | `/api/conversations/:id/messages` | risposta manuale WhatsApp |
+| `POST` | `/api/integrations/email` | verifica e collega SMTP |
+| `POST` | `/api/integrations/whatsapp` | verifica e collega Meta |
 
-| Servizio | Stato | Descrizione |
-|----------|-------|-------------|
-| **WhatsApp Business API** | ⚙️ Configurabile | Messaggistica automatica, template, broadcast |
-| **Email / Gmail SMTP** | ⚙️ Configurabile | Sequenze email, report, follow-up |
-| **Google Calendar** | 🔜 In sviluppo | Sincronizzazione appuntamenti |
-| **CRM** | ⚙️ Configurabile | Salvataggio automatico via webhook |
-| **Stripe** | ⚙️ Configurabile | Pagamenti ricorrenti, fatturazione |
-| **Webhook / API** | ⚙️ Configurabile | Connessione con n8n, Make, Zapier |
+Le API del workspace richiedono autenticazione e applicano isolamento per utente.
 
----
+## Limiti dichiarati
 
-## ⚡ Automazioni
+- nessun browser cloud generalista o controllo remoto di schede browser;
+- nessun terminale o codice arbitrario generato dal modello;
+- nessun registry MCP generico nella versione corrente;
+- Calendar OAuth richiede un’implementazione dedicata sul dominio definitivo;
+- SQLite e file locali consentono una sola istanza;
+- la qualità AI dipende dal modello, dai dati e dalle fonti;
+- le pagine legali sono una base configurabile e richiedono validazione professionale sul titolare e sui trattamenti reali.
 
-| Automazione | Trigger | Azioni |
-|-------------|---------|--------|
-| **Risposta automatica ai lead** | Nuovo lead | Invia messaggio di benvenuto |
-| **Qualificazione cliente** | Primo messaggio | Fa domande, calcola score |
-| **Salvataggio nel CRM** | Lead qualificato | Salva nel CRM esterno |
-| **Appuntamento automatico** | Lead interessato | Propone slot, conferma |
-| **Follow-up 1 giorno** | Nessuna risposta 24h | Invia messaggio reminder |
-| **Follow-up 3 giorni** | Nessuna risposta 3gg | Invia messaggio approfondito |
-| **Notifica commerciale** | Lead qualificato | Notifica team vendite |
-| **Report settimanale** | Ogni 7 giorni | Genera stats via email |
+Questi limiti sono intenzionali: una capacità non disponibile viene indicata come tale invece di essere rappresentata graficamente come attiva.
 
----
+## Checklist prima della vendita
 
-## 🔒 Sicurezza
+Leggi [docs/LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md) e completa tutti i gate relativi a identità legale, contratti con fornitori, backup, dominio, email, webhook, osservabilità e prova di ripristino.
 
-- **Autenticazione JWT** con token httpOnly cookie
-- **Password hashate** con bcryptjs (10 rounds)
-- **Rate limiting** differenziato per route pubbliche, API e auth
-- **Helmet** headers di sicurezza
-- **CORS** configurato
-- **Validazione input** lato server con express-validator
-- **SQL injection protetta** tramite prepared statements (sql.js)
-- **Sessioni** con secret configurabile
-- **Ruoli** admin/client con permessi separati
+## Licenza
 
----
-
-## 🧪 Sviluppo Futuro
-
-- [ ] Integrazione WhatsApp Business API reale
-- [ ] Google Calendar OAuth completo
-- [ ] Webhook real-time con n8n/Make
-- [ ] Dashboard con grafici Chart.js
-- [ ] Notifiche email transazionali
-- [ ] Autenticazione 2FA
-- [ ] API pubblica documentata con Swagger
-- [ ] Test unitari e di integrazione
-- [ ] Docker containerization
-- [ ] CI/CD pipeline
-- [ ] Multi-lingua (EN, ES, FR, DE)
-
----
-
-## 🌐 Deploy su Render (gratuito)
-
-Questo progetto è configurato per il deploy su **Render**:
-
-1. **Crea account** su [Render.com](https://render.com) (gratis)
-2. **Collega GitHub**: Dashboard → **New +** → **Blueprint**
-3. **Seleziona** il repository `piattaformaipersonale`
-4. **Render legge** automaticamente il file `render.yaml`
-5. **Imposta manualmente** queste variabili d'ambiente su Render:
-   - `OPENROUTER_API_KEY` — Chiave API OpenRouter per AI agent
-   - `STRIPE_SECRET_KEY` — Chiave segreta Stripe per pagamenti
-   - `WHATSAPP_API_KEY` — API Key WhatsApp Business
-   - `GMAIL_USER` e `GMAIL_PASS` — Credenziali Gmail SMTP
-
-**Web Service manuale**:
-- **Build Command**: `npm install`
-- **Start Command**: `node server.js`
-- **Plan**: **Free** ✅
-
----
-
-## 📄 Licenza
-
-© 2026 WES AI Automation. Tutti i diritti riservati.
-
----
-
-<p align="center">
-  <strong>WES AI Automation</strong> — <em>Automazione Intelligente per la Tua Azienda</em><br>
-  <a href="mailto:info@wesautomation.com">info@wesautomation.com</a> ·
-  <a href="https://github.com/walterzannoni90-netizen/piattaformaipersonale">GitHub</a>
-</p>
+MIT. Verifica separatamente le licenze e le condizioni dei servizi terzi collegati.

@@ -12,32 +12,35 @@ class AutomationEngine {
 
   async trigger(event, data = {}) {
     const db = getDatabase();
-    
-    try {
-      // Find all active automations for this event
-      const automations = db.prepare(`
-        SELECT * FROM automations 
-        WHERE trigger_event = ? AND is_active = 1
-      `).all(event);
-      
-      for (const auto of automations) {
-        await this.executeAutomation(auto, data);
+    if (!data.user_id) throw new Error('Automazione senza proprietario');
+
+    const automations = db.prepare(`
+      SELECT * FROM automations
+      WHERE trigger_event = ? AND user_id = ? AND is_active = 1
+    `).all(event, data.user_id);
+    const executedActions = [];
+    const errors = [];
+    for (const auto of automations) {
+      try {
+        executedActions.push(...await this.executeAutomation(auto, data));
+      } catch (error) {
+        errors.push({ automationId: auto.id, error: String(error.message || error).slice(0, 500) });
+        db.prepare(`INSERT INTO logs (id, user_id, level, action, details)
+          VALUES (?, ?, 'error', 'automation_failed', ?)`)
+          .run(uuidv4(), data.user_id, JSON.stringify({ event, automation_id: auto.id, error: String(error.message || error).slice(0, 500) }));
       }
-      
-      // Log the trigger
-      db.prepare(`
-        INSERT INTO logs (id, user_id, level, action, details)
-        VALUES (?, ?, 'info', 'automation_triggered', ?)
-      `).run(uuidv4(), data.user_id, JSON.stringify({ event, data: JSON.stringify(data) }));
-      
-    } catch (error) {
-      console.error('Automation error:', error);
     }
+
+    db.prepare(`INSERT INTO logs (id, user_id, level, action, details)
+      VALUES (?, ?, 'info', 'automation_triggered', ?)`)
+      .run(uuidv4(), data.user_id, JSON.stringify({ event, automations: automations.map((automation) => automation.id), errors: errors.length }));
+    return { executedActions, errors };
   }
 
   async executeAutomation(auto, data) {
     const actions = JSON.parse(auto.actions);
     const db = getDatabase();
+    const executed = [];
     
     for (const action of actions) {
       switch (action) {
@@ -59,21 +62,27 @@ class AutomationEngine {
         case 'send_followup':
           await this.sendFollowUp(auto.user_id, data.lead, data.type || '1day');
           break;
+        case 'send_followup_3days':
+          await this.sendFollowUp(auto.user_id, data.lead, '3days');
+          break;
         case 'notify_sales_team':
           await this.notifySalesTeam(auto.user_id, data.lead);
           break;
         case 'generate_report':
           await this.generateReport(auto.user_id);
           break;
+        default:
+          throw new Error(`Azione automazione non consentita: ${String(action).slice(0, 80)}`);
       }
+      executed.push(action);
     }
     
     // Update last run
-    db.prepare('UPDATE automations SET last_run = CURRENT_TIMESTAMP WHERE id = ?').run(auto.id);
+    db.prepare('UPDATE automations SET last_run = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?').run(auto.id, auto.user_id);
+    return executed;
   }
 
   async sendWelcome(userId, lead) {
-    // Implementation: send welcome message via WhatsApp/email
     const db = getDatabase();
     const agent = db.prepare('SELECT * FROM agents WHERE user_id = ? AND is_active = 1').get(userId);
     if (!agent) return;
@@ -82,14 +91,8 @@ class AutomationEngine {
       db.prepare('SELECT company_name FROM users WHERE id = ?').get(userId)?.company_name || '') 
       || 'Ciao! Come posso aiutarti?';
     
-    // Save message to conversation
-    const conversation = db.prepare('SELECT * FROM conversations WHERE lead_id = ? AND status = "active"').get(lead?.id);
-    if (conversation) {
-      const messages = JSON.parse(conversation.messages || '[]');
-      messages.push({ role: 'agent', content: message, timestamp: new Date().toISOString() });
-      db.prepare('UPDATE conversations SET messages = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-        .run(JSON.stringify(messages), conversation.id);
-    }
+    if (!lead?.phone) throw new Error('Lead senza numero WhatsApp');
+    await require('./whatsapp').sendMessage(userId, lead.phone, message);
     
     this.logAction(userId, 'welcome_sent', { lead_id: lead?.id });
   }
@@ -102,28 +105,9 @@ class AutomationEngine {
     const questions = JSON.parse(agent.qualification_questions || '[]');
     if (questions.length === 0) return;
     
-    // Find or create conversation
-    let conversation = db.prepare('SELECT * FROM conversations WHERE lead_id = ? AND status = "active"').get(lead?.id);
-    if (!conversation) {
-      const convId = uuidv4();
-      db.prepare(`
-        INSERT INTO conversations (id, user_id, lead_id, agent_id, channel, messages)
-        VALUES (?, ?, ?, ?, 'whatsapp', ?)
-      `).run(convId, userId, lead?.id, agent.id, JSON.stringify([]));
-      conversation = { id: convId, messages: '[]' };
-    }
-    
-    const messages = JSON.parse(conversation.messages || '[]');
     const firstQuestion = questions[0];
-    messages.push({ 
-      role: 'agent', 
-      content: firstQuestion.question,
-      metadata: { field: firstQuestion.field, required: firstQuestion.required },
-      timestamp: new Date().toISOString()
-    });
-    
-    db.prepare('UPDATE conversations SET messages = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-      .run(JSON.stringify(messages), conversation.id);
+    if (!lead?.phone) throw new Error('Lead senza numero WhatsApp');
+    await require('./whatsapp').sendMessage(userId, lead.phone, firstQuestion.question);
     
     this.logAction(userId, 'qualification_asked', { lead_id: lead?.id, question: firstQuestion.question });
   }
@@ -147,12 +131,12 @@ class AutomationEngine {
     
     // Update lead score
     if (lead?.id) {
-      db.prepare('UPDATE leads SET score = ?, status = CASE WHEN ? >= 7 THEN "qualified" ELSE status END, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
-        .run(Math.min(score, 10), score, lead.id);
+      db.prepare('UPDATE leads SET score = ?, status = CASE WHEN ? >= 7 THEN "qualified" ELSE status END, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?')
+        .run(Math.min(score, 10), score, lead.id, userId);
       
       // If qualified, trigger lead_qualified event
       if (score >= 7) {
-        this.trigger('lead_qualified', { ...lead, score, user_id: userId });
+        await this.trigger('lead_qualified', { lead: { ...lead, score }, user_id: userId });
       }
     }
     
@@ -160,13 +144,13 @@ class AutomationEngine {
   }
 
   async saveToCRM(userId, lead) {
-    // This would integrate with external CRM systems
-    this.logAction(userId, 'crm_saved', { lead_id: lead?.id });
+    const record = lead?.id && getDatabase().prepare('SELECT id FROM leads WHERE id = ? AND user_id = ?').get(lead.id, userId);
+    if (!record) throw new Error('Lead CRM non trovato');
+    this.logAction(userId, 'crm_record_confirmed', { lead_id: lead.id });
   }
 
   async scheduleAppointment(userId, lead) {
-    // Auto-scheduling logic
-    this.logAction(userId, 'appointment_auto_scheduled', { lead_id: lead?.id });
+    this.logAction(userId, 'appointment_requested', { lead_id: lead?.id, note: 'Serve una disponibilità esplicita prima della creazione.' });
   }
 
   async sendFollowUp(userId, lead, type = '1day') {
@@ -192,8 +176,18 @@ class AutomationEngine {
   }
 
   async notifySalesTeam(userId, lead) {
-    // Send notification to sales team (email, Slack, etc.)
-    this.logAction(userId, 'sales_notified', { lead_id: lead?.id });
+    const db = getDatabase();
+    const user = db.prepare('SELECT email, company_name FROM users WHERE id = ?').get(userId);
+    if (!user?.email) throw new Error('Email commerciale non disponibile');
+    const safeName = String(lead?.name || 'Nuovo lead').replace(/[<>&"']/g, '');
+    const result = await require('./email').sendEmail(
+      userId,
+      user.email,
+      'Nuovo lead qualificato',
+      `<p>WES ha qualificato <strong>${safeName}</strong>. Apri il CRM interno per verificare i dettagli prima di contattarlo.</p>`
+    );
+    if (!result.success) throw new Error(result.error);
+    this.logAction(userId, 'sales_notified', { lead_id: lead?.id, channel: 'email' });
   }
 
   async generateReport(userId) {
@@ -234,17 +228,36 @@ class AutomationEngine {
   }
 }
 
+let followUpsProcessing = false;
+let scheduledAutomationsProcessing = false;
+
+function recoverInterruptedFollowUps() {
+  const db = getDatabase();
+  const interrupted = db.prepare("UPDATE follow_ups SET status = 'uncertain' WHERE status = 'sending'").run().changes;
+  if (interrupted) {
+    db.prepare(`INSERT INTO logs (id, level, action, details) VALUES (?, 'warning', 'followups_marked_uncertain', ?)`)
+      .run(uuidv4(), JSON.stringify({ count: interrupted, reason: 'process_restart' }));
+  }
+  return interrupted;
+}
+
 // Check and execute pending follow-ups
 async function processPendingFollowUps() {
+  if (followUpsProcessing) return;
+  followUpsProcessing = true;
+  try {
   const db = getDatabase();
   const pending = db.prepare(`
-    SELECT f.*, l.user_id 
+    SELECT f.*
     FROM follow_ups f
-    JOIN leads l ON l.id = f.lead_id
+    JOIN leads l ON l.id = f.lead_id AND l.user_id = f.user_id
     WHERE f.status = 'pending' AND f.scheduled_at <= datetime('now')
   `).all();
   
   for (const followUp of pending) {
+    const locked = db.prepare("UPDATE follow_ups SET status = 'sending' WHERE id = ? AND user_id = ? AND status = 'pending'")
+      .run(followUp.id, followUp.user_id);
+    if (!locked.changes) continue;
     try {
       const lead = db.prepare('SELECT phone, email FROM leads WHERE id = ? AND user_id = ?').get(followUp.lead_id, followUp.user_id);
       if (followUp.channel === 'email') {
@@ -255,16 +268,46 @@ async function processPendingFollowUps() {
         if (!lead?.phone) throw new Error('Lead senza telefono');
         await require('./whatsapp').sendMessage(followUp.user_id, lead.phone, followUp.message_template);
       }
-      db.prepare('UPDATE follow_ups SET status = "sent", executed_at = CURRENT_TIMESTAMP WHERE id = ?').run(followUp.id);
+      db.prepare('UPDATE follow_ups SET status = "sent", executed_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?').run(followUp.id, followUp.user_id);
     } catch (error) {
-      db.prepare('UPDATE follow_ups SET status = "failed" WHERE id = ?').run(followUp.id);
-      db.prepare(`INSERT INTO logs (id, user_id, level, action, details) VALUES (?, ?, 'error', 'followup_failed', ?)`)
+      db.prepare('UPDATE follow_ups SET status = "uncertain" WHERE id = ? AND user_id = ?').run(followUp.id, followUp.user_id);
+      db.prepare(`INSERT INTO logs (id, user_id, level, action, details) VALUES (?, ?, 'error', 'followup_uncertain', ?)`)
         .run(uuidv4(), followUp.user_id, JSON.stringify({ follow_up_id: followUp.id, error: error.message }));
     }
+  }
+  } finally {
+    followUpsProcessing = false;
+  }
+}
+
+async function processScheduledAutomations() {
+  if (scheduledAutomationsProcessing) return;
+  scheduledAutomationsProcessing = true;
+  try {
+  const db = getDatabase();
+  const due = db.prepare(`
+    SELECT * FROM automations
+    WHERE trigger_event = 'weekly_schedule' AND is_active = 1
+      AND (last_run IS NULL OR last_run <= datetime('now', '-7 days'))
+    ORDER BY created_at ASC LIMIT 20
+  `).all();
+  for (const automation of due) {
+    try {
+      await module.exports.AutomationEngine.executeAutomation(automation, { user_id: automation.user_id });
+    } catch (error) {
+      db.prepare('UPDATE automations SET last_run = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?').run(automation.id, automation.user_id);
+      db.prepare(`INSERT INTO logs (id, user_id, level, action, details) VALUES (?, ?, 'error', 'scheduled_automation_failed', ?)`)
+        .run(uuidv4(), automation.user_id, JSON.stringify({ automation_id: automation.id, error: error.message }));
+    }
+  }
+  } finally {
+    scheduledAutomationsProcessing = false;
   }
 }
 
 module.exports = {
   AutomationEngine: new AutomationEngine(),
-  processPendingFollowUps
+  processPendingFollowUps,
+  processScheduledAutomations,
+  recoverInterruptedFollowUps
 };
