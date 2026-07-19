@@ -6,15 +6,23 @@ function hash(value) {
   return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 }
 
-function timeoutPromise(ms, signal) {
-  return new Promise((_, reject) => {
-    const timer = setTimeout(() => reject(Object.assign(new Error('Tool timeout'), { code: 'TOOL_TIMEOUT' })), ms);
-    timer.unref?.();
-    signal?.addEventListener?.('abort', () => {
-      clearTimeout(timer);
-      reject(Object.assign(new Error('Execution aborted'), { code: 'ABORTED' }));
-    }, { once: true });
+function createTimeoutGuard(ms, signal) {
+  let timer;
+  let abortHandler;
+  const promise = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(Object.assign(new Error('Tool timeout'), { code: 'TOOL_TIMEOUT' })), ms);
+    if (signal?.addEventListener) {
+      abortHandler = () => reject(Object.assign(new Error('Execution aborted'), { code: 'ABORTED' }));
+      signal.addEventListener('abort', abortHandler, { once: true });
+    }
   });
+  return {
+    promise,
+    cancel() {
+      clearTimeout(timer);
+      if (abortHandler && signal?.removeEventListener) signal.removeEventListener('abort', abortHandler);
+    }
+  };
 }
 
 class VerifiedToolRuntime {
@@ -45,12 +53,13 @@ class VerifiedToolRuntime {
     const executionId = request.executionId || hash({ request, at: Date.now() }).slice(0, 20);
     if (this.inflight.has(executionId)) throw Object.assign(new Error('Esecuzione duplicata'), { code: 'DUPLICATE_EXECUTION' });
     const startedAt = Date.now();
+    const timeoutMs = Math.max(100, Number(request.timeoutMs) || this.defaultTimeoutMs);
+    const timeoutGuard = createTimeoutGuard(timeoutMs, request.signal);
     this.inflight.set(executionId, { executionId, status: 'running', startedAt });
     try {
-      const timeoutMs = Math.max(100, Number(request.timeoutMs) || this.defaultTimeoutMs);
       const result = await Promise.race([
         handler({ ...request, tool: authorization.tool }),
-        timeoutPromise(timeoutMs, request.signal)
+        timeoutGuard.promise
       ]);
       const serialized = JSON.stringify(result);
       if (Buffer.byteLength(serialized || '', 'utf8') > this.maxOutputBytes) {
@@ -65,6 +74,7 @@ class VerifiedToolRuntime {
       }
       return { executionId, status: 'completed', result, verification, resultHash: hash(result), durationMs: Date.now() - startedAt };
     } finally {
+      timeoutGuard.cancel();
       this.inflight.delete(executionId);
     }
   }
@@ -81,4 +91,4 @@ class VerifiedToolRuntime {
   }
 }
 
-module.exports = { VerifiedToolRuntime, hash };
+module.exports = { VerifiedToolRuntime, hash, createTimeoutGuard };
