@@ -1,0 +1,23 @@
+services:
+  openmanus-engine:
+    build:
+      context: .
+      dockerfile: services/openmanus/Dockerfile
+      args:
+        OPENMANUS_REPOSITORY: ${OPENMANUS_REPOSITORY:-https://github.com/FoundationAgents/OpenManus.git}
+        OPENMANUS_REF: ${OPENMANUS_REF:-main}
+    environment:
+      OPENMANUS_SERVICE_TOKEN: ${OPENMANUS_SERVICE_TOKEN:?OPENMANUS_SERVICE_TOKEN is required}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+    ports:
+      - "127.0.0.1:8010:8010"
+    volumes:
+      - openmanus-workspace:/opt/openmanus/workspace
+      - ./config/openmanus:/opt/openmanus/config
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  openmanus-workspace:
