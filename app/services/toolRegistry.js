@@ -33,7 +33,8 @@ class ToolRegistry {
     if (!tool.actions.includes(action)) return denied('action_not_allowed');
     if (!tool.plans.includes(plan)) return denied('plan_not_allowed');
     if (!tool.agentRoles.includes(agentRole)) return denied('agent_not_allowed');
-    if (tool.requiresApproval && !approvedPayloadHash) return denied('approval_required');
+    const actionRequiresApproval = tool.requiresApproval || tool.approvalActions.includes(action);
+    if (actionRequiresApproval && !approvedPayloadHash) return denied('approval_required');
     return { allowed: true, reason: null, tool };
   }
 }
@@ -46,7 +47,10 @@ function normalizeDefinition(definition = {}) {
   const actions = uniqueStrings(definition.actions);
   const plans = uniqueStrings(definition.plans);
   const agentRoles = uniqueStrings(definition.agentRoles);
+  const approvalActions = uniqueStrings(definition.approvalActions);
   if (!actions.length || !plans.length || !agentRoles.length) throw new Error('Azioni, piani e ruoli sono obbligatori');
+  if (approvalActions.some((action) => !actions.includes(action))) throw new Error('Azione di approvazione non registrata');
+  const hasPerActionPolicy = Object.prototype.hasOwnProperty.call(definition, 'approvalActions');
   return {
     id,
     title: String(definition.title || id).trim().slice(0, 120),
@@ -55,7 +59,8 @@ function normalizeDefinition(definition = {}) {
     plans,
     agentRoles,
     enabled: definition.enabled !== false,
-    requiresApproval: definition.requiresApproval === true || risk === 'external_side_effect' || risk === 'privileged',
+    requiresApproval: definition.requiresApproval === true || (!hasPerActionPolicy && ['external_side_effect', 'privileged'].includes(risk)),
+    approvalActions,
     metadata: Object.freeze({ ...(definition.metadata || {}) })
   };
 }
@@ -79,6 +84,7 @@ function createDefaultRegistry() {
   registry.register({
     id: 'browser.session', title: 'Browser Agent', risk: 'external_side_effect',
     actions: ['navigate', 'screenshot', 'extract', 'download', 'upload', 'submit'],
+    approvalActions: ['download', 'upload', 'submit'],
     plans: ['pro', 'enterprise'],
     agentRoles: ['orchestrator', 'scout', 'operator']
   });
