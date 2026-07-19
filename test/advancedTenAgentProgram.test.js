@@ -7,38 +7,41 @@ const { createAdvancedAutonomyFactory } = require('../app/services/advancedAuton
 
 function completedHandlers() {
   return Object.fromEntries(
-    ADVANCED_TRACKS.map((track) => [track.id, () => Promise.resolve({ status: 'completed', output: track.id })])
+    ADVANCED_TRACKS.map((track) => [track.id, async () => ({ status: 'completed', output: track.id })])
   );
 }
 
-test('advanced ten-agent program contracts', async (t) => {
-  await t.test('defines exactly ten isolated advanced agents', () => {
-    assert.equal(ADVANCED_TRACKS.length, 10);
-    assert.equal(new Set(ADVANCED_TRACKS.map((track) => track.id)).size, 10);
-    assert.equal(new Set(ADVANCED_TRACKS.map((track) => track.owner)).size, 10);
-  });
+test('advanced ten-agent program contracts', async () => {
+  assert.equal(ADVANCED_TRACKS.length, 10);
+  assert.equal(new Set(ADVANCED_TRACKS.map((track) => track.id)).size, 10);
+  assert.equal(new Set(ADVANCED_TRACKS.map((track) => track.owner)).size, 10);
 
-  await t.test('runs all ten agents and reports exact completion', async () => {
-    const program = new AdvancedTenAgentProgram({ handlers: completedHandlers(), concurrency: 1 });
-    const result = await program.run({ goal: 'production advancement', runId: 'ci-success-run' });
-    assert.equal(result.summary.requested, 10);
-    assert.equal(result.summary.completed, 10);
-    assert.equal(result.summary.failed, 0);
-    assert.equal(result.summary.partial, 0);
-    assert.equal(result.complete, true);
+  const successfulProgram = new AdvancedTenAgentProgram({ handlers: completedHandlers(), concurrency: 1 });
+  const successfulResult = await successfulProgram.run({
+    goal: 'production advancement',
+    runId: 'ci-success-run'
   });
+  assert.deepEqual(successfulResult.summary, {
+    requested: 10,
+    completed: 10,
+    failed: 0,
+    partial: 0
+  });
+  assert.equal(successfulResult.complete, true);
 
-  await t.test('reports one failed agent deterministically', async () => {
-    const handlers = completedHandlers();
-    handlers['continuous-evaluation'] = () => Promise.resolve({ status: 'failed', output: { regression: true } });
-    const result = await new AdvancedTenAgentProgram({ handlers, concurrency: 1 }).run({ runId: 'ci-failure-run' });
-    assert.equal(result.summary.completed, 9);
-    assert.equal(result.summary.failed, 1);
-    assert.equal(result.complete, false);
+  const failingHandlers = completedHandlers();
+  failingHandlers['continuous-evaluation'] = async () => ({
+    status: 'failed',
+    output: { regression: true }
   });
+  const failedResult = await new AdvancedTenAgentProgram({
+    handlers: failingHandlers,
+    concurrency: 1
+  }).run({ runId: 'ci-failure-run' });
+  assert.equal(failedResult.summary.completed, 9);
+  assert.equal(failedResult.summary.failed, 1);
+  assert.equal(failedResult.complete, false);
 
-  await t.test('factory registers all ten operational contracts', () => {
-    const factory = createAdvancedAutonomyFactory({});
-    assert.deepEqual(factory.health(), { ready: true, agents: 10, registered: 10 });
-  });
+  const factory = createAdvancedAutonomyFactory({});
+  assert.deepEqual(factory.health(), { ready: true, agents: 10, registered: 10 });
 });
