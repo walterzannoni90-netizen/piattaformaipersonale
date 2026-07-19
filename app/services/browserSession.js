@@ -12,10 +12,17 @@ class BrowserSessionManager {
 
   create({ userId, taskId }) {
     const normalizedUserId = String(userId);
-    const active = [...this.sessions.values()].filter((session) => session.userId === normalizedUserId && !session.closedAt);
+    const now = Date.now();
+    const active = [...this.sessions.values()].filter((session) => {
+      if (session.userId !== normalizedUserId || session.closedAt) return false;
+      if (session.expiresAt <= now) {
+        session.closedAt = now;
+        return false;
+      }
+      return true;
+    });
     if (active.length >= this.maxSessionsPerUser) throw new Error('Limite sessioni browser raggiunto');
 
-    const now = Date.now();
     const session = {
       id: crypto.randomUUID(),
       userId: normalizedUserId,
@@ -52,6 +59,7 @@ class BrowserSessionManager {
   recordCommand({ sessionId, userId, command, status, artifactId = null }) {
     const session = this.sessions.get(String(sessionId));
     if (!session || session.userId !== String(userId)) throw new Error('Sessione browser non disponibile');
+    if (session.closedAt || session.expiresAt <= Date.now()) throw new Error('Sessione browser scaduta');
     session.commands.push(Object.freeze({
       at: Date.now(),
       action: String(command.action),
