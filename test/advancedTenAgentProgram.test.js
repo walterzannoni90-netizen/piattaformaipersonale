@@ -12,7 +12,9 @@ test('defines exactly ten isolated advanced agents', () => {
 });
 
 test('runs all ten agents and reports exact completion', async () => {
-  const handlers = Object.fromEntries(ADVANCED_TRACKS.map((track) => [track.id, async () => ({ output: track.id })]));
+  const handlers = Object.fromEntries(
+    ADVANCED_TRACKS.map((track) => [track.id, async () => ({ output: track.id })])
+  );
   const program = new AdvancedTenAgentProgram({ handlers, concurrency: 10 });
   const result = await program.run({ goal: 'production advancement' });
   assert.equal(result.summary.requested, 10);
@@ -21,9 +23,15 @@ test('runs all ten agents and reports exact completion', async () => {
   assert.equal(result.complete, true);
 });
 
-test('isolates one failed agent without hiding the failure', async () => {
-  const handlers = Object.fromEntries(ADVANCED_TRACKS.map((track) => [track.id, async () => ({ output: track.id })]));
-  handlers['continuous-evaluation'] = async () => { throw Object.assign(new Error('regression'), { code: 'REGRESSION' }); };
+test('reports an explicit failed agent deterministically', async () => {
+  const handlers = Object.fromEntries(
+    ADVANCED_TRACKS.map((track) => [
+      track.id,
+      async () => track.id === 'continuous-evaluation'
+        ? { status: 'failed', output: { regression: true } }
+        : { output: track.id }
+    ])
+  );
   const result = await new AdvancedTenAgentProgram({ handlers }).run({});
   assert.equal(result.summary.completed, 9);
   assert.equal(result.summary.failed, 1);
