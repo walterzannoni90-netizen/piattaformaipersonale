@@ -39,14 +39,15 @@ class DurableAgentMemory {
     const normalized = safeKey(key);
     const previous = this.locks.get(normalized) || Promise.resolve();
     let release;
-    const current = new Promise((resolve) => { release = resolve; });
-    this.locks.set(normalized, previous.then(() => current));
+    const gate = new Promise((resolve) => { release = resolve; });
+    const tail = previous.then(() => gate);
+    this.locks.set(normalized, tail);
     await previous;
     try {
       return await operation();
     } finally {
       release();
-      if (this.locks.get(normalized) === current) this.locks.delete(normalized);
+      if (this.locks.get(normalized) === tail) this.locks.delete(normalized);
     }
   }
 
@@ -93,6 +94,7 @@ class DurableAgentMemory {
   }
 
   async appendEvent(key, event, stateUpdater = null) {
+    await this.init();
     return this.withLock(key, async () => {
       const current = await this.load(key, { allowMissing: true }) || this.envelope(key, {}, [], 0);
       const nextState = typeof stateUpdater === 'function'
