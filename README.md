@@ -7,6 +7,7 @@ Non è una semplice chat e non dichiara capacità inesistenti. La versione corre
 ## Capacità disponibili
 
 - task autonomi con piano, timeline, stop, retry e ripresa dopo riavvio;
+- Agent Team con 2–6 specialisti indipendenti, esecuzione parallela limitata, quorum, Red Team, fonti aggregate e consumo tracciato;
 - progetti con istruzioni permanenti e memoria dei risultati;
 - allegati privati con controllo proprietario, hash SHA-256 e firma del formato;
 - analisi Python di CSV, TSV, XLSX, PDF, DOCX, PPTX, TXT, Markdown, JSON e immagini;
@@ -28,6 +29,9 @@ Non è una semplice chat e non dichiara capacità inesistenti. La versione corre
 flowchart TD
     UI[Workspace EJS] --> API[Express API]
     API --> ORCH[Agent orchestrator]
+    ORCH --> TEAM[Agent Team 2–6]
+    TEAM --> AI
+    TEAM --> WEB
     ORCH --> AI[OpenRouter]
     ORCH --> WEB[Tavily + safe fetch]
     ORCH --> PY[Python restricted worker]
@@ -86,6 +90,8 @@ ADMIN_COMPANY='La tua azienda' npm run create-admin
 | `DB_PATH` | sì | file SQLite persistente |
 | `AGENT_WORKSPACE_ROOT` | sì | directory privata dei task |
 | `PYTHON_BIN` | sì | interprete del worker ristretto |
+| `AGENT_TEAM_MAX_WORKERS` | no | tetto globale degli specialisti per team, 1–6 |
+| `AGENT_TEAM_CONCURRENCY` | no | massimo di chiamate specialistiche simultanee, 1–4 |
 | `ALLOW_PUBLIC_REGISTRATION` | no | in produzione è chiusa per default; abilitala solo quando onboarding e costi sono pronti |
 | `OPENROUTER_API_KEY` | no | chiave AI di piattaforma; ogni utente può salvarne una propria |
 | `OPENROUTER_MODEL` | no | modello predefinito, default `openrouter/auto` |
@@ -106,6 +112,12 @@ Le registrazioni pubbliche sono abilitate di default soltanto in sviluppo. In pr
 ### OpenRouter
 
 La chiave può essere impostata nell’ambiente oppure cifrata per singolo account da **Integrazioni**. La chiave personale ha precedenza. Senza chiave AI il task si ferma in `waiting_configuration` invece di simulare un risultato.
+
+### Agent Team
+
+Dal composer è possibile scegliere **WES Autonomo** oppure **Agent Team**. In modalità Team, specialisti con ruoli separati producono rapporti indipendenti in parallelo; Scout e Strategist possono raccogliere fonti tramite Tavily, mentre Analyst e Red Team lavorano sulle evidenze e sulle assunzioni. Il risultato passa a `compose` soltanto quando almeno due specialisti raggiungono il quorum.
+
+Il roster è limitato a 2 specialisti nello Starter, 4 nel Pro e 6 nell’Enterprise. `AGENT_TEAM_CONCURRENCY` limita le chiamate simultanee e `AGENT_TEAM_MAX_WORKERS` impone un tetto globale. Ogni chiamata viene registrata nelle statistiche d’uso, un guasto parziale resta visibile e nessun membro del team può eseguire azioni esterne: email, WhatsApp, appuntamenti e modifiche CRM continuano a usare l’approvazione esatta dell’orchestratore principale.
 
 ### Tavily
 
@@ -190,6 +202,7 @@ Le API del workspace richiedono autenticazione e applicano isolamento per utente
 - nessun browser cloud generalista o controllo remoto di schede browser;
 - nessun terminale o codice arbitrario generato dal modello;
 - nessun registry MCP generico nella versione corrente;
+- Agent Team esegue un massimo di 2, 4 o 6 specialisti in base al piano: non equivale ancora a una piattaforma di ricerca con centinaia di agenti;
 - Calendar OAuth richiede un’implementazione dedicata sul dominio definitivo;
 - SQLite e file locali consentono una sola istanza;
 - la qualità AI dipende dal modello, dai dati e dalle fonti;

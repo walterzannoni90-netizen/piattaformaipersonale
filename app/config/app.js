@@ -21,6 +21,7 @@ module.exports = {
       features: [
         '20 task autonomi al giorno',
         '2 task contemporanei',
+        'Agent Team con 2 specialisti',
         'Workspace privato con file',
         'Python per fogli, documenti e dati',
         'Ricerca web con fonti',
@@ -45,6 +46,7 @@ module.exports = {
         '100 task autonomi al giorno',
         '5 task contemporanei',
         'Tutto dello Starter',
+        'Agent Team con 4 specialisti paralleli',
         'Memoria avanzata per progetto',
         'CRM e automazioni complete',
         'WhatsApp Cloud API e SMTP verificati',
@@ -69,6 +71,7 @@ module.exports = {
         'Fino a 500 task al giorno',
         '10 task contemporanei',
         'Tutto del Pro',
+        'Agent Team con 6 specialisti paralleli',
         'Connettori personalizzati su progetto',
         'Branding e distribuzione su progetto',
         'Ambienti e policy dedicate',

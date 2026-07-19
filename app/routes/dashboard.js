@@ -372,7 +372,7 @@ router.get('/api/account/export', (req, res) => {
       files: db.prepare('SELECT id, project_id, task_id, original_name, mime_type, size_bytes, sha256, created_at FROM workspace_files WHERE user_id = ? ORDER BY created_at ASC').all(userId),
       approvals: db.prepare('SELECT id, task_id, action_type, title, description, payload, status, decided_at, created_at FROM task_approvals WHERE user_id = ? ORDER BY created_at ASC').all(userId),
       messages: db.prepare('SELECT id, task_id, role, content, created_at FROM task_messages WHERE user_id = ? ORDER BY created_at ASC').all(userId),
-      schedules: db.prepare('SELECT id, project_id, name, prompt, cron_expression, timezone, is_active, last_run, next_run, created_at FROM task_schedules WHERE user_id = ? ORDER BY created_at ASC').all(userId)
+      schedules: db.prepare('SELECT id, project_id, name, prompt, mode, cron_expression, timezone, is_active, last_run, next_run, created_at FROM task_schedules WHERE user_id = ? ORDER BY created_at ASC').all(userId)
     },
     billing: db.prepare('SELECT plan, status, current_period_start, current_period_end, trial_end, cancelled_at, created_at, updated_at FROM subscriptions WHERE user_id = ?').all(userId),
     usage: db.prepare('SELECT date, conversations_count, leads_count, messages_count, follow_ups_sent, appointments_scheduled, api_calls FROM usage_stats WHERE user_id = ? ORDER BY date ASC').all(userId),

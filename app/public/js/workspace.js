@@ -3,8 +3,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const prompt = document.getElementById('taskPrompt');
   const filesInput = document.getElementById('taskFiles');
   const selectedFiles = document.getElementById('selectedFiles');
+  const taskMode = document.getElementById('taskMode');
+  const setTaskMode = (mode) => {
+    const selected = mode === 'team' ? 'team' : 'autonomous';
+    if (taskMode) taskMode.value = selected;
+    document.querySelectorAll('[data-task-mode]').forEach(button => {
+      const active = button.dataset.taskMode === selected;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+  };
+  document.querySelectorAll('[data-task-mode]').forEach(button => button.addEventListener('click', () => setTaskMode(button.dataset.taskMode)));
   document.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
     prompt.value = button.dataset.prompt;
+    if (button.dataset.mode) setTaskMode(button.dataset.mode);
     prompt.focus();
   }));
   document.getElementById('attachFiles')?.addEventListener('click', () => filesInput.click());
@@ -25,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = new FormData();
     body.append('prompt', prompt.value);
     body.append('project_id', document.getElementById('taskProject')?.value || '');
+    body.append('mode', taskMode?.value || 'autonomous');
     [...(filesInput?.files || [])].forEach(file => body.append('files', file));
     try {
       const response = await fetch('/api/tasks', { method: 'POST', body, credentials: 'same-origin', headers: { Accept: 'application/json' } });
@@ -71,6 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const scheduleModal = document.getElementById('scheduleModal');
   document.getElementById('openScheduleModal')?.addEventListener('click', () => {
     document.getElementById('scheduleProjectId').value = document.getElementById('taskProject')?.value || '';
+    document.getElementById('scheduleMode').value = taskMode?.value || 'autonomous';
     scheduleModal.classList.remove('hidden');
   });
   document.querySelector('[data-close-schedule]')?.addEventListener('click', () => scheduleModal.classList.add('hidden'));
@@ -97,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch(`/api/tasks/${taskPage.dataset.taskId}/state`, { headers: { Accept: 'application/json' }, credentials: 'same-origin' });
         if (!response.ok) return;
         const state = await response.json();
-        const changed = state.task.status !== taskPage.dataset.taskStatus || String(state.events.length) !== taskPage.dataset.eventCount || String(state.artifacts.length) !== taskPage.dataset.artifactCount;
+        const changed = state.task.status !== taskPage.dataset.taskStatus || String(state.task.current_step) !== taskPage.dataset.taskStep || String(state.task.progress) !== taskPage.dataset.taskProgress || String(state.events.length) !== taskPage.dataset.eventCount || String(state.artifacts.length) !== taskPage.dataset.artifactCount;
         if (changed) { clearInterval(poll); location.reload(); }
       } catch {}
     }, 2500);

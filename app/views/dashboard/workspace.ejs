@@ -17,6 +17,11 @@
 
     <form id="taskComposer" class="agent-composer" enctype="multipart/form-data">
       <textarea id="taskPrompt" maxlength="8000" placeholder="Esempio: analizza i miei concorrenti, crea una strategia commerciale e consegnami un report con le azioni prioritarie…" required></textarea>
+      <div class="agent-mode-switch" role="group" aria-label="Modalità di esecuzione">
+        <button type="button" class="active" data-task-mode="autonomous" aria-pressed="true"><i class="fas fa-sparkles"></i><span><b>WES Autonomo</b><small>Un agente, percorso rapido</small></span></button>
+        <button type="button" data-task-mode="team" aria-pressed="false"><i class="fas fa-people-group"></i><span><b>Agent Team <em>NEW</em></b><small>Specialisti paralleli + Red Team</small></span></button>
+        <input id="taskMode" type="hidden" value="autonomous">
+      </div>
       <div id="selectedFiles" class="selected-files hidden"></div>
       <div class="agent-composer-bar">
         <div class="flex gap-2">
@@ -36,7 +41,7 @@
     </div>
 
     <div class="prompt-grid mt-5">
-      <button data-prompt="Analizza il mercato della mia attività, confronta i 10 concorrenti principali e crea un piano operativo di crescita per i prossimi 90 giorni."><i class="fas fa-binoculars"></i><span><b>Deep research</b>Mercato e concorrenti</span></button>
+      <button data-prompt="Analizza il mercato della mia attività, confronta i 10 concorrenti principali e crea un piano operativo di crescita per i prossimi 90 giorni." data-mode="team"><i class="fas fa-binoculars"></i><span><b>Agent Team Research</b>Più specialisti, una missione</span></button>
       <button data-prompt="Crea una presentazione commerciale completa della mia azienda, con proposta di valore, servizi, prezzi e call to action."><i class="fas fa-presentation-screen"></i><span><b>Presentazione</b>Pitch pronto da vendere</span></button>
       <button data-prompt="Organizza i lead del mio CRM, identifica quelli più promettenti e prepara messaggi di follow-up personalizzati."><i class="fas fa-users-gear"></i><span><b>Sales agent</b>Lavora sui miei lead</span></button>
       <button data-prompt="Crea un sito web moderno e completo per la mia attività, con testi, struttura, SEO e una strategia di conversione."><i class="fas fa-wand-magic-sparkles"></i><span><b>Build</b>Crea un prodotto digitale</span></button>
@@ -45,7 +50,7 @@
     <div class="schedule-header"><div><h3>Pianificazioni</h3><p>WES può ripetere un lavoro nel momento stabilito.</p></div><button id="openScheduleModal" type="button"><i class="fas fa-calendar-plus"></i> Pianifica task</button></div>
     <div class="schedule-list">
       <% if (!schedules.length) { %><div class="schedule-empty"><i class="fas fa-clock"></i><span>Nessun lavoro ricorrente</span></div><% } %>
-      <% schedules.forEach(schedule => { %><div class="schedule-row"><div class="schedule-icon"><i class="fas fa-rotate"></i></div><div><b><%= schedule.name %></b><p><%= schedule.prompt %></p></div><span><i class="fas fa-clock"></i> <%= schedule.next_run ? new Date(schedule.next_run).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short', timeZone: schedule.timezone }) : 'In pausa' %></span><button data-schedule-toggle="<%= schedule.id %>" class="schedule-toggle <%= schedule.is_active ? 'active' : '' %>" aria-label="<%= schedule.is_active ? 'Metti in pausa' : 'Attiva' %>"><i></i></button></div><% }) %>
+      <% schedules.forEach(schedule => { %><div class="schedule-row"><div class="schedule-icon"><i class="fas fa-rotate"></i></div><div><b><%= schedule.name %> <% if (schedule.mode === 'team') { %><span class="team-tag"><i class="fas fa-people-group"></i> Team</span><% } %></b><p><%= schedule.prompt %></p></div><span><i class="fas fa-clock"></i> <%= schedule.next_run ? new Date(schedule.next_run).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short', timeZone: schedule.timezone }) : 'In pausa' %></span><button data-schedule-toggle="<%= schedule.id %>" class="schedule-toggle <%= schedule.is_active ? 'active' : '' %>" aria-label="<%= schedule.is_active ? 'Metti in pausa' : 'Attiva' %>"><i></i></button></div><% }) %>
     </div>
 
     <div class="flex items-center justify-between mt-12 mb-4">
@@ -60,7 +65,7 @@
         <a href="/workspace/task/<%= task.id %>" class="task-row">
           <div class="task-icon <%= task.status %>"><i class="fas fa-<%= task.status === 'completed' ? 'check' : task.status === 'stopped' ? 'pause' : 'sparkles' %>"></i></div>
           <div class="min-w-0 flex-1"><h4><%= task.title %></h4><p><%= task.prompt %></p></div>
-          <div class="task-meta"><% if (task.project_name) { %><span class="project-tag"><%= task.project_name %></span><% } %><span class="status-dot <%= task.status %>"></span><%= task.status === 'completed' ? 'Completato' : task.status === 'stopped' ? 'Interrotto' : task.status === 'failed' ? 'Errore' : task.status === 'waiting_approval' ? 'Da approvare' : task.status === 'waiting_configuration' ? 'Da configurare' : 'In esecuzione' %><i class="fas fa-chevron-right"></i></div>
+          <div class="task-meta"><% if (task.mode === 'team') { %><span class="team-tag"><i class="fas fa-people-group"></i> Team</span><% } %><% if (task.project_name) { %><span class="project-tag"><%= task.project_name %></span><% } %><span class="status-dot <%= task.status %>"></span><%= task.status === 'completed' ? 'Completato' : task.status === 'stopped' ? 'Interrotto' : task.status === 'failed' ? 'Errore' : task.status === 'waiting_approval' ? 'Da approvare' : task.status === 'waiting_configuration' ? 'Da configurare' : 'In esecuzione' %><i class="fas fa-chevron-right"></i></div>
         </a>
       <% }) %>
     </div>
@@ -87,7 +92,7 @@
     <label>Nome<input name="name" maxlength="80" required placeholder="Es. Report commerciale del mattino"></label>
     <label>Obiettivo<textarea name="prompt" maxlength="8000" required placeholder="Descrivi cosa deve fare e quale risultato deve consegnare"></textarea></label>
     <div class="schedule-form-grid"><label>Frequenza<select name="frequency"><option value="daily">Ogni giorno</option><option value="weekdays">Dal lunedì al venerdì</option><option value="weekly">Ogni settimana</option></select></label><label>Ora<input name="hour" type="number" value="9" min="0" max="23" required></label><label>Minuti<input name="minute" type="number" value="0" min="0" max="59" required></label><label>Giorno<select name="weekday"><option value="1">Lunedì</option><option value="2">Martedì</option><option value="3">Mercoledì</option><option value="4">Giovedì</option><option value="5">Venerdì</option><option value="6">Sabato</option><option value="0">Domenica</option></select></label></div>
-    <input type="hidden" name="timezone" value="Europe/Rome"><input type="hidden" name="project_id" id="scheduleProjectId">
+    <input type="hidden" name="timezone" value="Europe/Rome"><input type="hidden" name="project_id" id="scheduleProjectId"><input type="hidden" name="mode" id="scheduleMode" value="autonomous">
     <button type="submit" class="run-agent justify-center"><span>Salva pianificazione</span><i class="fas fa-check"></i></button>
   </form>
 </div>

@@ -57,8 +57,8 @@ async function processDueSchedules() {
         continue;
       }
       const id = uuidv4();
-      db.prepare(`INSERT INTO agent_tasks (id, user_id, project_id, title, prompt, status, progress, plan)
-        VALUES (?, ?, ?, ?, ?, 'planning', 1, '[]')`).run(id, schedule.user_id, schedule.project_id || null, schedule.name, schedule.prompt);
+      db.prepare(`INSERT INTO agent_tasks (id, user_id, project_id, title, prompt, status, progress, mode, plan)
+        VALUES (?, ?, ?, ?, ?, 'planning', 1, ?, '[]')`).run(id, schedule.user_id, schedule.project_id || null, schedule.name, schedule.prompt, schedule.mode === 'team' ? 'team' : 'autonomous');
       db.prepare('INSERT INTO task_events (id, task_id, type, title, detail, status) VALUES (?, ?, ?, ?, ?, ?)')
         .run(uuidv4(), id, 'schedule', 'Task avviato da pianificazione', schedule.name, 'completed');
       orchestrator.startTask(id);

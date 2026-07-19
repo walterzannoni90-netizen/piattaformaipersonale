@@ -1,10 +1,11 @@
 <%- include('../partials/header') %>
 <%- include('../partials/dashboard-nav') %>
-<section id="taskPage" data-task-id="<%= task.id %>" data-task-status="<%= task.status %>" data-event-count="<%= events.length %>" data-artifact-count="<%= artifacts.length %>" class="agent-shell -m-6 min-h-[calc(100vh-73px)] p-5 lg:p-8">
+<% const teamEvents = events.filter(event => event.type === 'team_agent'); %>
+<section id="taskPage" data-task-id="<%= task.id %>" data-task-status="<%= task.status %>" data-task-step="<%= task.current_step %>" data-task-progress="<%= task.progress %>" data-event-count="<%= events.length %>" data-artifact-count="<%= artifacts.length %>" class="agent-shell -m-6 min-h-[calc(100vh-73px)] p-5 lg:p-8">
   <div class="mx-auto max-w-7xl">
     <a href="/workspace" class="text-sm text-slate-400 hover:text-white"><i class="fas fa-arrow-left mr-2"></i>Tutti i task</a>
     <div class="task-head mt-5">
-      <div><div class="agent-kicker"><span></span> <%= task.project_name ? 'Progetto · ' + task.project_name : 'Task autonomo' %></div><h2><%= task.title %></h2><p><%= task.prompt %></p></div>
+      <div><div class="agent-kicker"><span></span> <%= task.mode === 'team' ? 'WES Agent Team' : task.project_name ? 'Progetto · ' + task.project_name : 'Task autonomo' %></div><h2><%= task.title %></h2><p><%= task.prompt %></p></div>
       <div class="task-actions">
         <% if (['failed','waiting_configuration','stopped'].includes(task.status)) { %><button id="retryTask" data-id="<%= task.id %>" class="stop-task"><i class="fas fa-rotate-right"></i> Riprova</button><% } %>
         <button id="stopTask" data-id="<%= task.id %>" class="stop-task" <%= ['completed','stopped','failed'].includes(task.status) ? 'disabled' : '' %>><i class="fas fa-stop"></i> Interrompi</button>
@@ -14,6 +15,21 @@
     <div class="task-layout mt-6">
       <div class="task-canvas">
         <div class="agent-thinking <%= task.status %>"><div class="wes-orb"><i class="fas fa-<%= task.status === 'completed' ? 'check' : task.status === 'failed' ? 'triangle-exclamation' : task.status.startsWith('waiting') ? 'pause' : 'sparkles' %>"></i></div><div><b><%= task.status === 'completed' ? 'Lavoro completato' : task.status === 'failed' ? 'WES ha interrotto il lavoro' : task.status === 'waiting_approval' ? 'Serve la tua approvazione' : task.status === 'waiting_configuration' ? 'Serve una configurazione' : task.status === 'stopped' ? 'Task interrotto' : 'WES sta lavorando' %></b><span><%= task.error || (task.status === 'completed' ? 'Il risultato è pronto nel workspace.' : 'Puoi lasciare questa pagina: il task continua nel workspace.') %></span></div><% if (['planning','running'].includes(task.status)) { %><div class="thinking-dots"><i></i><i></i><i></i></div><% } %></div>
+
+        <% if (task.mode === 'team') { %>
+          <section class="mission-control">
+            <header><div><span class="mission-eyebrow"><i class="fas fa-satellite-dish"></i> Mission Control · Live</span><h3>Specialisti indipendenti, sintesi unica</h3><p>Ogni agente produce un rapporto separato. WES consegna soltanto dopo quorum e controllo qualità.</p></div><div class="mission-counter"><strong><%= teamEvents.filter(event => event.status === 'completed').length %>/<%= Math.max(teamEvents.length, 2) %></strong><span>agenti pronti</span></div></header>
+            <div class="agent-team-grid">
+              <% if (!teamEvents.length) { %>
+                <% ['Scout', 'Analyst', 'Strategist', 'Red Team'].forEach((name, index) => { %><div class="team-member queued <%= index > 1 ? 'team-pro' : '' %>"><div class="member-orb"><i class="fas fa-<%= index === 0 ? 'globe' : index === 1 ? 'chart-line' : index === 2 ? 'chess-knight' : 'shield-halved' %>"></i></div><div><b><%= name %></b><p>In attesa del piano operativo</p></div><span>queued</span></div><% }) %>
+              <% } %>
+              <% teamEvents.forEach(event => { const icon = event.title.startsWith('Scout') ? 'globe' : event.title.startsWith('Analyst') ? 'chart-line' : event.title.startsWith('Strategist') ? 'chess-knight' : event.title.startsWith('Red Team') ? 'shield-halved' : event.title.startsWith('Operator') ? 'gears' : 'scale-balanced'; %>
+                <div class="team-member <%= event.status %>"><div class="member-orb"><i class="fas fa-<%= icon %>"></i></div><div><b><%= event.title %></b><p><%= event.detail %></p></div><span><%= event.status %></span></div>
+              <% }) %>
+            </div>
+            <footer><span><i class="fas fa-code-branch"></i> Esecuzione parallela limitata</span><span><i class="fas fa-coins"></i> Consumo tracciato</span><span><i class="fas fa-shield"></i> Nessuna azione esterna</span></footer>
+          </section>
+        <% } %>
 
         <% if (approvals.some(approval => approval.status === 'pending')) { %>
           <div class="approval-zone"><h3><i class="fas fa-shield-halved"></i> Conferma richiesta</h3><% approvals.filter(approval => approval.status === 'pending').forEach(approval => { %><div class="approval-card"><div><b><%= approval.title %></b><p class="whitespace-pre-wrap"><%= approval.description %></p><% if (approval.details && Object.keys(approval.details).length) { %><details class="approval-details"><summary>Controlla i dati esatti</summary><dl><% Object.entries(approval.details).forEach(([key, value]) => { %><dt><%= key %></dt><dd><%= typeof value === 'object' ? JSON.stringify(value) : value %></dd><% }) %></dl></details><% } %><span>WES non procederà senza una scelta esplicita.</span></div><div><button data-approval="<%= approval.id %>" data-decision="rejected">Rifiuta</button><button class="approve" data-approval="<%= approval.id %>" data-decision="approved">Approva</button></div></div><% }) %></div>
@@ -25,7 +41,7 @@
         </div>
         <% if (task.result) { %><h3 class="mt-8">Risultato</h3><article class="task-result markdown-output"><%- resultHtml %></article><% } %>
         <h3 class="mt-8">Attività live</h3>
-        <div class="event-list"><% events.forEach(event => { %><div class="event <%= event.status %>"><i class="fas fa-<%= event.type === 'plan' ? 'list-check' : event.type === 'error' ? 'triangle-exclamation' : event.type === 'web_search' ? 'globe' : event.type === 'python_analyze' ? 'code' : 'brain' %>"></i><div><b><%= event.title %></b><p><%= event.detail %></p></div><span><%= event.status %></span></div><% }) %></div>
+        <div class="event-list"><% events.forEach(event => { %><div class="event <%= event.status %>"><i class="fas fa-<%= event.type === 'plan' ? 'list-check' : event.type === 'error' ? 'triangle-exclamation' : event.type === 'web_search' ? 'globe' : event.type === 'python_analyze' ? 'code' : event.type === 'team_agent' ? 'people-group' : 'brain' %>"></i><div><b><%= event.title %></b><p><%= event.detail %></p></div><span><%= event.status %></span></div><% }) %></div>
       </div>
       <aside class="artifact-panel"><h3>Output</h3><p>I risultati creati da WES sono privati e scaricabili solo dal proprietario.</p><% if (!artifacts.length) { %><div class="artifact-empty"><i class="fas fa-folder-open"></i><span>Nessun artefatto ancora</span></div><% } %><% artifacts.forEach(a => { %><a href="/api/artifacts/<%= a.id %>/download" class="artifact"><i class="fas fa-file-lines"></i><span><%= a.name %><small><%= a.type %></small></span><i class="fas fa-download"></i></a><% }) %><% if (files.length) { %><h3 class="mt-6">File di partenza</h3><% files.forEach(file => { %><a href="/api/workspace-files/<%= file.id %>/download" class="artifact"><i class="fas fa-paperclip"></i><span><%= file.original_name %><small><%= Math.ceil(file.size_bytes / 1024) %> KB</small></span><i class="fas fa-download"></i></a><% }) %><% } %><div class="safety-card"><i class="fas fa-shield-check"></i><div><b>Sei sempre al comando</b><p>Invii, pubblicazioni, cancellazioni e pagamenti richiedono la tua approvazione.</p></div></div></aside>
     </div>

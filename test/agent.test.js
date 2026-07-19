@@ -80,6 +80,19 @@ test('planner normalizes unknown tools and preserves mandatory delivery steps', 
     { title: 'Analizza', tool: 'reasoning', input: {} }
   ] }, fallback);
   assert.ok(actionable.steps.findIndex((step) => step.tool === 'send_email') > actionable.steps.findIndex((step) => step.tool === 'quality_review'));
+
+  const autonomous = validatePlan({ title: 'Falso team', steps: [{ title: 'Team', tool: 'team_research', input: {} }] }, fallback);
+  assert.equal(autonomous.steps[0].tool, 'reasoning');
+  const teamFallback = fallbackPlan('Confronta il mercato con più specialisti', false, 'team');
+  const teamPlan = validatePlan({ title: 'Team reale', steps: [
+    { title: 'Analisi', tool: 'reasoning', input: {} },
+    { title: 'Team uno', tool: 'team_research', input: {} },
+    { title: 'Team duplicato', tool: 'team_research', input: {} }
+  ] }, teamFallback);
+  assert.equal(teamPlan.steps.filter((step) => step.tool === 'team_research').length, 1);
+  assert.ok(teamPlan.steps.findIndex((step) => step.tool === 'team_research') < teamPlan.steps.findIndex((step) => step.tool === 'compose'));
+  const fileTeam = fallbackPlan('Analizza il file con più specialisti', true, 'team');
+  assert.ok(fileTeam.steps.findIndex((step) => step.tool === 'python_analyze') < fileTeam.steps.findIndex((step) => step.tool === 'team_research'));
 });
 
 test('connector secrets are authenticated and encrypted at rest', () => {

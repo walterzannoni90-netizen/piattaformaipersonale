@@ -84,6 +84,7 @@ router.post('/api/tasks', upload.array('files', 5), (req, res, next) => {
   const db = getDatabase();
   const prompt = orchestrator.cleanText(req.body.prompt, 8000);
   const projectId = orchestrator.cleanText(req.body.project_id, 80) || null;
+  const mode = req.body.mode === 'team' ? 'team' : 'autonomous';
   if (prompt.length < 10) return res.status(422).json({ success: false, error: 'Descrivi meglio il risultato che vuoi ottenere.' });
   if (projectId && !ownedProject(db, projectId, req.user.id)) return res.status(404).json({ success: false, error: 'Progetto non trovato.' });
   try { (req.files || []).forEach(fileStore.validateUpload); } catch (error) { return res.status(422).json({ success: false, error: error.message }); }
@@ -93,8 +94,8 @@ router.post('/api/tasks', upload.array('files', 5), (req, res, next) => {
   const title = orchestrator.cleanText(prompt.split(/[.!?\n]/)[0], 72) || 'Nuovo task WES';
   const storedPaths = [];
   try {
-    db.prepare('INSERT INTO agent_tasks (id, user_id, project_id, title, prompt, status, progress, plan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
-      .run(id, req.user.id, projectId, title, prompt, 'planning', 1, '[]');
+    db.prepare('INSERT INTO agent_tasks (id, user_id, project_id, title, prompt, status, progress, mode, plan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .run(id, req.user.id, projectId, title, prompt, 'planning', 1, mode, '[]');
     for (const file of req.files || []) {
       const stored = fileStore.saveUpload({ userId: req.user.id, taskId: id, file });
       storedPaths.push(stored.storagePath);
@@ -120,7 +121,7 @@ router.use((error, req, res, next) => {
 
 router.get('/api/tasks/:id/state', (req, res) => {
   const db = getDatabase();
-  const task = db.prepare('SELECT id, title, status, progress, current_step, error, result, needs_approval, updated_at FROM agent_tasks WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
+  const task = db.prepare('SELECT id, title, status, progress, current_step, mode, error, result, needs_approval, updated_at FROM agent_tasks WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
   if (!task) return res.status(404).json({ error: 'Task non trovato' });
   const events = db.prepare('SELECT id, type, title, detail, status, created_at FROM task_events WHERE task_id = ? ORDER BY created_at ASC').all(task.id);
   const artifacts = db.prepare('SELECT id, name, type, created_at FROM task_artifacts WHERE task_id = ? ORDER BY created_at DESC').all(task.id);
@@ -294,6 +295,7 @@ router.post('/api/schedules', (req, res) => {
   const name = orchestrator.cleanText(req.body.name, 80);
   const prompt = orchestrator.cleanText(req.body.prompt, 8000);
   const frequency = req.body.frequency;
+  const mode = req.body.mode === 'team' ? 'team' : 'autonomous';
   const projectId = orchestrator.cleanText(req.body.project_id, 80) || null;
   const hour = Number(req.body.hour);
   const minute = Number(req.body.minute || 0);
@@ -313,8 +315,8 @@ router.post('/api/schedules', (req, res) => {
   if (count >= (limits[user.plan] || 3)) return res.status(429).json({ error: 'Limite pianificazioni attive raggiunto.' });
   const next = scheduleService.nextRun(cronExpression, timezone);
   const id = uuidv4();
-  db.prepare(`INSERT INTO task_schedules (id, user_id, project_id, name, prompt, cron_expression, timezone, next_run)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(id, req.user.id, projectId, name, prompt, cronExpression, timezone, next?.toISOString() || null);
+  db.prepare(`INSERT INTO task_schedules (id, user_id, project_id, name, prompt, mode, cron_expression, timezone, next_run)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(id, req.user.id, projectId, name, prompt, mode, cronExpression, timezone, next?.toISOString() || null);
   res.status(201).json({ success: true, id, next_run: next?.toISOString() });
 });
 
