@@ -13,27 +13,23 @@ const DOMAINS = Object.freeze({
   product: ['requirements', 'ux', 'documentation', 'localization', 'billing', 'support', 'readiness']
 });
 
-const MANDATORY_AGENTS = Object.freeze(
-  Object.entries(DOMAINS).flatMap(([domain, roles]) =>
-    roles.map((role, index) => Object.freeze({
-      id: `${domain}-${role}`,
-      domain,
-      role,
-      ordinal: index + 1,
-      mandatory: true
-    }))
-  )
-);
-
+const MANDATORY_AGENTS = Object.freeze(Object.entries(DOMAINS).flatMap(([domain, roles]) =>
+  roles.map((role, index) => Object.freeze({ id: `${domain}-${role}`, domain, role, ordinal: index + 1, mandatory: true }))
+));
 if (MANDATORY_AGENTS.length !== 70) throw new Error('Il catalogo obbligatorio deve contenere esattamente 70 agenti');
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 class MandatorySeventyAgentRuntime {
-  constructor({ handlers = {}, concurrency = 10, telemetry, checkpointStore, failFast = false } = {}) {
+  constructor({ handlers = {}, concurrency = 10, telemetry, checkpointStore, failFast = false, timeoutMs = 30000, retries = 1, retryDelayMs = 25 } = {}) {
     this.handlers = new Map(Object.entries(handlers));
     this.concurrency = Math.max(1, Math.min(70, Number(concurrency) || 10));
     this.telemetry = telemetry;
     this.checkpointStore = checkpointStore;
     this.failFast = Boolean(failFast);
+    this.timeoutMs = Math.max(1, Number(timeoutMs) || 30000);
+    this.retries = Math.max(0, Math.min(10, Number(retries) || 0));
+    this.retryDelayMs = Math.max(0, Number(retryDelayMs) || 0);
   }
 
   register(agentId, handler) {
@@ -59,31 +55,47 @@ class MandatorySeventyAgentRuntime {
     return health;
   }
 
+  async invoke(agent, context) {
+    let lastError;
+    for (let attempt = 0; attempt <= this.retries; attempt += 1) {
+      const startedAt = Date.now();
+      try {
+        const timeout = new Promise((_, reject) => setTimeout(() => {
+          const error = new Error(`Timeout agente ${agent.id}`);
+          error.code = 'MANDATORY_AGENT_TIMEOUT';
+          reject(error);
+        }, this.timeoutMs));
+        const value = await Promise.race([this.handlers.get(agent.id)({ ...context, agent, attempt }), timeout]);
+        return { agentId: agent.id, domain: agent.domain, status: value?.status || 'completed', output: value?.output ?? value, attempt, durationMs: Date.now() - startedAt };
+      } catch (error) {
+        lastError = error;
+        await this.emit('mandatory-70.agent.retry', { runId: context.runId, agentId: agent.id, attempt, error: error.message, code: error.code });
+        if (attempt < this.retries) await sleep(this.retryDelayMs * (attempt + 1));
+      }
+    }
+    return { agentId: agent.id, domain: agent.domain, status: 'failed', error: lastError.message, code: lastError.code || 'MANDATORY_AGENT_FAILED', attempts: this.retries + 1 };
+  }
+
   async execute(context = {}) {
     this.assertReady();
     const runId = context.runId || `mandatory-70-${Date.now()}`;
-    const results = new Array(MANDATORY_AGENTS.length);
+    const resumed = await this.checkpointStore?.load?.(runId);
+    const results = new Array(70);
+    for (const item of resumed?.results || []) if (item?.agentId) results[MANDATORY_AGENTS.findIndex((a) => a.id === item.agentId)] = item;
     let cursor = 0;
     let stopped = false;
+    await this.emit('mandatory-70.started', { runId, required: 70, resumed: results.filter(Boolean).length });
 
-    await this.emit('mandatory-70.started', { runId, required: 70 });
     const workers = Array.from({ length: this.concurrency }, async () => {
       while (!stopped) {
         const index = cursor++;
-        if (index >= MANDATORY_AGENTS.length) return;
-        const agent = MANDATORY_AGENTS[index];
-        const startedAt = Date.now();
-        try {
-          const value = await this.handlers.get(agent.id)({ ...context, runId, agent });
-          const status = value?.status || 'completed';
-          results[index] = { agentId: agent.id, domain: agent.domain, status, output: value?.output ?? value, durationMs: Date.now() - startedAt };
-          if (status === 'failed' && this.failFast) stopped = true;
-        } catch (error) {
-          results[index] = { agentId: agent.id, domain: agent.domain, status: 'failed', error: error.message, code: error.code || 'MANDATORY_AGENT_FAILED', durationMs: Date.now() - startedAt };
-          if (this.failFast) stopped = true;
-        }
-        await this.checkpointStore?.save?.({ runId, index, result: results[index] });
-        await this.emit('mandatory-70.agent.completed', { runId, ...results[index] });
+        if (index >= 70) return;
+        if (results[index]?.status === 'completed') continue;
+        const result = await this.invoke(MANDATORY_AGENTS[index], { ...context, runId });
+        results[index] = result;
+        if (result.status === 'failed' && this.failFast) stopped = true;
+        await this.checkpointStore?.save?.({ runId, index, result, results: results.filter(Boolean) });
+        await this.emit('mandatory-70.agent.completed', { runId, ...result });
       }
     });
 
