@@ -1,125 +1,37 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
-<section class="bg-gradient-to-br from-wes-50 to-white py-20">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Prenota una Call</h1>
-            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-                Scopri come WES AI Automation può trasformare la gestione lead della tua azienda 
-                in una call di 30 minuti senza impegno.
-            </p>
-        </div>
-        
-        <div class="grid lg:grid-cols-2 gap-12">
-            <!-- Benefits -->
-            <div>
-                <div class="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
-                    <h2 class="text-xl font-bold mb-6">Cosa riceverai:</h2>
-                    <ul class="space-y-4">
-                        <li class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-wes-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-check text-wes-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <span class="font-medium">Analisi del tuo business</span>
-                                <p class="text-sm text-gray-500">Valutiamo insieme le tue esigenze e i processi da automatizzare</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-wes-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-check text-wes-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <span class="font-medium">Demo personalizzata</span>
-                                <p class="text-sm text-gray-500">Vedrai WES AI Automation in azione con dati del tuo settore</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-wes-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-check text-wes-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <span class="font-medium">Preventivo su misura</span>
-                                <p class="text-sm text-gray-500">Riceverai un piano personalizzato con costi e tempistiche</p>
-                            </div>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <div class="w-8 h-8 bg-wes-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <i class="fas fa-check text-wes-600 text-sm"></i>
-                            </div>
-                            <div>
-                                <span class="font-medium">Nessun impegno</span>
-                                <p class="text-sm text-gray-500">La call è gratuita e senza obblighi di acquisto</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Booking Form -->
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-                <h2 class="text-xl font-bold mb-6">Scegli data e ora</h2>
-                <form action="/prenota-call" method="POST" class="space-y-4" id="bookingForm">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
-                        <input type="text" name="name" required 
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition"
-                            placeholder="Il tuo nome">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" name="email" required 
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition"
-                            placeholder="tua@email.com">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Telefono</label>
-                        <input type="tel" name="phone" 
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition"
-                            placeholder="+39 333 1234567">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Azienda *</label>
-                        <input type="text" name="company" required 
-                            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition"
-                            placeholder="Nome azienda">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Data *</label>
-                            <input type="date" name="date" required id="bookingDate" min="<%= new Date().toISOString().split('T')[0] %>"
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Ora *</label>
-                            <select name="time" required
-                                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
-                                <option value="">Seleziona ora</option>
-                                <option value="09:00">09:00</option>
-                                <option value="10:00">10:00</option>
-                                <option value="11:00">11:00</option>
-                                <option value="12:00">12:00</option>
-                                <option value="14:00">14:00</option>
-                                <option value="15:00">15:00</option>
-                                <option value="16:00">16:00</option>
-                                <option value="17:00">17:00</option>
-                                <option value="18:00">18:00</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="submit" 
-                        class="w-full py-3 px-6 bg-wes-500 text-white font-semibold rounded-xl hover:bg-wes-600 transition shadow-lg shadow-wes-500/20">
-                        <i class="fas fa-calendar-check mr-2"></i>Prenota Call Gratuita
-                    </button>
-                </form>
-            </div>
-        </div>
+<main class="product-page min-h-screen">
+  <section class="py-16 lg:py-24 relative overflow-hidden"><div class="home-grid"></div><div class="absolute w-[500px] h-[500px] bg-violet-600/15 blur-[130px] rounded-full left-1/2 -top-72"></div><div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"><div class="grid lg:grid-cols-[.85fr_1.15fr] gap-10 lg:gap-16 items-start">
+    <div class="lg:sticky lg:top-28"><div class="home-badge"><span></span> Discovery call · 30 minuti</div><h1 class="text-5xl lg:text-7xl leading-[.96] tracking-[-.06em] font-semibold mt-5">Dal processo<br><span class="text-violet-300">al primo piano.</span></h1><p class="text-slate-400 mt-6 leading-relaxed">La call serve a capire fattibilità, dati, connettori e punti di controllo. Lo slot inviato è una richiesta: riceverai conferma dal team.</p><div class="space-y-4 mt-10">
+      <div class="flex gap-4"><span class="w-9 h-9 shrink-0 rounded-lg bg-violet-500/15 text-violet-300 grid place-items-center text-xs">01</span><div><h3 class="text-sm font-medium">Mappiamo il processo</h3><p class="text-xs text-slate-500 mt-1">Obiettivo, passaggi manuali, dati e rischio operativo.</p></div></div>
+      <div class="flex gap-4"><span class="w-9 h-9 shrink-0 rounded-lg bg-cyan-500/15 text-cyan-300 grid place-items-center text-xs">02</span><div><h3 class="text-sm font-medium">Verifichiamo le capacità</h3><p class="text-xs text-slate-500 mt-1">Cosa è già disponibile e cosa richiede un setup dedicato.</p></div></div>
+      <div class="flex gap-4"><span class="w-9 h-9 shrink-0 rounded-lg bg-emerald-500/15 text-emerald-300 grid place-items-center text-xs">03</span><div><h3 class="text-sm font-medium">Definiamo il prossimo passo</h3><p class="text-xs text-slate-500 mt-1">Perimetro, responsabilità e configurazione proposta.</p></div></div>
+    </div></div>
+
+    <div class="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 sm:p-8 shadow-2xl"><div class="flex items-center justify-between mb-7"><div><div class="text-[10px] uppercase tracking-[.2em] text-violet-300">Richiesta disponibilità</div><h2 class="text-2xl font-semibold mt-2">Scegli uno slot</h2></div><div class="w-12 h-12 rounded-2xl bg-violet-500/15 text-violet-300 grid place-items-center"><i class="fas fa-calendar-check"></i></div></div>
+      <form action="/prenota-call" method="POST" id="bookingForm" class="space-y-4">
+        <div class="absolute -left-[9999px]" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+        <div class="grid sm:grid-cols-2 gap-4"><label class="text-xs text-slate-400">Nome *<input name="name" required minlength="2" maxlength="120" autocomplete="name" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"></label><label class="text-xs text-slate-400">Azienda *<input name="company" required minlength="2" maxlength="120" autocomplete="organization" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"></label></div>
+        <div class="grid sm:grid-cols-2 gap-4"><label class="text-xs text-slate-400">Email *<input name="email" type="email" required maxlength="254" autocomplete="email" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"></label><label class="text-xs text-slate-400">Telefono<input name="phone" type="tel" maxlength="40" autocomplete="tel" class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"></label></div>
+        <div class="grid sm:grid-cols-2 gap-4"><label class="text-xs text-slate-400">Data *<input id="bookingDate" name="date" type="date" required class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"></label><label class="text-xs text-slate-400">Ora italiana *<select name="time" required class="mt-2 w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm text-white outline-none focus:border-violet-500"><option value="">Seleziona</option><option value="09:00">09:00</option><option value="10:00">10:00</option><option value="11:00">11:00</option><option value="12:00">12:00</option><option value="14:00">14:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option></select></label></div>
+        <button class="w-full rounded-xl bg-white text-slate-950 py-3.5 text-sm font-bold hover:bg-violet-100 transition">Invia richiesta <i class="fas fa-arrow-right ml-2"></i></button>
+        <div class="rounded-xl bg-amber-500/5 border border-amber-500/15 p-3 text-[10px] text-amber-100/60 leading-relaxed"><i class="fas fa-circle-info text-amber-300 mr-1"></i>L’invio non costituisce conferma automatica. Lo slot viene registrato e verificato dal team.</div>
+        <p class="text-[10px] text-slate-600">I dati sono trattati per gestire la richiesta secondo l’<a href="/privacy" class="text-slate-400 underline">informativa privacy</a>.</p>
+      </form>
     </div>
-</section>
+  </div></div></section>
+</main>
 
 <script>
-document.getElementById('bookingDate').min = new Date().toISOString().split('T')[0];
+(() => {
+  const input = document.getElementById('bookingDate');
+  const now = new Date();
+  const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const max = new Date(now.getTime() + 180 * 86400000);
+  input.min = localToday;
+  input.max = new Date(max.getTime() - max.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+})();
 </script>
 
 <%- include('../partials/footer') %>

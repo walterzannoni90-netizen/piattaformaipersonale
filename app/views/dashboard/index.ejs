@@ -1,13 +1,11 @@
 <%- include('../partials/header') %>
 <%- include('../partials/dashboard-nav') %>
 
-<!-- Dashboard Header Image -->
-<div class="relative rounded-2xl overflow-hidden mb-8 bg-gradient-to-r from-wes-500 to-purple-700">
-    <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&h=200&fit=crop&auto=format&q=80" 
-         alt="Dashboard" class="absolute inset-0 w-full h-full object-cover opacity-20">
-    <div class="relative px-8 py-10">
-        <h2 class="text-2xl font-bold text-white mb-2">Bentornato, <%= typeof currentUser !== 'undefined' && currentUser ? currentUser.company : 'Utente' %>!</h2>
-        <p class="text-wes-100">Ecco un riepilogo delle tue attività di oggi.</p>
+<div class="relative rounded-2xl overflow-hidden mb-8 bg-slate-950 border border-slate-800">
+    <div class="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_15%_0,rgba(108,99,255,.8),transparent_45%)]"></div>
+    <div class="relative px-8 py-10 flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+        <div><div class="text-[10px] uppercase tracking-[.2em] text-violet-300 mb-2">Control center</div><h2 class="text-2xl font-bold text-white mb-2">Bentornato, <%= typeof currentUser !== 'undefined' && currentUser ? currentUser.company : 'Utente' %>.</h2><p class="text-slate-400">Qui trovi solo attività e dati realmente registrati.</p></div>
+        <a href="/workspace" class="inline-flex items-center justify-center gap-2 rounded-xl bg-white text-slate-950 px-5 py-3 text-sm font-bold">Avvia un task <i class="fas fa-arrow-right"></i></a>
     </div>
 </div>
 

@@ -11,7 +11,7 @@
                 <tr class="bg-gray-50 text-left text-xs text-gray-500">
                     <th class="px-4 py-3">Azienda</th>
                     <th class="px-4 py-3">Servizio</th>
-                    <th class="px-4 py-3">Key</th>
+                    <th class="px-4 py-3">Protezione</th>
                     <th class="px-4 py-3">Stato</th>
                     <th class="px-4 py-3">Data</th>
                 </tr>
@@ -22,7 +22,7 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3"><%= k.company_name || k.user_id?.substring(0,8) %></td>
                             <td class="px-4 py-3"><%= k.service %></td>
-                            <td class="px-4 py-3 font-mono text-xs">****<%= k.key_value.slice(-4) %></td>
+                            <td class="px-4 py-3 text-xs"><i class="fas fa-lock text-emerald-500 mr-1"></i> Cifrata · valore non leggibile</td>
                             <td class="px-4 py-3">
                                 <span class="text-xs px-2 py-0.5 rounded-full <%= k.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
                                     <%= k.is_active ? 'Attiva' : 'Disattiva' %>

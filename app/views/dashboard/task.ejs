@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+<section id="taskPage" data-task-id="<%= task.id %>" data-task-status="<%= task.status %>" data-event-count="<%= events.length %>" data-artifact-count="<%= artifacts.length %>" class="agent-shell -m-6 min-h-[calc(100vh-73px)] p-5 lg:p-8">
+  <div class="mx-auto max-w-7xl">
+    <a href="/workspace" class="text-sm text-slate-400 hover:text-white"><i class="fas fa-arrow-left mr-2"></i>Tutti i task</a>
+    <div class="task-head mt-5">
+      <div><div class="agent-kicker"><span></span> <%= task.project_name ? 'Progetto · ' + task.project_name : 'Task autonomo' %></div><h2><%= task.title %></h2><p><%= task.prompt %></p></div>
+      <div class="task-actions">
+        <% if (['failed','waiting_configuration','stopped'].includes(task.status)) { %><button id="retryTask" data-id="<%= task.id %>" class="stop-task"><i class="fas fa-rotate-right"></i> Riprova</button><% } %>
+        <button id="stopTask" data-id="<%= task.id %>" class="stop-task" <%= ['completed','stopped','failed'].includes(task.status) ? 'disabled' : '' %>><i class="fas fa-stop"></i> Interrompi</button>
+      </div>
+    </div>
+    <div class="task-progress"><span style="width:<%= task.progress %>%"></span></div>
+    <div class="task-layout mt-6">
+      <div class="task-canvas">
+        <div class="agent-thinking <%= task.status %>"><div class="wes-orb"><i class="fas fa-<%= task.status === 'completed' ? 'check' : task.status === 'failed' ? 'triangle-exclamation' : task.status.startsWith('waiting') ? 'pause' : 'sparkles' %>"></i></div><div><b><%= task.status === 'completed' ? 'Lavoro completato' : task.status === 'failed' ? 'WES ha interrotto il lavoro' : task.status === 'waiting_approval' ? 'Serve la tua approvazione' : task.status === 'waiting_configuration' ? 'Serve una configurazione' : task.status === 'stopped' ? 'Task interrotto' : 'WES sta lavorando' %></b><span><%= task.error || (task.status === 'completed' ? 'Il risultato è pronto nel workspace.' : 'Puoi lasciare questa pagina: il task continua nel workspace.') %></span></div><% if (['planning','running'].includes(task.status)) { %><div class="thinking-dots"><i></i><i></i><i></i></div><% } %></div>
+
+        <% if (approvals.some(approval => approval.status === 'pending')) { %>
+          <div class="approval-zone"><h3><i class="fas fa-shield-halved"></i> Conferma richiesta</h3><% approvals.filter(approval => approval.status === 'pending').forEach(approval => { %><div class="approval-card"><div><b><%= approval.title %></b><p class="whitespace-pre-wrap"><%= approval.description %></p><% if (approval.details && Object.keys(approval.details).length) { %><details class="approval-details"><summary>Controlla i dati esatti</summary><dl><% Object.entries(approval.details).forEach(([key, value]) => { %><dt><%= key %></dt><dd><%= typeof value === 'object' ? JSON.stringify(value) : value %></dd><% }) %></dl></details><% } %><span>WES non procederà senza una scelta esplicita.</span></div><div><button data-approval="<%= approval.id %>" data-decision="rejected">Rifiuta</button><button class="approve" data-approval="<%= approval.id %>" data-decision="approved">Approva</button></div></div><% }) %></div>
+        <% } %>
+        <% if (approvals.some(approval => approval.status === 'uncertain' || approval.status === 'executing')) { %><div class="approval-zone uncertain"><h3><i class="fas fa-triangle-exclamation"></i> Azione da verificare</h3><p>Un’esecuzione esterna è stata interrotta in uno stato incerto. Controlla il canale prima di riprovare: WES non effettua duplicati alla cieca.</p></div><% } %>
+        <h3>Piano operativo</h3>
+        <div class="plan-list">
+          <% parsedPlan.forEach((step, index) => { const state = index < Number(task.current_step || 0) ? 'done' : index === Number(task.current_step || 0) && !['completed','failed','stopped'].includes(task.status) ? 'active' : ''; %><div class="plan-step <%= state %>"><div class="plan-index"><% if (state === 'done') { %><i class="fas fa-check"></i><% } else if (state === 'active') { %><i class="fas fa-spinner fa-spin"></i><% } else { %><%= index + 1 %><% } %></div><div><b><%= step.title %></b><p><%= step.description %></p><span><i class="fas fa-cube"></i> <%= step.tool %></span></div></div><% }) %>
+        </div>
+        <% if (task.result) { %><h3 class="mt-8">Risultato</h3><article class="task-result markdown-output"><%- resultHtml %></article><% } %>
+        <h3 class="mt-8">Attività live</h3>
+        <div class="event-list"><% events.forEach(event => { %><div class="event <%= event.status %>"><i class="fas fa-<%= event.type === 'plan' ? 'list-check' : event.type === 'error' ? 'triangle-exclamation' : event.type === 'web_search' ? 'globe' : event.type === 'python_analyze' ? 'code' : 'brain' %>"></i><div><b><%= event.title %></b><p><%= event.detail %></p></div><span><%= event.status %></span></div><% }) %></div>
+      </div>
+      <aside class="artifact-panel"><h3>Output</h3><p>I risultati creati da WES sono privati e scaricabili solo dal proprietario.</p><% if (!artifacts.length) { %><div class="artifact-empty"><i class="fas fa-folder-open"></i><span>Nessun artefatto ancora</span></div><% } %><% artifacts.forEach(a => { %><a href="/api/artifacts/<%= a.id %>/download" class="artifact"><i class="fas fa-file-lines"></i><span><%= a.name %><small><%= a.type %></small></span><i class="fas fa-download"></i></a><% }) %><% if (files.length) { %><h3 class="mt-6">File di partenza</h3><% files.forEach(file => { %><a href="/api/workspace-files/<%= file.id %>/download" class="artifact"><i class="fas fa-paperclip"></i><span><%= file.original_name %><small><%= Math.ceil(file.size_bytes / 1024) %> KB</small></span><i class="fas fa-download"></i></a><% }) %><% } %><div class="safety-card"><i class="fas fa-shield-check"></i><div><b>Sei sempre al comando</b><p>Invii, pubblicazioni, cancellazioni e pagamenti richiedono la tua approvazione.</p></div></div></aside>
+    </div>
+  </div>
+</section>
+<script src="/js/workspace.js"></script>
+        </div></main></div>
+<%- include('../partials/footer') %>

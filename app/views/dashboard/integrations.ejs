@@ -1,144 +1,73 @@
 <%- include('../partials/header') %>
 <%- include('../partials/dashboard-nav') %>
 
-<div class="grid md:grid-cols-2 gap-6">
-    
-    <!-- WhatsApp -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                    <i class="fab fa-whatsapp text-2xl text-green-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold">WhatsApp Business</h3>
-                    <p class="text-xs text-gray-500">Messaggistica automatica</p>
-                </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full 
-                <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
-                <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'Connesso' : 'Non connesso' %>
-            </span>
+<section class="-m-6 min-h-[calc(100vh-73px)] bg-slate-950 text-white p-5 lg:p-8">
+    <div class="mx-auto max-w-6xl">
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-5 mb-8">
+            <div><div class="text-[10px] uppercase tracking-[.24em] text-violet-400 font-bold mb-2">Tool registry</div><h2 class="text-3xl font-semibold tracking-tight">Collega ciò che WES può usare.</h2><p class="text-sm text-slate-400 mt-2 max-w-2xl">Ogni segreto viene cifrato prima del salvataggio. Un badge verde indica una configurazione reale, non una demo grafica.</p></div>
+            <div class="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-2"><i class="fas fa-shield-halved mr-2"></i>Segreti mai mostrati dopo il salvataggio</div>
         </div>
-        <p class="text-sm text-gray-600 mb-4">Collega WhatsApp Business API per gestire conversazioni, inviare messaggi automatici e ricevere notifiche in tempo reale.</p>
-        <button onclick="alert('Integrazione WhatsApp in fase di configurazione. Richiedi assistenza.')" 
-            class="w-full py-2.5 px-4 <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-700 hover:bg-green-100' %> rounded-xl text-sm font-medium transition">
-            <i class="fab fa-whatsapp mr-2"></i>
-            <%= integrations && integrations.find(i => i.service === 'whatsapp' && i.is_connected) ? 'Disconnetti' : 'Connetti WhatsApp' %>
-        </button>
-    </div>
-    
-    <!-- Email -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-envelope text-2xl text-blue-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold">Email / Gmail</h3>
-                    <p class="text-xs text-gray-500">Automazione email</p>
-                </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full 
-                <%= integrations && integrations.find(i => i.service === 'email' && i.is_connected) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
-                <%= integrations && integrations.find(i => i.service === 'email' && i.is_connected) ? 'Connesso' : 'Non connesso' %>
-            </span>
+
+        <div class="grid lg:grid-cols-2 gap-5">
+            <article class="rounded-2xl bg-slate-900 border border-slate-800 p-5">
+                <div class="flex items-center justify-between mb-5"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl bg-violet-500/15 text-violet-300 grid place-items-center"><i class="fas fa-brain"></i></div><div><h3 class="font-semibold">OpenRouter</h3><p class="text-xs text-slate-500">Piano, sintesi e deliverable</p></div></div><span class="text-[10px] px-2.5 py-1 rounded-full <%= agentConnectors.openrouter ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-500' %>"><%= agentConnectors.openrouter ? 'ATTIVO' : 'DA COLLEGARE' %></span></div>
+                <form class="agent-connector-form space-y-3" data-service="openrouter"><input name="api_key" required type="password" autocomplete="new-password" maxlength="240" placeholder="sk-or-v1-…" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-violet-500"><button class="w-full rounded-xl bg-white text-slate-950 py-3 text-sm font-bold">Salva chiave cifrata</button></form>
+                <% if (agentConnectors.openrouter) { %><button type="button" class="remove-agent-connector mt-3 text-xs text-slate-500 hover:text-red-300" data-service="openrouter"><i class="fas fa-link-slash mr-1"></i>Rimuovi chiave personale</button><% } %>
+            </article>
+
+            <article class="rounded-2xl bg-slate-900 border border-slate-800 p-5">
+                <div class="flex items-center justify-between mb-5"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl bg-cyan-500/15 text-cyan-300 grid place-items-center"><i class="fas fa-globe"></i></div><div><h3 class="font-semibold">Tavily Search</h3><p class="text-xs text-slate-500">Ricerca web con URL e fonti</p></div></div><span class="text-[10px] px-2.5 py-1 rounded-full <%= agentConnectors.tavily ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-500' %>"><%= agentConnectors.tavily ? 'ATTIVO' : 'DA COLLEGARE' %></span></div>
+                <form class="agent-connector-form space-y-3" data-service="tavily"><input name="api_key" required type="password" autocomplete="new-password" maxlength="240" placeholder="tvly-…" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-cyan-500"><button class="w-full rounded-xl bg-white text-slate-950 py-3 text-sm font-bold">Salva chiave cifrata</button></form>
+                <% if (agentConnectors.tavily) { %><button type="button" class="remove-agent-connector mt-3 text-xs text-slate-500 hover:text-red-300" data-service="tavily"><i class="fas fa-link-slash mr-1"></i>Rimuovi chiave personale</button><% } %>
+            </article>
+
+            <article class="rounded-2xl bg-slate-900 border border-slate-800 p-5">
+                <div class="flex items-center justify-between mb-5"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl bg-green-500/15 text-green-300 grid place-items-center"><i class="fab fa-whatsapp"></i></div><div><h3 class="font-semibold">WhatsApp Cloud API</h3><p class="text-xs text-slate-500">Messaggi e conversazioni reali</p></div></div><span class="text-[10px] px-2.5 py-1 rounded-full <%= channelConnectors.whatsapp ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-500' %>"><%= channelConnectors.whatsapp ? 'VERIFICATO' : 'NON CONNESSO' %></span></div>
+                <% if (!channelConnectors.whatsapp) { %><form id="whatsappConnector" class="space-y-3"><input name="token" required type="password" autocomplete="new-password" maxlength="500" placeholder="Access token Meta" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500"><input name="phone_id" required inputmode="numeric" maxlength="30" placeholder="Phone Number ID" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-green-500"><button class="w-full rounded-xl bg-green-400 text-green-950 py-3 text-sm font-bold">Verifica con Meta e collega</button></form><% } else { %><div class="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-sm text-emerald-200">Token convalidato. Configura sul pannello Meta il webhook <code class="text-xs">/api/whatsapp/webhook</code>.</div><button type="button" class="disconnect-channel mt-3 text-xs text-slate-500 hover:text-red-300" data-service="whatsapp"><i class="fas fa-link-slash mr-1"></i>Disconnetti</button><% } %>
+            </article>
+
+            <article class="rounded-2xl bg-slate-900 border border-slate-800 p-5">
+                <div class="flex items-center justify-between mb-5"><div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl bg-blue-500/15 text-blue-300 grid place-items-center"><i class="fas fa-envelope"></i></div><div><h3 class="font-semibold">Email SMTP</h3><p class="text-xs text-slate-500">Follow-up e report verificati</p></div></div><span class="text-[10px] px-2.5 py-1 rounded-full <%= channelConnectors.email ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-800 text-slate-500' %>"><%= channelConnectors.email ? 'VERIFICATO' : 'NON CONNESSO' %></span></div>
+                <% if (!channelConnectors.email) { %><form id="emailConnector" class="grid grid-cols-3 gap-3"><input name="host" required maxlength="253" placeholder="smtp.example.com" class="col-span-2 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500"><select name="port" class="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm"><option value="587">587 TLS</option><option value="465">465 SSL</option></select><input name="user" required type="email" maxlength="254" autocomplete="username" placeholder="utente@example.com" class="col-span-3 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500"><input name="pass" required type="password" maxlength="500" autocomplete="new-password" placeholder="Password o app password" class="col-span-3 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500"><button class="col-span-3 rounded-xl bg-blue-400 text-blue-950 py-3 text-sm font-bold">Verifica SMTP e collega</button></form><% } else { %><div class="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4 text-sm text-emerald-200">Connessione SMTP verificata. WES può usarla solo nei flussi che prevedono invio e controllo umano.</div><button type="button" class="disconnect-channel mt-3 text-xs text-slate-500 hover:text-red-300" data-service="email"><i class="fas fa-link-slash mr-1"></i>Disconnetti</button><% } %>
+            </article>
         </div>
-        <p class="text-sm text-gray-600 mb-4">Collega il tuo account Gmail o SMTP per inviare email automatiche, report e follow-up.</p>
-        <button onclick="alert('Integrazione Email in fase di configurazione. Richiedi assistenza.')" 
-            class="w-full py-2.5 px-4 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl text-sm font-medium transition">
-            <i class="fas fa-envelope mr-2"></i> Connetti Email
-        </button>
-    </div>
-    
-    <!-- Google Calendar -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <i class="fab fa-google text-2xl text-purple-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold">Google Calendar</h3>
-                    <p class="text-xs text-gray-500">Appuntamenti automatici</p>
-                </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Non connesso</span>
+
+        <div class="mt-5 grid md:grid-cols-3 gap-4">
+            <article class="rounded-2xl bg-slate-900/70 border border-slate-800 p-5"><div class="flex items-center justify-between"><i class="fas fa-database text-amber-300"></i><span class="text-[10px] text-emerald-300">INCLUSO</span></div><h3 class="font-semibold mt-5">CRM WES</h3><p class="text-xs text-slate-500 mt-1">Lead, conversazioni e score sono già isolati per account e disponibili all’agente in sola lettura.</p></article>
+            <article class="rounded-2xl bg-slate-900/70 border border-slate-800 p-5"><div class="flex items-center justify-between"><i class="fas fa-calendar text-purple-300"></i><span class="text-[10px] text-amber-300">SETUP DEDICATO</span></div><h3 class="font-semibold mt-5">Calendar OAuth</h3><p class="text-xs text-slate-500 mt-1">Richiede credenziali Google/Microsoft e callback del dominio definitivo. Non viene simulato.</p></article>
+            <article class="rounded-2xl bg-slate-900/70 border border-slate-800 p-5"><div class="flex items-center justify-between"><i class="fab fa-stripe text-indigo-300"></i><span class="text-[10px] text-amber-300">SERVER</span></div><h3 class="font-semibold mt-5">Stripe</h3><p class="text-xs text-slate-500 mt-1">La piattaforma accetta solo webhook firmati. Le chiavi Stripe si configurano nell’ambiente di produzione.</p></article>
         </div>
-        <p class="text-sm text-gray-600 mb-4">Sincronizza Google Calendar per proporre e confermare appuntamenti in automatico.</p>
-        <button onclick="alert('Integrazione Google Calendar in fase di sviluppo.')" 
-            class="w-full py-2.5 px-4 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-xl text-sm font-medium transition">
-            <i class="fab fa-google mr-2"></i> Connetti Calendar
-        </button>
     </div>
-    
-    <!-- CRM -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-database text-2xl text-amber-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold">CRM</h3>
-                    <p class="text-xs text-gray-500">Salvataggio automatico lead</p>
-                </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full <%= integrations && integrations.find(i => i.service === 'crm' && i.is_connected) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
-                <%= integrations && integrations.find(i => i.service === 'crm' && i.is_connected) ? 'Connesso' : 'Non connesso' %>
-            </span>
-        </div>
-        <p class="text-sm text-gray-600 mb-4">Salva automaticamente lead e conversazioni nel tuo CRM preferito via API webhook.</p>
-        <button onclick="alert('Integrazione CRM in fase di configurazione.')" 
-            class="w-full py-2.5 px-4 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-xl text-sm font-medium transition">
-            <i class="fas fa-plug mr-2"></i> Connetti CRM
-        </button>
-    </div>
-    
-    <!-- Stripe -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                    <i class="fab fa-stripe text-2xl text-indigo-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold">Stripe</h3>
-                    <p class="text-xs text-gray-500">Pagamenti e fatturazione</p>
-                </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Configurabile</span>
-        </div>
-        <p class="text-sm text-gray-600 mb-4">Accetta pagamenti con carte di credito, genera fatture e gestisci abbonamenti.</p>
-        <button onclick="alert('Integrazione Stripe disponibile nei piani Enterprise.')" 
-            class="w-full py-2.5 px-4 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl text-sm font-medium transition">
-            <i class="fab fa-stripe mr-2"></i> Connetti Stripe
-        </button>
-    </div>
-    
-    <!-- Webhook -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 hover:shadow-md transition">
-        <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
-                    <i class="fas fa-network-wired text-2xl text-teal-600"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold">Webhook / API</h3>
-                    <p class="text-xs text-gray-500">n8n, Make, Zapier</p>
-                </div>
-            </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">Configurabile</span>
-        </div>
-        <p class="text-sm text-gray-600 mb-4">Connetti WES AI Automation con n8n, Make, Zapier o qualsiasi altro servizio via webhook.</p>
-        <button onclick="alert('Webhook disponibile nei piani Pro ed Enterprise.')" 
-            class="w-full py-2.5 px-4 bg-teal-50 text-teal-700 hover:bg-teal-100 rounded-xl text-sm font-medium transition">
-            <i class="fas fa-plug mr-2"></i> Configura Webhook
-        </button>
-    </div>
-    
-</div>
+</section>
+
+<script>
+document.querySelectorAll('.agent-connector-form').forEach(form => form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('button'); button.disabled = true;
+    const result = await apiCall('/api/agent-connectors/' + form.dataset.service, 'POST', { api_key: form.elements.api_key.value });
+    if (result.success) location.reload(); else { showToast(result.error || 'Connessione non salvata', 'error'); button.disabled = false; }
+}));
+document.querySelectorAll('.remove-agent-connector').forEach(button => button.addEventListener('click', async () => {
+    if (!confirm('Rimuovere questa chiave personale?')) return;
+    const result = await apiCall('/api/agent-connectors/' + button.dataset.service, 'DELETE');
+    if (result.success) location.reload(); else showToast(result.error || 'Chiave non rimossa', 'error');
+}));
+document.getElementById('whatsappConnector')?.addEventListener('submit', async function(event) {
+    event.preventDefault(); const button = this.querySelector('button'); button.disabled = true;
+    const form = new FormData(this); const result = await apiCall('/api/integrations/whatsapp', 'POST', { token: form.get('token'), phone_id: form.get('phone_id') });
+    if (result.success) location.reload(); else { showToast(result.error || 'WhatsApp non collegato', 'error'); button.disabled = false; }
+});
+document.getElementById('emailConnector')?.addEventListener('submit', async function(event) {
+    event.preventDefault(); const button = this.querySelector('button'); button.disabled = true;
+    const form = new FormData(this); const result = await apiCall('/api/integrations/email', 'POST', Object.fromEntries(form));
+    if (result.success) location.reload(); else { showToast(result.error || 'SMTP non collegato', 'error'); button.disabled = false; }
+});
+document.querySelectorAll('.disconnect-channel').forEach(button => button.addEventListener('click', async () => {
+    if (!confirm('Disconnettere questa integrazione?')) return;
+    const result = await apiCall('/api/integrations/' + button.dataset.service, 'DELETE');
+    if (result.success) location.reload(); else showToast(result.error || 'Integrazione non rimossa', 'error');
+}));
+</script>
 
 </main></div>
 <%- include('../partials/footer') %>

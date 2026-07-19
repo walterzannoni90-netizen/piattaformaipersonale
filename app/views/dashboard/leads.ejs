@@ -18,6 +18,10 @@
     <a href="/dashboard/lead?status=converted" class="px-4 py-2 text-sm font-medium rounded-xl <%= currentStatus === 'converted' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' %> transition">
         Convertiti (<%= stats.converted.count %>)
     </a>
+    <a href="/dashboard/lead?status=lost" class="px-4 py-2 text-sm font-medium rounded-xl <%= currentStatus === 'lost' ? 'bg-rose-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' %> transition">
+        Persi (<%= stats.lost.count %>)
+    </a>
+    <button type="button" onclick="document.getElementById('newLeadModal').classList.remove('hidden')" class="ml-auto px-4 py-2 text-sm font-semibold rounded-xl bg-slate-950 text-white hover:bg-violet-700 transition"><i class="fas fa-plus mr-2"></i>Nuovo lead</button>
 </div>
 
 <!-- Leads Table -->
@@ -79,9 +83,9 @@
                                 <%= new Date(lead.created_at).toLocaleDateString('it-IT') %>
                             </td>
                             <td class="px-6 py-4">
-                                <button class="p-1.5 text-gray-400 hover:text-wes-500 transition" title="Dettagli">
+                                <a href="/dashboard/lead/<%= lead.id %>" class="p-1.5 text-gray-400 hover:text-wes-500 transition" title="Apri scheda" aria-label="Apri scheda lead">
                                     <i class="fas fa-eye"></i>
-                                </button>
+                                </a>
                             </td>
                         </tr>
                     <% }); %>
@@ -98,17 +102,39 @@
     </div>
 </div>
 
+<div id="newLeadModal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm p-4 grid place-items-center">
+    <div class="w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 relative">
+        <button type="button" onclick="document.getElementById('newLeadModal').classList.add('hidden')" class="absolute right-5 top-4 text-slate-400 hover:text-slate-950 text-xl" aria-label="Chiudi">&times;</button>
+        <div class="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 grid place-items-center"><i class="fas fa-user-plus"></i></div>
+        <h2 class="text-2xl font-bold mt-5">Aggiungi un lead</h2><p class="text-sm text-slate-500 mt-1">Basta almeno un recapito. Il record resterà nel tuo workspace.</p>
+        <form id="newLeadForm" class="mt-6 grid sm:grid-cols-2 gap-4">
+            <label class="text-xs text-slate-500 sm:col-span-2">Nome<input name="name" maxlength="120" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-violet-500"></label>
+            <label class="text-xs text-slate-500">Email<input name="email" type="email" maxlength="254" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-violet-500"></label>
+            <label class="text-xs text-slate-500">Telefono<input name="phone" maxlength="40" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-violet-500"></label>
+            <label class="text-xs text-slate-500 sm:col-span-2">Fonte<select name="source" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none"><option value="manual">Inserimento manuale</option><option value="website">Sito web</option><option value="whatsapp">WhatsApp</option><option value="email">Email</option><option value="referral">Referral</option></select></label>
+            <label class="text-xs text-slate-500 sm:col-span-2">Note<textarea name="notes" maxlength="5000" rows="4" class="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-violet-500 resize-none"></textarea></label>
+            <button class="sm:col-span-2 rounded-xl bg-slate-950 text-white py-3 text-sm font-bold hover:bg-violet-700 transition">Crea e apri scheda</button>
+        </form>
+    </div>
+</div>
+
 <script>
-function updateLeadStatus(id, status) {
-    fetch('/api/lead/update-status', {
+async function updateLeadStatus(id, status) {
+    const response = await fetch('/api/lead/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status })
-    })
-    .then(r => r.json())
-    .then(d => { if(d.success) location.reload(); })
-    .catch(() => {});
+    });
+    const result = await response.json();
+    if (result.success) location.reload();
+    else showToast(result.error || 'Stato non aggiornato', 'error');
 }
+document.getElementById('newLeadForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const result = await apiCall('/api/leads', 'POST', Object.fromEntries(new FormData(this).entries()));
+    if (result.success) location.href = result.redirect;
+    else showToast(result.error || 'Lead non creato', 'error');
+});
 </script>
 
 </main></div>

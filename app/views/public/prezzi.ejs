@@ -1,155 +1,36 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
-<!-- Header -->
-<section class="relative overflow-hidden bg-gradient-to-br from-wes-50 to-white py-20">
-    <div class="absolute inset-0 opacity-10">
-        <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1920&h=300&fit=crop&auto=format&q=80" 
-             alt="" class="w-full h-full object-cover">
-    </div>
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">Piani e Prezzi</h1>
-        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-            Scegli il piano più adatto alla tua azienda. Tutti i piani includono una configurazione iniziale personalizzata.
-        </p>
-    </div>
-</section>
+<main class="product-page">
+  <section class="product-page-hero"><div class="home-grid"></div><div class="max-w-5xl mx-auto px-4 relative text-center"><div class="home-badge"><span></span> Capacità trasparente</div><h1>Un piano per delegare.<br><em>Nessun numero inventato.</em></h1><p>Limiti chiari su task e concorrenza, workspace privato e controllo umano in ogni piano. L’attivazione commerciale e le integrazioni vengono definite prima dell’acquisto.</p></div></section>
 
-<!-- Pricing -->
-<section class="py-16 bg-white">
+  <section class="py-20 lg:py-28 border-t border-slate-800/70">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-3 gap-8">
-            
-            <!-- Starter -->
-            <div class="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-wes-200 transition-all relative">
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold">Starter</h3>
-                    <p class="text-gray-500 text-sm mt-1">Per chi inizia con l'automazione</p>
-                </div>
-                <div class="mb-6">
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-4xl font-bold">297€</span>
-                        <span class="text-gray-500">/mese</span>
-                    </div>
-                    <div class="mt-2 text-sm text-gray-500">
-                        <span class="font-medium text-gray-700">+ 1.000€</span> setup iniziale
-                    </div>
-                </div>
-                <ul class="space-y-3 mb-8">
-                    <% if (typeof plans !== 'undefined' && plans.starter) { %>
-                        <% plans.starter.features.forEach(function(feature) { %>
-                            <li class="flex items-center gap-3 text-sm">
-                                <i class="fas fa-check text-green-500 flex-shrink-0"></i>
-                                <span><%= feature %></span>
-                            </li>
-                        <% }); %>
-                    <% } %>
-                </ul>
-                <a href="/prenota-call" class="block w-full text-center py-3 px-6 border-2 border-wes-500 text-wes-600 font-semibold rounded-xl hover:bg-wes-50 transition">
-                    Inizia Ora
-                </a>
-            </div>
-            
-            <!-- Pro (Popular) -->
-            <div class="bg-gradient-to-b from-wes-500 to-purple-700 rounded-2xl p-8 shadow-xl relative transform lg:scale-105">
-                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-yellow-900 px-6 py-1 rounded-full text-sm font-bold shadow-lg">
-                    Più scelto
-                </div>
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold text-white">Pro</h3>
-                    <p class="text-wes-100 text-sm mt-1">Per aziende in crescita</p>
-                </div>
-                <div class="mb-6">
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-4xl font-bold text-white">597€</span>
-                        <span class="text-wes-200">/mese</span>
-                    </div>
-                    <div class="mt-2 text-sm text-wes-100">
-                        <span class="font-medium text-white">+ 2.000€</span> setup iniziale
-                    </div>
-                </div>
-                <ul class="space-y-3 mb-8">
-                    <% if (typeof plans !== 'undefined' && plans.pro) { %>
-                        <% plans.pro.features.forEach(function(feature) { %>
-                            <li class="flex items-center gap-3 text-sm text-white">
-                                <i class="fas fa-check text-green-300 flex-shrink-0"></i>
-                                <span><%= feature %></span>
-                            </li>
-                        <% }); %>
-                    <% } %>
-                </ul>
-                <a href="/prenota-call" class="block w-full text-center py-3 px-6 bg-white text-wes-600 font-semibold rounded-xl hover:bg-gray-50 transition shadow-lg">
-                    Scegli Pro
-                </a>
-            </div>
-            
-            <!-- Enterprise -->
-            <div class="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-wes-200 transition-all">
-                <div class="mb-6">
-                    <h3 class="text-xl font-bold">Enterprise</h3>
-                    <p class="text-gray-500 text-sm mt-1">Per grandi volumi e personalizzazione</p>
-                </div>
-                <div class="mb-6">
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-4xl font-bold">1.500€</span>
-                        <span class="text-gray-500">/mese</span>
-                    </div>
-                    <div class="mt-2 text-sm text-gray-500">
-                        <span class="font-medium text-gray-700">+ 5.000€</span> setup iniziale
-                    </div>
-                </div>
-                <ul class="space-y-3 mb-8">
-                    <% if (typeof plans !== 'undefined' && plans.enterprise) { %>
-                        <% plans.enterprise.features.forEach(function(feature) { %>
-                            <li class="flex items-center gap-3 text-sm">
-                                <i class="fas fa-check text-green-500 flex-shrink-0"></i>
-                                <span><%= feature %></span>
-                            </li>
-                        <% }); %>
-                    <% } %>
-                </ul>
-                <a href="/prenota-call" class="block w-full text-center py-3 px-6 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-wes-500 hover:text-wes-600 transition">
-                    Contattaci
-                </a>
-            </div>
-        </div>
-        
-        <!-- Note -->
-        <div class="mt-12 p-6 bg-gray-50 rounded-2xl">
-            <div class="flex items-start gap-4">
-                <i class="fas fa-info-circle text-wes-500 text-xl mt-1"></i>
-                <div>
-                    <h4 class="font-semibold mb-1">Cosa include il setup iniziale?</h4>
-                    <p class="text-sm text-gray-600">Configurazione agente AI personalizzato, integrazione WhatsApp Business, connessione email/CRM, creazione automazioni su misura, formazione del team e supporto per il primo mese.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+      <% const descriptions = { starter: 'Per iniziare a delegare processi reali', pro: 'Per un utilizzo operativo quotidiano', enterprise: 'Per team, volumi e ambienti dedicati' }; %>
+      <div class="grid lg:grid-cols-3 gap-5 items-start">
+        <% Object.entries(plans).forEach(function(entry) { const key = entry[0]; const plan = entry[1]; const highlighted = key === 'pro'; %>
+          <article class="relative rounded-3xl border p-7 lg:p-8 <%= highlighted ? 'bg-[radial-gradient(circle_at_top_right,rgba(108,99,255,.35),transparent_42%)] bg-slate-900 border-violet-500/50 shadow-2xl shadow-violet-950/30 lg:-mt-4' : 'bg-slate-900/70 border-slate-800' %>">
+            <% if (highlighted) { %><div class="text-[10px] tracking-[.2em] uppercase text-violet-300 mb-5"><i class="fas fa-layer-group mr-2"></i>Per operatività estesa</div><% } %>
+            <h2 class="text-2xl font-semibold"><%= plan.name %></h2><p class="text-sm text-slate-500 mt-2 min-h-10"><%= descriptions[key] %></p>
+            <div class="my-7"><div class="flex items-end gap-2"><strong class="text-5xl tracking-tight">€<%= new Intl.NumberFormat('it-IT').format(plan.price) %></strong><span class="text-sm text-slate-500 pb-1">/ mese</span></div><div class="text-xs text-slate-500 mt-3">Setup iniziale: <span class="text-slate-300">€<%= new Intl.NumberFormat('it-IT').format(plan.setupFee) %> una tantum</span></div></div>
+            <a href="/prenota-call" class="flex items-center justify-center gap-2 w-full rounded-xl py-3 text-sm font-bold <%= highlighted ? 'bg-white text-slate-950 hover:bg-violet-100' : 'border border-slate-700 text-white hover:border-violet-500' %> transition">Valuta <%= plan.name %> <i class="fas fa-arrow-right text-xs"></i></a>
+            <ul class="mt-8 space-y-3"><% plan.features.forEach(function(feature) { %><li class="flex gap-3 text-sm text-slate-300"><i class="fas fa-check text-emerald-400 mt-1 text-xs"></i><span><%= feature %></span></li><% }); %></ul>
+          </article>
+        <% }); %>
+      </div>
 
-<!-- FAQ -->
-<section class="py-16 bg-gray-50">
-    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-bold text-center mb-12">Domande Frequenti</h2>
-        <div class="space-y-4">
-            <div class="bg-white rounded-xl p-6">
-                <h3 class="font-semibold mb-2">Posso cambiare piano quando voglio?</h3>
-                <p class="text-sm text-gray-600">Sì, puoi passare a un piano superiore o inferiore in qualsiasi momento. La differenza verrà calcolata in proporzione.</p>
-            </div>
-            <div class="bg-white rounded-xl p-6">
-                <h3 class="font-semibold mb-2">Quanto tempo per l'attivazione?</h3>
-                <p class="text-sm text-gray-600">Il setup iniziale richiede 3-5 giorni lavorativi. Durante questo periodo configuriamo l'agente AI, le integrazioni e le automazioni.</p>
-            </div>
-            <div class="bg-white rounded-xl p-6">
-                <h3 class="font-semibold mb-2">Posso integrare il mio CRM esistente?</h3>
-                <p class="text-sm text-gray-600">Sì, supportiamo l'integrazione con i principali CRM via API webhook. Nei piani Pro ed Enterprise includiamo l'integrazione personalizzata.</p>
-            </div>
-            <div class="bg-white rounded-xl p-6">
-                <h3 class="font-semibold mb-2">È previsto un periodo di prova?</h3>
-                <p class="text-sm text-gray-600">Offriamo una demo gratuita di 7 giorni per farti testare la piattaforma con dati reali. Prenota una call per attivarla.</p>
-            </div>
-        </div>
+      <div class="mt-8 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 flex gap-4"><i class="fas fa-circle-info text-amber-300 mt-1"></i><div><h3 class="text-sm font-semibold text-amber-100">Prima si definisce il perimetro, poi si attiva.</h3><p class="text-xs text-amber-100/55 mt-1 leading-relaxed">I prezzi rappresentano i piani applicativi. Credenziali e consumi di servizi terzi—ad esempio modelli AI, ricerca, Meta, SMTP o Stripe—possono avere costi separati in base alla configurazione concordata.</p></div></div>
     </div>
-</section>
+  </section>
+
+  <section class="py-20 border-t border-slate-800 bg-slate-950/50"><div class="max-w-4xl mx-auto px-4"><div class="text-center mb-12"><div class="home-badge"><span></span> Domande concrete</div><h2 class="text-4xl lg:text-5xl font-semibold tracking-tight mt-4">Prima di scegliere.</h2></div><div class="grid gap-3">
+    <details class="group rounded-2xl border border-slate-800 bg-slate-900 p-5"><summary class="cursor-pointer font-medium flex justify-between gap-4">Cosa comprende il setup?<i class="fas fa-plus text-slate-600 group-open:rotate-45 transition"></i></summary><p class="text-sm text-slate-400 mt-4 leading-relaxed">Configurazione del workspace, policy operative, modello e ricerca, progetti iniziali, collegamento degli strumenti disponibili e formazione concordata.</p></details>
+    <details class="group rounded-2xl border border-slate-800 bg-slate-900 p-5"><summary class="cursor-pointer font-medium flex justify-between gap-4">Quando posso iniziare?<i class="fas fa-plus text-slate-600 group-open:rotate-45 transition"></i></summary><p class="text-sm text-slate-400 mt-4 leading-relaxed">Il workspace è utilizzabile dopo la creazione dell’account. Le integrazioni esterne diventano operative solo dopo la verifica delle relative credenziali.</p></details>
+    <details class="group rounded-2xl border border-slate-800 bg-slate-900 p-5"><summary class="cursor-pointer font-medium flex justify-between gap-4">Come cambio piano?<i class="fas fa-plus text-slate-600 group-open:rotate-45 transition"></i></summary><p class="text-sm text-slate-400 mt-4 leading-relaxed">Il cambio viene concordato con il team commerciale. Prima della variazione vengono confermati limiti, costi e data di efficacia.</p></details>
+    <details class="group rounded-2xl border border-slate-800 bg-slate-900 p-5"><summary class="cursor-pointer font-medium flex justify-between gap-4">Il browser autonomo è incluso?<i class="fas fa-plus text-slate-600 group-open:rotate-45 transition"></i></summary><p class="text-sm text-slate-400 mt-4 leading-relaxed">WES oggi esegue ricerca e lettura web sicura, non un browser cloud generalista. Le azioni esterne disponibili sono dichiarate nell’interfaccia e richiedono i connettori previsti.</p></details>
+  </div></div></section>
+
+  <section class="capability-cta"><div class="max-w-4xl mx-auto px-4 text-center"><h2>Partiamo da un processo vero,<br>non da una promessa.</h2><p>Porta un obiettivo e i vincoli: definiamo insieme il piano giusto.</p><a href="/prenota-call" class="home-primary">Prenota una call <i class="fas fa-arrow-right"></i></a></div></section>
+</main>
 
 <%- include('../partials/footer') %>

@@ -1,15 +1,15 @@
 <%- include('../partials/header') %>
 <%- include('../partials/navbar') %>
 
-<section class="min-h-[60vh] flex items-center justify-center py-20">
-    <div class="text-center">
-        <div class="text-8xl font-bold text-red-200 mb-4">500</div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Errore interno</h1>
-        <p class="text-gray-500 mb-8"><%= typeof message !== 'undefined' ? message : 'Si è verificato un errore imprevisto. Il team è stato notificato.' %></p>
-        <a href="/" class="inline-flex items-center gap-2 px-6 py-3 bg-wes-500 text-white font-medium rounded-xl hover:bg-wes-600 transition">
-            <i class="fas fa-arrow-left"></i> Torna alla Home
-        </a>
-    </div>
-</section>
+<main class="product-page min-h-[calc(100vh-64px)] flex items-center py-20">
+  <div class="home-grid"></div>
+  <div class="relative w-full max-w-3xl mx-auto px-4 text-center">
+    <div class="mx-auto w-16 h-16 rounded-2xl border border-rose-500/30 bg-rose-500/10 text-rose-300 grid place-items-center shadow-2xl shadow-rose-950"><i class="fas fa-triangle-exclamation text-xl"></i></div>
+    <div class="mt-7 text-[10px] uppercase tracking-[.35em] font-bold text-rose-400">Errore 500</div>
+    <h1 class="mt-4 text-5xl sm:text-7xl font-semibold tracking-tight text-white">Esecuzione fermata<br><em class="text-rose-300 not-italic">in sicurezza.</em></h1>
+    <p class="mt-6 text-slate-400 max-w-xl mx-auto"><%= typeof message !== 'undefined' ? message : 'Si è verificato un errore interno. Puoi riprovare senza dare per eseguita l’operazione.' %></p>
+    <div class="mt-9 flex flex-wrap justify-center gap-3"><a href="<%= currentUser ? '/workspace' : '/' %>" class="rounded-xl bg-white text-slate-950 px-5 py-3 text-sm font-bold"><i class="fas fa-arrow-left mr-2"></i><%= currentUser ? 'Torna al workspace' : 'Torna alla home' %></a><a href="/contatti" class="rounded-xl border border-slate-700 text-slate-300 px-5 py-3 text-sm font-semibold hover:border-slate-500">Richiedi assistenza</a></div>
+  </div>
+</main>
 
 <%- include('../partials/footer') %>

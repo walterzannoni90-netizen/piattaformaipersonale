@@ -1,35 +1,82 @@
 services:
   - type: web
     name: wes-ai-automation
-    runtime: node
+    runtime: docker
     repo: https://github.com/walterzannoni90-netizen/piattaformaipersonale
     branch: master
-    plan: starter # Minimo $7/mese per domini personalizzati
-    buildCommand: npm install
-    startCommand: node server.js
-    healthCheckPath: /
-    domains:
-      - app.incontridibakeka.com
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    maxShutdownDelaySeconds: 60
+    disk:
+      name: wes-data
+      mountPath: /var/data
+      sizeGB: 5
     envVars:
       - key: PORT
         value: "10000"
-      - key: NODE_VERSION
-        value: "22"
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
         generateValue: true
-      - key: SESSION_SECRET
+      - key: APP_ENCRYPTION_KEY
         generateValue: true
       - key: APP_URL
-        value: https://app.incontridibakeka.com
+        sync: false
+      - key: DB_PATH
+        value: /var/data/wes.db
+      - key: AGENT_WORKSPACE_ROOT
+        value: /var/data/workspaces
+      - key: PYTHON_BIN
+        value: /opt/venv/bin/python
+      - key: ALLOW_PUBLIC_REGISTRATION
+        value: "false"
       - key: OPENROUTER_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
         sync: false
       - key: STRIPE_SECRET_KEY
         sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
       - key: WHATSAPP_API_KEY
         sync: false
-      - key: GMAIL_USER
+      - key: WHATSAPP_PHONE_ID
         sync: false
-      - key: GMAIL_PASS
+      - key: WHATSAPP_OWNER_USER_ID
         sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: META_GRAPH_VERSION
+        value: v22.0
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: CONTACT_EMAIL
+        sync: false
+      - key: CONTACT_PHONE
+        sync: false
+      - key: CONTACT_LOCATION
+        sync: false
+      - key: LEGAL_NAME
+        sync: false
+      - key: LEGAL_ADDRESS
+        sync: false
+      - key: VAT_NUMBER
+        sync: false
+      - key: PRIVACY_EMAIL
+        sync: false
+      - key: LEGAL_REVIEWED
+        value: "false"
+      - key: DATA_RETENTION_DAYS
+        value: "365"

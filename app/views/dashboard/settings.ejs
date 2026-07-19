@@ -53,32 +53,33 @@
     
     <!-- OpenRouter Config -->
     <div class="mt-6 bg-white rounded-xl border border-gray-100 p-8">
-        <h2 class="text-xl font-bold mb-6">Configurazione API OpenRouter</h2>
+        <div class="flex items-start justify-between gap-4 mb-6"><div><h2 class="text-xl font-bold">Motore AI autonomo</h2><p class="text-xs text-gray-500 mt-1">Chiave personale e modello usato per piano e consegna.</p></div><span class="text-xs text-emerald-600 bg-emerald-50 rounded-full px-3 py-1"><i class="fas fa-lock mr-1"></i>Cifratura AES-GCM</span></div>
         <p class="text-sm text-gray-500 mb-4">
-            Inserisci la tua API Key di OpenRouter per abilitare l'agente AI. 
-            Se non hai una chiave, <a href="https://openrouter.ai/keys" target="_blank" class="text-wes-500 hover:text-wes-600">creala qui</a>.
+            Inserisci una API key OpenRouter. Viene cifrata prima di essere salvata e non sarà mai mostrata di nuovo.
+            Se non hai una chiave, <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" class="text-wes-500 hover:text-wes-600">creala qui</a>.
         </p>
         <form id="apiKeyForm" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">OpenRouter API Key</label>
-                <input type="password" name="api_key" placeholder="sk-or-v1-..." 
+                <input type="password" name="api_key" required maxlength="240" autocomplete="new-password" placeholder="sk-or-v1-..."
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Modello AI</label>
-                <select name="model"
+                <label class="block text-sm font-medium text-gray-700 mb-1">ID modello OpenRouter</label>
+                <input name="model" required maxlength="150" value="<%= agentModel %>" placeholder="openrouter/auto"
                     class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wes-500 focus:border-wes-500 outline-none transition">
-                    <option value="openai/gpt-4o">GPT-4o (OpenAI)</option>
-                    <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-                    <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-                    <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</option>
-                    <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
-                </select>
+                <p class="text-xs text-gray-400 mt-1"><code>openrouter/auto</code> lascia a OpenRouter la selezione; puoi indicare qualsiasi model slug valido.</p>
             </div>
             <button type="submit" class="w-full py-2.5 px-4 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition">
-                <i class="fas fa-key mr-2"></i> Salva API Key
+                <i class="fas fa-key mr-2"></i> Salva e attiva
             </button>
         </form>
+    </div>
+
+    <div class="mt-6 rounded-xl border border-slate-200 bg-slate-950 text-white p-8">
+        <div class="flex items-start justify-between gap-5"><div><div class="text-[10px] uppercase tracking-[.22em] text-violet-400 font-bold">Data control</div><h2 class="text-xl font-bold mt-2">I tuoi dati, portabili.</h2><p class="text-sm text-slate-400 mt-2">Genera un export JSON dei dati dell’account, CRM, workspace, audit, output e metadati degli allegati. Password, segreti cifrati e percorsi interni non vengono inclusi.</p></div><i class="fas fa-box-archive text-violet-300 text-xl"></i></div>
+        <div class="mt-6 flex flex-col sm:flex-row gap-3"><a href="/api/account/export" class="flex-1 rounded-xl bg-white text-slate-950 py-3 px-4 text-center text-sm font-bold"><i class="fas fa-download mr-2"></i>Scarica export account</a><a href="mailto:<%= legal.privacyEmail %>?subject=Richiesta%20privacy%20account%20WES" class="flex-1 rounded-xl border border-slate-700 text-slate-300 py-3 px-4 text-center text-sm font-semibold hover:border-violet-500">Rettifica o cancellazione</a></div>
+        <p class="text-[10px] text-slate-600 mt-3">Il download può essere generato una volta al minuto e non viene memorizzato come file pubblico.</p>
     </div>
 </div>
 
@@ -98,15 +99,16 @@ document.getElementById('settingsForm').addEventListener('submit', async functio
         body: JSON.stringify(data)
     });
     const result = await res.json();
-    if (result.success) {
-        alert('Impostazioni aggiornate con successo!');
-        location.reload();
-    }
+    if (result.success) { showToast('Impostazioni aggiornate'); location.reload(); }
+    else showToast(result.error || 'Impostazioni non salvate', 'error');
 });
 
-document.getElementById('apiKeyForm')?.addEventListener('submit', function(e) {
+document.getElementById('apiKeyForm')?.addEventListener('submit', async function(e) {
     e.preventDefault();
-    alert('Configurazione API salvata. Riavvia il server per applicare le modifiche.');
+    const form = new FormData(this);
+    const result = await apiCall('/api/agent-connectors/openrouter', 'POST', { api_key: form.get('api_key'), model: form.get('model') });
+    if (result.success) { this.elements.api_key.value = ''; showToast('Motore AI attivato senza riavvio'); }
+    else showToast(result.error || 'Configurazione non salvata', 'error');
 });
 </script>
 

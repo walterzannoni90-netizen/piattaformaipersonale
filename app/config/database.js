@@ -7,7 +7,7 @@ const dbPath = path.resolve(__dirname, '../../', process.env.DB_PATH || './datab
 const dbDir = path.dirname(dbPath);
 
 if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+  fs.mkdirSync(dbDir, { recursive: true, mode: 0o700 });
 }
 
 let _db = null;
@@ -49,10 +49,14 @@ class Statement {
     if (!this._stmt) this._prepare();
     this.bind(...params);
     this._stmt.step();
+    // sql.js resets its modified-row counter during export(). Capture it before
+    // persisting the database or callers would receive a false zero even though
+    // the write was applied.
+    const changes = this.db.getRowsModified();
     this._stmt.free();
     this._stmt = null;
     _saveDatabase();
-    return { changes: this.db.getRowsModified() };
+    return { changes };
   }
 
   get(...params) {
@@ -119,10 +123,14 @@ let db = new DatabaseCompat();
 
 function _saveDatabase() {
   if (_db) {
+    const temporaryPath = `${dbPath}.tmp-${process.pid}`;
     try {
-      fs.writeFileSync(dbPath, Buffer.from(_db.export()));
-    } catch (e) {
-      console.error('Failed to save database:', e.message);
+      fs.writeFileSync(temporaryPath, Buffer.from(_db.export()), { mode: 0o600 });
+      fs.renameSync(temporaryPath, dbPath);
+      try { fs.chmodSync(dbPath, 0o600); } catch {}
+    } catch (error) {
+      try { if (fs.existsSync(temporaryPath)) fs.unlinkSync(temporaryPath); } catch {}
+      throw new Error(`Persistenza database non riuscita: ${error.message}`);
     }
   }
 }
@@ -173,6 +181,7 @@ function initializeSchema() {
       plan TEXT DEFAULT 'starter',
       setup_fee_paid INTEGER DEFAULT 0,
       status TEXT DEFAULT 'active',
+      session_version INTEGER DEFAULT 0,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
       last_login TEXT,
@@ -187,6 +196,18 @@ function initializeSchema() {
       service TEXT NOT NULL,
       key_value TEXT NOT NULL,
       is_active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      expires_at TEXT NOT NULL,
+      used_at TEXT,
       created_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     )
@@ -215,6 +236,7 @@ function initializeSchema() {
       name TEXT,
       email TEXT,
       phone TEXT,
+      phone_normalized TEXT,
       source TEXT,
       status TEXT DEFAULT 'new',
       score INTEGER DEFAULT 0,
@@ -329,6 +351,7 @@ function initializeSchema() {
       current_period_end TEXT,
       stripe_subscription_id TEXT,
       stripe_customer_id TEXT,
+      stripe_event_created INTEGER DEFAULT 0,
       trial_end TEXT,
       cancelled_at TEXT,
       created_at TEXT DEFAULT (datetime('now')),
@@ -396,15 +419,251 @@ function initializeSchema() {
       UNIQUE(user_id, service)
     )
   `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS inbound_requests (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      phone TEXT,
+      company TEXT,
+      message TEXT,
+      requested_at TEXT,
+      status TEXT DEFAULT 'new',
+      created_at TEXT DEFAULT (datetime('now'))
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS processed_webhook_events (
+      provider TEXT NOT NULL,
+      event_id TEXT NOT NULL,
+      event_type TEXT,
+      user_id TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      PRIMARY KEY (provider, event_id)
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS agent_tasks (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      project_id TEXT,
+      title TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      status TEXT DEFAULT 'planning',
+      progress INTEGER DEFAULT 0,
+      current_step INTEGER DEFAULT 0,
+      mode TEXT DEFAULT 'autonomous',
+      plan TEXT DEFAULT '[]',
+      result TEXT,
+      error TEXT,
+      needs_approval INTEGER DEFAULT 0,
+      cancel_requested INTEGER DEFAULT 0,
+      credits_used INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      completed_at TEXT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_events (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      detail TEXT,
+      status TEXT DEFAULT 'completed',
+      metadata TEXT DEFAULT '{}',
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (task_id) REFERENCES agent_tasks(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_artifacts (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      content TEXT,
+      url TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (task_id) REFERENCES agent_tasks(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS projects (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      instructions TEXT,
+      color TEXT DEFAULT '#6C63FF',
+      archived INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS project_memories (
+      id TEXT PRIMARY KEY,
+      project_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      kind TEXT DEFAULT 'fact',
+      content TEXT NOT NULL,
+      source_task_id TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (source_task_id) REFERENCES agent_tasks(id) ON DELETE SET NULL
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS workspace_files (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      project_id TEXT,
+      task_id TEXT,
+      original_name TEXT NOT NULL,
+      stored_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size_bytes INTEGER NOT NULL,
+      storage_path TEXT NOT NULL,
+      sha256 TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+      FOREIGN KEY (task_id) REFERENCES agent_tasks(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_approvals (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      action_type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      description TEXT,
+      payload TEXT DEFAULT '{}',
+      status TEXT DEFAULT 'pending',
+      decided_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (task_id) REFERENCES agent_tasks(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_messages (
+      id TEXT PRIMARY KEY,
+      task_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (task_id) REFERENCES agent_tasks(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_schedules (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      project_id TEXT,
+      name TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      cron_expression TEXT NOT NULL,
+      timezone TEXT DEFAULT 'Europe/Rome',
+      is_active INTEGER DEFAULT 1,
+      last_run TEXT,
+      next_run TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
+    )
+  `);
+
+  // Forward-only, non-destructive migrations for installations created before
+  // the autonomous workspace was introduced.
+  const userColumns = db.prepare('PRAGMA table_info(users)').all().map((column) => column.name);
+  if (!userColumns.includes('session_version')) db.exec('ALTER TABLE users ADD COLUMN session_version INTEGER DEFAULT 0');
+
+  const taskColumns = db.prepare('PRAGMA table_info(agent_tasks)').all().map((column) => column.name);
+  const addTaskColumn = (name, definition) => {
+    if (!taskColumns.includes(name)) db.exec(`ALTER TABLE agent_tasks ADD COLUMN ${name} ${definition}`);
+  };
+  addTaskColumn('project_id', 'TEXT');
+  addTaskColumn('current_step', 'INTEGER DEFAULT 0');
+  addTaskColumn('error', 'TEXT');
+  addTaskColumn('needs_approval', 'INTEGER DEFAULT 0');
+  addTaskColumn('cancel_requested', 'INTEGER DEFAULT 0');
+
+  const leadColumns = db.prepare('PRAGMA table_info(leads)').all().map((column) => column.name);
+  if (!leadColumns.includes('phone_normalized')) db.exec('ALTER TABLE leads ADD COLUMN phone_normalized TEXT');
+  const { normalizePhone } = require('../utils/contact');
+  for (const lead of db.prepare("SELECT id, phone FROM leads WHERE phone IS NOT NULL AND trim(phone) <> '' AND (phone_normalized IS NULL OR phone_normalized = '')").all()) {
+    db.prepare('UPDATE leads SET phone_normalized = ? WHERE id = ?').run(normalizePhone(lead.phone) || null, lead.id);
+  }
+
+  const subscriptionColumns = db.prepare('PRAGMA table_info(subscriptions)').all().map((column) => column.name);
+  if (!subscriptionColumns.includes('stripe_event_created')) db.exec('ALTER TABLE subscriptions ADD COLUMN stripe_event_created INTEGER DEFAULT 0');
+
+  // Normalize automation templates created by early versions, where the
+  // template id was mistakenly stored instead of the runtime event name.
+  const automationEvents = {
+    'auto-response': 'first_message',
+    'qualify-lead': 'first_message',
+    'save-crm': 'lead_qualified',
+    'auto-appointment': 'lead_qualified',
+    'followup-1day': 'first_message',
+    'followup-3days': 'first_message',
+    'notify-sales': 'lead_qualified',
+    'weekly-report': 'weekly_schedule'
+  };
+  for (const [legacy, event] of Object.entries(automationEvents)) {
+    db.prepare('UPDATE automations SET trigger_event = ? WHERE trigger_event = ?').run(event, legacy);
+  }
+  db.prepare("UPDATE automations SET actions = '[\"send_followup_3days\"]' WHERE trigger_event = 'first_message' AND name = 'Follow-up dopo 3 giorni'").run();
   
   // Indexes
   db.exec('CREATE INDEX IF NOT EXISTS idx_leads_user ON leads(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_leads_user_status_created ON leads(user_id, status, created_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_leads_user_phone ON leads(user_id, phone_normalized)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_conversations_user ON conversations(user_id)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_appointments_user ON appointments(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_appointments_user_time ON appointments(user_id, status, start_time, end_time)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_followups_user ON follow_ups(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_followups_due ON follow_ups(status, scheduled_at)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_automations_user ON automations(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_automations_trigger_user ON automations(trigger_event, user_id, is_active)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_logs_created ON logs(created_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_logs_user_created ON logs(user_id, created_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_agent_tasks_user ON agent_tasks(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_agent_tasks_user_status_created ON agent_tasks(user_id, status, created_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_task_events_task ON task_events(task_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_task_events_task_created ON task_events(task_id, created_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_memories_project ON project_memories(project_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_workspace_files_user ON workspace_files(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_approvals_task ON task_approvals(task_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_approvals_task_status ON task_approvals(task_id, user_id, status)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_inbound_requests_created ON inbound_requests(created_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_webhook_events_created ON processed_webhook_events(created_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_task_schedules_due ON task_schedules(is_active, next_run)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_password_reset_hash ON password_reset_tokens(token_hash)');
 }
 
 module.exports = { getDatabase, initDatabase };

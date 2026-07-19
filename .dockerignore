@@ -1,0 +1,12 @@
+.git
+.github
+.env
+node_modules
+database/*.db
+database/*.db-wal
+database/*.db-shm
+data
+coverage
+npm-debug.log*
+Dockerfile*
+README.md

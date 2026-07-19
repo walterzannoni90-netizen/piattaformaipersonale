@@ -64,67 +64,45 @@
     <% } %>
 </div>
 
-<!-- Fonte Lead -->
+<!-- Distribuzioni calcolate dai dati reali del tenant -->
+<%
+const sourceMeta = {
+    whatsapp: { label: 'WhatsApp', icon: 'fab fa-whatsapp', color: 'bg-emerald-500', text: 'text-emerald-500' },
+    website: { label: 'Sito web', icon: 'fas fa-globe', color: 'bg-blue-500', text: 'text-blue-500' },
+    booking_call: { label: 'Richiesta call', icon: 'fas fa-calendar', color: 'bg-violet-500', text: 'text-violet-500' },
+    email: { label: 'Email', icon: 'fas fa-envelope', color: 'bg-purple-500', text: 'text-purple-500' }
+};
+const statusMeta = {
+    new: { label: 'Nuovi', color: 'bg-blue-500' },
+    qualified: { label: 'Qualificati', color: 'bg-emerald-500' },
+    contacted: { label: 'Contattati', color: 'bg-violet-500' },
+    converted: { label: 'Convertiti', color: 'bg-amber-500' },
+    lost: { label: 'Persi', color: 'bg-rose-500' }
+};
+%>
 <div class="grid md:grid-cols-2 gap-6">
     <div class="bg-white rounded-xl border border-gray-100 p-6">
-        <h2 class="font-bold mb-4">Distribuzione Lead per Fonte</h2>
-        <div class="space-y-3">
-            <div class="flex items-center justify-between">
-                <span class="text-sm flex items-center gap-2"><i class="fab fa-whatsapp text-green-500"></i> WhatsApp</span>
-                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.4) : 0 %></span>
-            </div>
-            <div class="bg-gray-200 rounded-full h-2">
-                <div class="bg-green-500 h-2 rounded-full" style="width: 40%"></div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm flex items-center gap-2"><i class="fas fa-globe text-blue-500"></i> Sito Web</span>
-                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.35) : 0 %></span>
-            </div>
-            <div class="bg-gray-200 rounded-full h-2">
-                <div class="bg-blue-500 h-2 rounded-full" style="width: 35%"></div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm flex items-center gap-2"><i class="fas fa-envelope text-purple-500"></i> Email</span>
-                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.25) : 0 %></span>
-            </div>
-            <div class="bg-gray-200 rounded-full h-2">
-                <div class="bg-purple-500 h-2 rounded-full" style="width: 25%"></div>
-            </div>
-        </div>
+        <div class="flex items-start justify-between gap-3 mb-5"><div><h2 class="font-bold">Lead per fonte</h2><p class="text-xs text-gray-400 mt-1">Conteggi registrati nel CRM</p></div><i class="fas fa-fingerprint text-wes-400"></i></div>
+        <% if (sourceStats.length) { %><div class="space-y-4">
+            <% sourceStats.forEach(function(stat) { const meta = sourceMeta[stat.key] || { label: stat.key, icon: 'fas fa-circle-nodes', color: 'bg-slate-500', text: 'text-slate-500' }; %>
+                <div>
+                    <div class="flex items-center justify-between mb-1.5"><span class="text-sm flex items-center gap-2 capitalize"><i class="<%= meta.icon %> <%= meta.text %>"></i><%= meta.label %></span><span class="text-xs font-semibold"><%= stat.count %> · <%= stat.percentage %>%</span></div>
+                    <div class="bg-gray-100 rounded-full h-2 overflow-hidden"><div class="<%= meta.color %> h-2 rounded-full" style="width: <%= stat.percentage %>%"></div></div>
+                </div>
+            <% }); %>
+        </div><% } else { %><div class="rounded-xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-400">Nessun lead registrato.</div><% } %>
     </div>
-    
+
     <div class="bg-white rounded-xl border border-gray-100 p-6">
-        <h2 class="font-bold mb-4">Stato Lead</h2>
-        <div class="space-y-3">
-            <div class="flex items-center justify-between">
-                <span class="text-sm">Nuovi</span>
-                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.3) : 0 %></span>
-            </div>
-            <div class="bg-gray-200 rounded-full h-2">
-                <div class="bg-blue-500 h-2 rounded-full" style="width: 30%"></div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm">Qualificati</span>
-                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.25) : 0 %></span>
-            </div>
-            <div class="bg-gray-200 rounded-full h-2">
-                <div class="bg-green-500 h-2 rounded-full" style="width: 25%"></div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm">Contattati</span>
-                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.25) : 0 %></span>
-            </div>
-            <div class="bg-gray-200 rounded-full h-2">
-                <div class="bg-purple-500 h-2 rounded-full" style="width: 25%"></div>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-sm">Convertiti</span>
-                <span class="text-sm font-medium"><%= totalStats.totalLeads.count > 0 ? Math.round(totalStats.totalLeads.count * 0.2) : 0 %></span>
-            </div>
-            <div class="bg-gray-200 rounded-full h-2">
-                <div class="bg-amber-500 h-2 rounded-full" style="width: 20%"></div>
-            </div>
-        </div>
+        <div class="flex items-start justify-between gap-3 mb-5"><div><h2 class="font-bold">Lead per stato</h2><p class="text-xs text-gray-400 mt-1">Pipeline corrente, senza stime</p></div><i class="fas fa-filter text-wes-400"></i></div>
+        <% if (statusStats.length) { %><div class="space-y-4">
+            <% statusStats.forEach(function(stat) { const meta = statusMeta[stat.key] || { label: stat.key, color: 'bg-slate-500' }; %>
+                <div>
+                    <div class="flex items-center justify-between mb-1.5"><span class="text-sm capitalize"><%= meta.label %></span><span class="text-xs font-semibold"><%= stat.count %> · <%= stat.percentage %>%</span></div>
+                    <div class="bg-gray-100 rounded-full h-2 overflow-hidden"><div class="<%= meta.color %> h-2 rounded-full" style="width: <%= stat.percentage %>%"></div></div>
+                </div>
+            <% }); %>
+        </div><% } else { %><div class="rounded-xl border border-dashed border-gray-200 p-8 text-center text-sm text-gray-400">La pipeline apparirà quando arriveranno i primi lead.</div><% } %>
     </div>
 </div>
 

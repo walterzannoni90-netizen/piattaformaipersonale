@@ -1,72 +1,52 @@
 <%- include('../partials/header') %>
 <%- include('../partials/dashboard-nav') %>
 
-<div class="grid lg:grid-cols-3 gap-6">
-    <!-- Lista conversazioni -->
-    <div class="lg:col-span-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
-        <div class="p-4 border-b border-gray-100">
-            <h2 class="font-bold">Conversazioni</h2>
-            <p class="text-xs text-gray-500 mt-1"><%= conversations.length %> totali</p>
+<section class="-m-6 min-h-[calc(100vh-73px)] bg-slate-950 text-white p-4 lg:p-7">
+  <div class="mx-auto max-w-7xl">
+    <div class="mb-6"><div class="text-[10px] uppercase tracking-[.24em] text-violet-400 font-bold mb-2">Conversation center</div><h2 class="text-3xl font-semibold tracking-tight">Contesto completo, risposta reale.</h2><p class="text-sm text-slate-400 mt-2">Consulta lo storico salvato e intervieni manualmente sul canale WhatsApp collegato.</p></div>
+    <div class="grid lg:grid-cols-[360px_1fr] rounded-2xl border border-slate-800 bg-slate-900 overflow-hidden min-h-[680px]">
+      <aside class="border-b lg:border-b-0 lg:border-r border-slate-800">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between"><div><h3 class="font-semibold">Conversazioni</h3><p class="text-xs text-slate-500 mt-1"><%= conversations.length %> totali</p></div><div class="w-9 h-9 rounded-xl bg-violet-500/15 text-violet-300 grid place-items-center"><i class="fas fa-comments"></i></div></div>
+        <div class="max-h-[610px] overflow-y-auto divide-y divide-slate-800/70">
+          <% if (conversations.length) { conversations.forEach(function(conversation) { const last = conversation.messageList[conversation.messageList.length - 1]; %>
+            <a href="/dashboard/conversazioni?id=<%= encodeURIComponent(conversation.id) %>" class="block p-4 transition <%= selectedConversation && selectedConversation.id === conversation.id ? 'bg-violet-500/10 border-l-2 border-violet-400' : 'hover:bg-slate-800/60 border-l-2 border-transparent' %>">
+              <div class="flex items-center justify-between gap-3"><span class="text-sm font-medium truncate"><%= conversation.lead_name || conversation.lead_phone || 'Lead' %></span><span class="text-[10px] text-slate-600 shrink-0"><%= new Date(conversation.updated_at).toLocaleDateString('it-IT') %></span></div>
+              <div class="flex items-center gap-2 mt-1"><span class="text-[10px] uppercase text-emerald-300"><i class="<%= conversation.channel === 'whatsapp' ? 'fab fa-whatsapp' : 'fas fa-globe' %> mr-1"></i><%= conversation.channel %></span><span class="w-1 h-1 bg-slate-600 rounded-full"></span><span class="text-[10px] text-slate-500"><%= conversation.status %></span></div>
+              <p class="text-xs text-slate-500 truncate mt-2"><%= last ? last.content : 'Nessun messaggio' %></p>
+            </a>
+          <% }); } else { %><div class="p-10 text-center text-slate-600"><i class="fas fa-inbox text-3xl"></i><p class="text-sm mt-3">Nessuna conversazione</p></div><% } %>
         </div>
-        <div class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
-            <% if (conversations.length > 0) { %>
-                <% conversations.forEach(function(conv) { %>
-                    <div class="p-4 hover:bg-gray-50 cursor-pointer transition">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-medium text-sm"><%= conv.lead_name || 'Lead' %></span>
-                            <span class="text-xs text-gray-400"><%= new Date(conv.updated_at).toLocaleDateString('it-IT') %></span>
-                        </div>
-                        <div class="flex items-center gap-2 text-xs text-gray-500">
-                            <i class="fab fa-<%= conv.channel === 'whatsapp' ? 'whatsapp' : 'chrome' %>"></i>
-                            <span><%= conv.channel %></span>
-                            <span class="px-1.5 py-0.5 rounded-full <%= conv.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
-                                <%= conv.status %>
-                            </span>
-                        </div>
-                        <% if (conv.messages) { 
-                            const msgs = JSON.parse(conv.messages || '[]');
-                            if (msgs.length > 0) { %>
-                                <p class="text-xs text-gray-400 mt-2 truncate"><%= msgs[msgs.length-1].content %></p>
-                        <% } } %>
-                    </div>
-                <% }); %>
-            <% } else { %>
-                <div class="p-8 text-center text-gray-400">
-                    <i class="fas fa-comment-dots text-4xl mb-3 block"></i>
-                    <p>Nessuna conversazione</p>
-                </div>
-            <% } %>
-        </div>
+      </aside>
+
+      <div class="flex flex-col min-w-0">
+        <% if (selectedConversation) { %>
+          <header class="p-4 border-b border-slate-800 flex items-center justify-between gap-4"><div class="flex items-center gap-3 min-w-0"><div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-cyan-400 grid place-items-center font-bold"><%= (selectedConversation.lead_name || 'L').charAt(0).toUpperCase() %></div><div class="min-w-0"><h3 class="font-medium truncate"><%= selectedConversation.lead_name || 'Lead WhatsApp' %></h3><p class="text-xs text-slate-500 truncate"><%= selectedConversation.lead_email || selectedConversation.lead_phone || 'Contatto non disponibile' %></p></div></div><span class="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300"><%= selectedConversation.status.toUpperCase() %></span></header>
+          <div id="messageHistory" class="flex-1 overflow-y-auto p-5 lg:p-8 space-y-4 bg-[radial-gradient(circle_at_top_right,rgba(108,99,255,.08),transparent_38%)]">
+            <% if (selectedConversation.messageList.length) { selectedConversation.messageList.forEach(function(message) { const fromAgent = message.role === 'agent' || message.role === 'assistant'; %>
+              <div class="flex <%= fromAgent ? 'justify-end' : 'justify-start' %>"><div class="max-w-[82%] rounded-2xl px-4 py-3 <%= fromAgent ? 'bg-violet-500 text-white rounded-br-md' : 'bg-slate-800 text-slate-200 rounded-bl-md' %>"><p class="text-sm whitespace-pre-wrap break-words"><%= message.content %></p><div class="mt-2 text-[9px] <%= fromAgent ? 'text-violet-200' : 'text-slate-500' %>"><%= fromAgent ? 'WES / operatore' : 'Lead' %><% if (message.timestamp) { %> · <%= new Date(message.timestamp).toLocaleString('it-IT', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' }) %><% } %></div></div></div>
+            <% }); } else { %><div class="h-full grid place-items-center text-center text-slate-600"><div><i class="fas fa-message text-4xl"></i><p class="text-sm mt-3">Lo storico è vuoto.</p></div></div><% } %>
+          </div>
+          <footer class="p-4 border-t border-slate-800">
+            <% if (selectedConversation.channel === 'whatsapp' && selectedConversation.status === 'active') { %>
+              <form id="manualMessageForm" data-id="<%= selectedConversation.id %>" class="flex items-end gap-3"><label class="sr-only" for="manualMessage">Messaggio</label><textarea id="manualMessage" name="content" maxlength="4096" rows="2" required class="flex-1 resize-none rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-sm outline-none focus:border-violet-500" placeholder="Rispondi manualmente su WhatsApp…"></textarea><button class="w-12 h-12 rounded-xl bg-white text-slate-950 grid place-items-center hover:bg-violet-100"><i class="fas fa-paper-plane"></i></button></form>
+              <p class="text-[10px] text-slate-600 mt-2"><i class="fas fa-shield-halved mr-1"></i>Il messaggio viene inviato tramite la connessione Meta dell’account e registrato nello storico.</p>
+            <% } else { %><div class="rounded-xl bg-slate-950 border border-slate-800 p-3 text-xs text-slate-500">Questo canale è disponibile in sola lettura oppure la conversazione è chiusa.</div><% } %>
+          </footer>
+        <% } else { %><div class="flex-1 grid place-items-center text-center text-slate-600"><div><i class="fas fa-comments text-5xl"></i><h3 class="font-medium text-slate-300 mt-5">Il conversation center è pronto</h3><p class="text-sm mt-1">Le nuove conversazioni collegate appariranno qui.</p></div></div><% } %>
+      </div>
     </div>
-    
-    <!-- Chat simulata -->
-    <div class="lg:col-span-2 bg-white rounded-xl border border-gray-100 flex flex-col">
-        <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">L</div>
-                <div>
-                    <p class="font-medium text-sm">Seleziona una conversazione</p>
-                    <p class="text-xs text-gray-400">Scegli una conversazione dalla lista</p>
-                </div>
-            </div>
-        </div>
-        <div class="flex-1 p-8 flex items-center justify-center text-gray-400">
-            <div class="text-center">
-                <i class="fas fa-comment-dots text-6xl mb-4"></i>
-                <p>Seleziona una conversazione per vedere i messaggi</p>
-            </div>
-        </div>
-        <div class="p-4 border-t border-gray-100">
-            <div class="flex items-center gap-2">
-                <input type="text" placeholder="Scrivi un messaggio..." disabled
-                    class="flex-1 px-4 py-2.5 bg-gray-50 rounded-xl text-sm border-0 focus:ring-2 focus:ring-wes-500">
-                <button disabled class="p-2.5 bg-gray-200 text-gray-400 rounded-xl">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+  </div>
+</section>
+
+<script>
+document.getElementById('manualMessageForm')?.addEventListener('submit', async function(event) {
+  event.preventDefault(); const button = this.querySelector('button'); button.disabled = true;
+  const content = this.elements.content.value.trim();
+  const result = await apiCall(`/api/conversations/${this.dataset.id}/messages`, 'POST', { content });
+  if (result.success) location.reload(); else { showToast(result.error || 'Messaggio non inviato', 'error'); button.disabled = false; }
+});
+const history = document.getElementById('messageHistory'); if (history) history.scrollTop = history.scrollHeight;
+</script>
 
 </main></div>
 <%- include('../partials/footer') %>

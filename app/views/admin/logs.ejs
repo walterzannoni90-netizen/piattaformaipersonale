@@ -4,7 +4,7 @@
 <div class="bg-white rounded-xl border border-gray-100 p-6">
     <div class="flex items-center justify-between mb-4">
         <h2 class="font-bold">Log di Sistema (<%= totalLogs %>)</h2>
-        <button onclick="if(confirm('Eliminare i log più vecchi di 30 giorni?')){ fetch('/api/admin/logs/clear', {method:'POST'}).then(()=>location.reload()) }" 
+        <button onclick="clearOldLogs()"
             class="px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-xl hover:bg-red-100 transition">
             <i class="fas fa-trash mr-1"></i> Pulisci Log
         </button>
@@ -69,6 +69,16 @@
         </div>
     <% } %>
 </div>
+
+<script>
+async function clearOldLogs() {
+    if (!confirm('Eliminare definitivamente soltanto i log più vecchi di 30 giorni?')) return;
+    const response = await fetch('/api/admin/logs/clear', { method: 'POST' });
+    const result = await response.json();
+    if (result.success) location.reload();
+    else showToast(result.error || 'Log non eliminati', 'error');
+}
+</script>
 
 </main></div>
 <%- include('../partials/footer') %>

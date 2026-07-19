@@ -49,14 +49,14 @@
     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         <% if (typeof templates !== 'undefined' && templates) { %>
             <% templates.forEach(function(tmpl) { %>
-                <div class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md hover:border-wes-200 transition cursor-pointer group"
+                <button type="button" class="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md hover:border-wes-200 transition cursor-pointer group text-left"
                      onclick="createAutomation('<%= tmpl.id %>')">
                     <div class="w-10 h-10 bg-wes-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-wes-500 transition-colors">
                         <i class="fas fa-<%= tmpl.icon %> text-wes-500 group-hover:text-white transition-colors"></i>
                     </div>
                     <h3 class="font-medium text-sm mb-1"><%= tmpl.name %></h3>
                     <p class="text-xs text-gray-500"><%= tmpl.description %></p>
-                </div>
+                </button>
             <% }); %>
         <% } %>
     </div>
@@ -64,11 +64,13 @@
 
 <script>
 async function toggleAutomation(id, isActive) {
-    await fetch('/api/automation/toggle', {
+    const response = await fetch('/api/automation/toggle', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, is_active: isActive })
     });
+    const result = await response.json();
+    if (!result.success) { showToast(result.error || 'Automazione non aggiornata', 'error'); location.reload(); }
 }
 
 async function createAutomation(templateId) {
@@ -79,6 +81,7 @@ async function createAutomation(templateId) {
     });
     const result = await res.json();
     if (result.success) location.reload();
+    else showToast(result.error || 'Automazione non creata', 'error');
 }
 </script>
 

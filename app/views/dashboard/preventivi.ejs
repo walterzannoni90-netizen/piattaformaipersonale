@@ -3,10 +3,10 @@
 
 <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
     <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="font-bold">Preventivi (<%= invoices.length %>)</h2>
+        <div><h2 class="font-bold">Bozze preventivo (<%= invoices.length %>)</h2><p class="text-xs text-gray-400 mt-1">Archivio interno: nessun invio avviene da questa schermata.</p></div>
         <button onclick="document.getElementById('newInvoiceModal').classList.remove('hidden')"
             class="px-4 py-2 bg-wes-500 text-white text-sm font-medium rounded-xl hover:bg-wes-600 transition">
-            <i class="fas fa-plus mr-1"></i> Nuovo Preventivo
+            <i class="fas fa-plus mr-1"></i> Nuova bozza
         </button>
     </div>
     <div class="overflow-x-auto">
@@ -55,13 +55,13 @@
 <div id="newInvoiceModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
     <div class="bg-white rounded-2xl p-6 w-full max-w-md mx-4">
         <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-bold">Nuovo Preventivo</h3>
+            <h3 class="text-lg font-bold">Nuova bozza preventivo</h3>
             <button onclick="document.getElementById('newInvoiceModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">&times;</button>
         </div>
         <form id="invoiceForm" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium mb-1">Lead ID</label>
-                <input type="text" name="lead_id" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none">
+                <label class="block text-sm font-medium mb-1">Lead</label>
+                <select name="lead_id" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none"><option value="">Nessun lead collegato</option><% leads.forEach(function(lead) { %><option value="<%= lead.id %>"><%= lead.name || lead.email || lead.phone || lead.id %></option><% }) %></select>
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Importo (€)</label>
@@ -73,7 +73,7 @@
                 <textarea name="notes" rows="3" class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-wes-500 outline-none resize-none"></textarea>
             </div>
             <button type="submit" class="w-full py-3 bg-wes-500 text-white font-medium rounded-xl hover:bg-wes-600 transition">
-                Crea Preventivo
+                Salva bozza
             </button>
         </form>
     </div>
@@ -98,7 +98,7 @@ document.getElementById('invoiceForm').addEventListener('submit', async function
     if (result.success) {
         document.getElementById('newInvoiceModal').classList.add('hidden');
         location.reload();
-    }
+    } else showToast(result.error || 'Bozza non creata', 'error');
 });
 </script>
 

@@ -51,13 +51,15 @@
 
 <script>
 async function deleteUser(id) {
-    if (!confirm('Sei sicuro di voler eliminare questo utente?')) return;
-    await fetch('/api/admin/user/delete', {
+    if (!confirm('Archiviare questo account? L’accesso verrà disattivato ma i dati non saranno cancellati.')) return;
+    const response = await fetch('/api/admin/user/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
     });
-    location.reload();
+    const result = await response.json();
+    if (result.success) location.reload();
+    else showToast(result.error || 'Account non archiviato', 'error');
 }
 </script>
 

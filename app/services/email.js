@@ -4,54 +4,82 @@
 const nodemailer = require('nodemailer');
 const { getDatabase } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const secretVault = require('./secretVault');
+const safeWeb = require('./safeWeb');
 
 class EmailService {
   constructor() {
     this.transporter = null;
   }
 
-  getTransporter(userId) {
+  async getTransporter(userId, suppliedConfig = null) {
     const db = getDatabase();
     const config = db.prepare('SELECT * FROM api_keys WHERE user_id = ? AND service = "email" AND is_active = 1').get(userId);
-    
-    if (config) {
-      const creds = JSON.parse(config.key_value);
-      return nodemailer.createTransport({
-        host: creds.host || process.env.SMTP_HOST,
-        port: creds.port || process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-          user: creds.user || process.env.SMTP_USER,
-          pass: creds.pass || process.env.SMTP_PASS
-        }
-      });
+    let creds = suppliedConfig;
+    if (!creds && config) {
+      try { creds = JSON.parse(secretVault.open(config.key_value)); } catch { return null; }
     }
-    
-    // Default transporter using env vars
-    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-      return nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
+    if (!creds && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      creds = { host: process.env.SMTP_HOST, port: process.env.SMTP_PORT, user: process.env.SMTP_USER, pass: process.env.SMTP_PASS };
     }
-    
-    return null;
+    if (!creds?.host || !creds?.user || !creds?.pass) return null;
+    const port = Number(creds.port || 587);
+    if (![465, 587].includes(port)) throw new Error('Porta SMTP non consentita');
+    const resolved = await safeWeb.resolvePublicHost(creds.host);
+    const transporter = nodemailer.createTransport({
+      host: resolved.address,
+      port,
+      secure: port === 465,
+      requireTLS: port === 587,
+      connectionTimeout: 12_000,
+      greetingTimeout: 12_000,
+      socketTimeout: 20_000,
+      auth: { user: creds.user, pass: creds.pass },
+      tls: { servername: resolved.hostname, rejectUnauthorized: true }
+    });
+    return { transporter, from: creds.from || creds.user };
+  }
+
+  async verifyCredentials(creds) {
+    const configured = await this.getTransporter('__verification__', creds);
+    if (!configured) throw new Error('Configurazione SMTP incompleta');
+    await configured.transporter.verify();
+    return true;
+  }
+
+  async sendPlatformEmail(to, subject, html) {
+    const creds = process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS ? {
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT || 587,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+      from: process.env.SMTP_FROM || process.env.SMTP_USER
+    } : null;
+    if (!creds) return { success: false, error: 'SMTP di piattaforma non configurato' };
+    try {
+      const configured = await this.getTransporter('__platform__', creds);
+      const info = await configured.transporter.sendMail({
+        from: `"WES Autonomous Intelligence" <${configured.from}>`,
+        to,
+        subject,
+        html
+      });
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.error('Platform email error:', error.message);
+      return { success: false, error: error.message };
+    }
   }
 
   async sendEmail(userId, to, subject, html, from) {
     try {
-      const transporter = this.getTransporter(userId);
-      if (!transporter) {
+      const configured = await this.getTransporter(userId);
+      if (!configured) {
         return { success: false, error: 'Email SMTP non configurata' };
       }
 
-      const info = await transporter.sendMail({
-        from: from || `"WES AI Automation" <${process.env.SMTP_USER}>`,
+      const info = await configured.transporter.sendMail({
+        from: from || `"WES AI Automation" <${configured.from}>`,
         to,
         subject,
         html
