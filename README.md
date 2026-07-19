@@ -32,6 +32,7 @@ La base attuale comprende:
 - approvazione del payload esatto prima di azioni esterne;
 - client Node.js per OpenManus con autenticazione, timeout, polling e cancellazione;
 - servizio FastAPI OpenManus con stato persistente SQLite, cancellazione reale dei task e recovery esplicito dopo riavvio;
+- gateway Node.js resiliente con rollout disattivato, shadow, canary o primary, circuit breaker, fallback selettivo, idempotenza, health cache, progress normalizzato e metriche;
 - Docker Compose dedicato all'architettura ibrida.
 
 > Il concept grafico sotto rappresenta la direzione del prodotto finale e non uno screenshot della versione oggi in produzione.
@@ -48,8 +49,8 @@ flowchart LR
     UI --> N[Node.js Platform]
     N --> P[Planner e Policy]
     N --> M[Memoria e Audit]
-    N --> O[OpenManus Client]
-    O -->|Bearer token| F[FastAPI Engine]
+    N --> G[OpenManus Gateway]
+    G -->|Bearer token| F[FastAPI Engine]
     F --> OM[OpenManus]
     OM --> B[Browser e strumenti]
     OM --> R[Risultato]
@@ -63,7 +64,8 @@ flowchart LR
 | Livello | Responsabilità |
 |---|---|
 | WES Node.js | utenti, autorizzazioni, pagamenti, workspace, memoria, audit, approvazioni e consegna |
-| OpenManus client | autenticazione interna, timeout, polling, cancellazione e normalizzazione errori |
+| OpenManus gateway | rollout, canary, circuit breaker, idempotenza, fallback, metriche e normalizzazione stato |
+| OpenManus client | autenticazione interna, timeout, polling, cancellazione e normalizzazione errori HTTP |
 | OpenManus FastAPI | ciclo di vita dei task, persistenza, recovery e gestione dell'agente Python |
 | OpenManus | pianificazione ed esecuzione autonoma tramite strumenti e browser |
 
@@ -75,6 +77,7 @@ flowchart LR
 | `unifiedTaskRuntime` | ponte dai piani persistiti al runtime resiliente |
 | `autonomyRuntime` | memoria, valutazione, browser e auto-correzione |
 | `resilientExecutor` | checkpoint, retry, cancellazione e replanning |
+| `openManusGateway` | rollout controllato e protezione del confine Node/Python |
 | `openManusClient` | comunicazione sicura tra Node.js e il motore Python |
 | `services/openmanus/app.py` | API del motore, persistenza e cancellazione reale |
 | `agentTeam` | specialisti paralleli, quorum e consolidamento evidenze |
@@ -89,6 +92,8 @@ flowchart LR
 - browser limitato da allowlist e budget di azioni;
 - azioni esterne subordinate ad approvazione esatta;
 - token obbligatorio per il servizio OpenManus in produzione;
+- gateway OpenManus disattivato per default e attivabile soltanto tramite configurazione esplicita;
+- circuit breaker dopo errori consecutivi e fallback soltanto per guasti infrastrutturali recuperabili;
 - task OpenManus persistiti su SQLite con WAL;
 - task interrotti realmente tramite `asyncio.Task.cancel()`;
 - task rimasti in esecuzione durante un riavvio marcati esplicitamente come falliti, senza fingere un completamento.
@@ -128,6 +133,11 @@ Configurazione essenziale:
 | `OPENMANUS_SERVICE_TOKEN` | autenticazione tra Node.js e Python; obbligatoria in produzione |
 | `OPENMANUS_REQUEST_TIMEOUT_MS` | timeout delle singole chiamate HTTP |
 | `OPENMANUS_STATE_DB` | database persistente dei task del motore |
+| `OPENMANUS_RUNTIME_MODE` | `disabled`, `shadow`, `canary` o `primary` |
+| `OPENMANUS_CANARY_PERCENT` | percentuale deterministica di task autonomi delegati |
+| `OPENMANUS_CIRCUIT_FAILURES` | errori consecutivi prima dell'apertura del circuito |
+| `OPENMANUS_CIRCUIT_RESET_MS` | tempo di raffreddamento del circuito |
+| `OPENMANUS_HEALTH_TTL_MS` | durata della cache di health check |
 | `APP_URL` | URL HTTPS canonico della piattaforma |
 | `JWT_SECRET` | firma delle sessioni |
 | `APP_ENCRYPTION_KEY` | cifratura dei segreti |
@@ -143,7 +153,7 @@ npm run build
 npm audit --omit=dev
 ```
 
-La CI valida sintassi, test Node, dipendenze Python e build Docker. I test coprono planner, runtime resiliente, recovery, memoria, browser, policy, sicurezza web e client OpenManus.
+La CI valida sintassi, test Node, dipendenze Python e build Docker. I test coprono planner, runtime resiliente, recovery, memoria, browser, policy, sicurezza web, client OpenManus e gateway di rollout.
 
 ## API OpenManus
 
@@ -159,12 +169,12 @@ La CI valida sintassi, test Node, dipendenze Python e build Docker. I test copro
 **Avanzamento macro-roadmap: 1 completato, 17 rimanenti.**
 
 - [x] integrazione infrastrutturale OpenManus: API autenticata, client Node, persistenza, cancellazione e Docker;
-- [ ] delegazione selettiva dei task dal runtime principale a OpenManus;
+- [~] delegazione selettiva: gateway con canary, circuit breaker, fallback, idempotenza e metriche completato; collegamento al ciclo principale ancora da chiudere;
 - [ ] orchestratore multi-agente avanzato;
 - [ ] memoria semantica persistente;
 - [ ] browser autonomo robusto;
 - [ ] registry estensibile degli strumenti;
-- [ ] recovery distribuito e idempotenza;
+- [ ] recovery distribuito e idempotenza end-to-end;
 - [ ] pianificazione dinamica durante l'esecuzione;
 - [ ] sandbox isolata per codice;
 - [ ] pipeline completa documenti e artefatti;
@@ -177,8 +187,11 @@ La CI valida sintassi, test Node, dipendenze Python e build Docker. I test copro
 - [ ] suite E2E e hardening di produzione;
 - [ ] deploy enterprise, osservabilità e release pubblica.
 
+Dettaglio tecnico della fase corrente: [`docs/openmanus-runtime-wave-8.md`](docs/openmanus-runtime-wave-8.md).
+
 ## Limiti dichiarati
 
+- il gateway è implementato e testato come componente isolato, ma non ha ancora sostituito il ciclo principale di `agentOrchestrator`;
 - l'integrazione infrastrutturale non significa ancora che ogni task dell'interfaccia venga delegato automaticamente a OpenManus;
 - SQLite richiede una singola istanza per ciascun database locale;
 - i connettori funzionano soltanto quando configurati realmente;
