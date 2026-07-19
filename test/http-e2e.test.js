@@ -71,7 +71,13 @@ test('release HTTP journey keeps tenant data private and fails transparently wit
 
   const form = new FormData();
   form.append('prompt', 'Analizza con Python il documento allegato e prepara un report Markdown verificabile.');
-  form.append('files', new Blob([fs.readFileSync(path.resolve(__dirname, '../README.md'))], { type: 'text/markdown' }), 'README.md');
+  const fixture = Buffer.from([
+    '# Brief operativo E2E',
+    '',
+    'Obiettivo: verificare analisi Python, isolamento tenant e consegna degli artefatti.',
+    'Valore campione: 42.'
+  ].join('\n'), 'utf8');
+  form.append('files', new Blob([fixture], { type: 'text/markdown' }), 'brief-operativo.md');
   const taskResponse = await fetch(`${baseUrl}/api/tasks`, {
     method: 'POST', headers: { Cookie: ownerCookie, Origin: baseUrl }, body: form
   });
