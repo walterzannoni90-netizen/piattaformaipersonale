@@ -13,8 +13,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  discover-tests:
+    runs-on: ubuntu-latest
+    outputs:
+      files: ${{ steps.tests.outputs.files }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: tests
+        shell: bash
+        run: |
+          files=$(printf '%s\n' test/*.test.js | jq -R -s -c 'split("\n")[:-1]')
+          echo "files=$files" >> "$GITHUB_OUTPUT"
+
+  test-file:
+    needs: discover-tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file: ${{ fromJSON(needs.discover-tests.outputs.files) }}
+    name: test ${{ matrix.file }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node --test "${{ matrix.file }}"
+
   verify:
     runs-on: ubuntu-latest
+    needs: test-file
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,7 +58,8 @@ jobs:
       - run: pip install --requirement requirements.txt
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - name: Full test suite
+        run: npm test
       - run: npm audit --omit=dev --audit-level=high
       - run: git diff --exit-code -- app/public/css/tailwind.css
 
