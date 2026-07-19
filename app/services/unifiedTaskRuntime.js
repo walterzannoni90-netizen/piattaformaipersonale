@@ -19,9 +19,28 @@ async function runUnifiedTaskRuntime({
   operationalRuntime,
   operationalContext = {},
   productionRuntime,
-  productionOptions = {}
+  productionOptions = {},
+  productionIntegrationHub
 }) {
   if (!task || !task.id) throw new Error('Task obbligatorio');
+
+  if (productionIntegrationHub && typeof productionIntegrationHub.execute === 'function') {
+    const health = typeof productionIntegrationHub.health === 'function'
+      ? await productionIntegrationHub.health()
+      : { ready: true };
+    if (!health.ready) {
+      const error = new Error('Integrazioni di produzione non pronte');
+      error.code = 'PRODUCTION_INTEGRATIONS_NOT_READY';
+      error.health = health;
+      throw error;
+    }
+    return productionIntegrationHub.execute(task, {
+      ...productionOptions,
+      signal,
+      legacyPlan,
+      handlers
+    });
+  }
 
   if (operationalRuntime && typeof operationalRuntime.execute === 'function') {
     const health = typeof operationalRuntime.health === 'function' ? operationalRuntime.health() : { ready: true };
