@@ -17,6 +17,7 @@ test('database initializes the complete schema and persists writes', async (t) =
     'task_schedules', 'inbound_requests', 'processed_webhook_events']) {
     assert.ok(tables.includes(table), `missing table ${table}`);
   }
+  assert.ok(db.prepare('PRAGMA table_info(task_schedules)').all().some((column) => column.name === 'mode'));
   db.prepare('INSERT INTO users (id, email, password, company_name) VALUES (?, ?, ?, ?)')
     .run('test-user', 'test@example.com', 'hash', 'Test Company');
   assert.equal(db.prepare('SELECT company_name FROM users WHERE id = ?').get('test-user').company_name, 'Test Company');

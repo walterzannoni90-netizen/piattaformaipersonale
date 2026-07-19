@@ -18,14 +18,20 @@ test('workspace and task views render safely', async () => {
     ...globals, title: 'Workspace', page: 'workspace', counts: { total: 0, running: 0, done: 0 }, projects: [], schedules: [], tasks: []
   });
   assert.match(workspace, /WES Autonomous Intelligence/);
+  assert.match(workspace, /Agent Team/);
+  assert.match(workspace, /data-task-mode="team"/);
 
   const task = await ejs.renderFile(path.join(views, 'task.ejs'), {
     ...globals, title: 'Task', page: 'workspace',
-    task: { id: 'safe', title: 'Test', prompt: '<script>alert(1)</script>', status: 'running', progress: 25, current_step: 0, project_name: null, error: null, result: null },
-    parsedPlan: [{ title: 'Step', description: 'Safe', tool: 'reasoning' }], events: [], artifacts: [], approvals: [], files: []
+    task: { id: 'safe', title: 'Test', prompt: '<script>alert(1)</script>', status: 'running', progress: 25, current_step: 0, mode: 'team', project_name: null, error: null, result: null },
+    parsedPlan: [{ title: 'Step', description: 'Safe', tool: 'team_research' }],
+    events: [{ id: 'event-safe', type: 'team_agent', title: 'Scout · Ricerca verificabile', detail: 'Rapporto indipendente completato', status: 'completed' }],
+    artifacts: [], approvals: [], files: []
   });
   assert.doesNotMatch(task, /<script>alert\(1\)<\/script>/);
   assert.match(task, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  assert.match(task, /Mission Control/);
+  assert.match(task, /Scout · Ricerca verificabile/);
 });
 
 test('operational CRM views render real controls without placeholder alerts', async () => {
@@ -68,7 +74,9 @@ test('public autonomous product pages render without fabricated case-study marku
   const services = await ejs.renderFile(path.join(publicViews, 'servizi.ejs'), { ...globals, currentPath: '/servizi', title: 'Servizi' });
   const cases = await ejs.renderFile(path.join(publicViews, 'casi-uso.ejs'), { ...globals, currentPath: '/casi-uso', title: 'Casi' });
   assert.match(home, /Non chiedergli come/);
+  assert.match(home, /WES Agent Team/);
   assert.match(services, /Analisi dati con Python/);
+  assert.match(services, /Agent Team parallelo/);
   assert.match(cases, /Questi sono esempi di flussi supportati/);
   assert.doesNotMatch(cases, /\+340%|testimonial-card|case-study-result/i);
   const closedHome = await ejs.renderFile(path.join(publicViews, 'home.ejs'), {

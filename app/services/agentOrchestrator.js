@@ -8,24 +8,30 @@ const safeWeb = require('./safeWeb');
 const fileStore = require('./fileStore');
 const { runPythonOperation } = require('./pythonRunner');
 const secretVault = require('./secretVault');
+const agentTeam = require('./agentTeam');
 
 const running = new Set();
 const queued = [];
 let shuttingDown = false;
 const maxConcurrency = Math.max(1, Math.min(Number(process.env.AGENT_MAX_CONCURRENCY || 2), 8));
 const externalTools = new Set(['send_email', 'send_whatsapp', 'create_appointment', 'update_lead_status']);
-const allowedTools = new Set(['reasoning', 'web_search', 'web_fetch', 'python_analyze', 'crm_read', 'compose', 'quality_review', ...externalTools]);
+const allowedTools = new Set(['reasoning', 'team_research', 'web_search', 'web_fetch', 'python_analyze', 'crm_read', 'compose', 'quality_review', ...externalTools]);
 
 function cleanText(value, max = 4000) {
   return String(value || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim().slice(0, max);
 }
 
-function fallbackPlan(prompt, hasFiles) {
+function fallbackPlan(prompt, hasFiles, mode = 'autonomous') {
   const lower = prompt.toLowerCase();
   const steps = [{ id: 'understand', title: 'Definisco obiettivo e criteri', description: 'Analizzo la richiesta e preparo il contesto operativo.', tool: 'reasoning', input: {} }];
   if (/lead|crm|client|vendit|commercial/.test(lower)) steps.push({ id: 'crm', title: 'Analizzo il CRM', description: 'Uso soltanto i dati dell’account corrente.', tool: 'crm_read', input: {} });
-  if (/ricerc|mercato|concorrent|confront|trova|online|web/.test(lower)) steps.push({ id: 'research', title: 'Eseguo ricerca verificabile', description: 'Raccolgo fonti web con URL e contenuti rilevanti.', tool: 'web_search', input: { query: prompt.slice(0, 500) } });
-  if (hasFiles) steps.push({ id: 'files', title: 'Analizzo i file', description: 'Python esamina i dati nel workspace protetto.', tool: 'python_analyze', input: {} });
+  if (hasFiles && mode === 'team') steps.push({ id: 'files', title: 'Analizzo i file', description: 'Python esamina i dati nel workspace protetto prima del confronto tra specialisti.', tool: 'python_analyze', input: {} });
+  if (mode === 'team') {
+    steps.push({ id: 'agent-team', title: 'Attivo il team di specialisti', description: 'Più agenti lavorano in parallelo, confrontano evidenze e stressano le conclusioni.', tool: 'team_research', input: {} });
+  } else if (/ricerc|mercato|concorrent|confront|trova|online|web/.test(lower)) {
+    steps.push({ id: 'research', title: 'Eseguo ricerca verificabile', description: 'Raccolgo fonti web con URL e contenuti rilevanti.', tool: 'web_search', input: { query: prompt.slice(0, 500) } });
+  }
+  if (hasFiles && mode !== 'team') steps.push({ id: 'files', title: 'Analizzo i file', description: 'Python esamina i dati nel workspace protetto.', tool: 'python_analyze', input: {} });
   steps.push({ id: 'compose', title: 'Creo il risultato', description: 'Produco un documento completo basato sui dati raccolti.', tool: 'compose', input: {} });
   steps.push({ id: 'review', title: 'Controllo qualità', description: 'Verifico completezza, fonti e limiti prima della consegna.', tool: 'quality_review', input: {} });
   return { title: cleanText(prompt.split(/[.!?\n]/)[0], 72) || 'Nuovo task WES', steps };
@@ -33,18 +39,33 @@ function fallbackPlan(prompt, hasFiles) {
 
 function validatePlan(raw, fallback) {
   if (!raw || !Array.isArray(raw.steps)) return fallback;
+  const teamEnabled = fallback.steps.some((step) => step.tool === 'team_research');
   const steps = raw.steps.slice(0, 10).map((step, index) => ({
     id: cleanText(step.id || `step-${index + 1}`, 60),
     title: cleanText(step.title || `Passaggio ${index + 1}`, 120),
     description: cleanText(step.description, 500),
-    tool: allowedTools.has(step.tool) ? step.tool : 'reasoning',
+    tool: allowedTools.has(step.tool) && (step.tool !== 'team_research' || teamEnabled) ? step.tool : 'reasoning',
     input: step.input && typeof step.input === 'object' && !Array.isArray(step.input) ? step.input : {}
   }));
   const internal = steps.filter((step) => !externalTools.has(step.tool));
   const external = steps.filter((step) => externalTools.has(step.tool));
   const compose = internal.find((step) => step.tool === 'compose') || fallback.steps.find((step) => step.tool === 'compose');
   const review = internal.find((step) => step.tool === 'quality_review') || fallback.steps.find((step) => step.tool === 'quality_review');
-  const preparation = internal.filter((step) => !['compose', 'quality_review'].includes(step.tool));
+  let teamSeen = false;
+  const preparation = internal.filter((step) => !['compose', 'quality_review'].includes(step.tool)).filter((step) => {
+    if (step.tool !== 'team_research') return true;
+    if (teamSeen) return false;
+    teamSeen = true;
+    return true;
+  });
+  if (teamEnabled && !preparation.some((step) => step.tool === 'team_research')) {
+    const requiredTeam = fallback.steps.find((step) => step.tool === 'team_research');
+    preparation.push(requiredTeam);
+  }
+  if (teamEnabled) {
+    const teamIndex = preparation.findIndex((step) => step.tool === 'team_research');
+    if (teamIndex >= 0) preparation.push(preparation.splice(teamIndex, 1)[0]);
+  }
   return { title: cleanText(raw.title, 72) || fallback.title, steps: [...preparation, compose, review, ...external].filter(Boolean).slice(0, 12) };
 }
 
@@ -111,13 +132,14 @@ function accountContext(task) {
 }
 
 async function buildPlan(task, files) {
-  const fallback = fallbackPlan(task.prompt, files.length > 0);
+  const fallback = fallbackPlan(task.prompt, files.length > 0, task.mode);
   const context = accountContext(task);
   const response = await openrouter.complete([
     {
       role: 'system',
       content: `Sei il planner operativo di WES. Crea un piano breve e realmente eseguibile. Non mostrare ragionamenti interni.\n` +
-        `Strumenti consentiti: reasoning, web_search, web_fetch, python_analyze, crm_read, compose, quality_review, send_email, send_whatsapp, create_appointment, update_lead_status.\n` +
+        `Strumenti consentiti: reasoning, team_research, web_search, web_fetch, python_analyze, crm_read, compose, quality_review, send_email, send_whatsapp, create_appointment, update_lead_status.\n` +
+        `Modalità selezionata: ${task.mode === 'team' ? 'Agent Team. Inserisci esattamente un passaggio team_research prima di compose.' : 'Autonoma. Non usare team_research.'}\n` +
         `Gli ultimi quattro strumenti richiedono automaticamente l'approvazione umana e vanno usati solo se l'utente chiede esplicitamente quell'effetto esterno. ` +
         `Mettili dopo compose e quality_review. Per inviare il risultato finale usa body o message uguale a "$deliverable". ` +
         `Non puoi pubblicare, comprare, cancellare dati o usare strumenti diversi da quelli elencati.\n` +
@@ -128,6 +150,7 @@ async function buildPlan(task, files) {
       role: 'user',
       content: JSON.stringify({
         goal: task.prompt,
+        mode: task.mode,
         company: context.user.company_name,
         sector: context.user.sector,
         project: context.project,
@@ -395,6 +418,68 @@ async function executeStep(task, step, plan, evidence, files) {
       return { note: step.description || 'Contesto operativo preparato.' };
     case 'crm_read':
       return crmSnapshot(task.user_id);
+    case 'team_research': {
+      const context = accountContext(task);
+      const eventIds = new Map();
+      const teamSize = agentTeam.teamSizeForPlan(context.user.plan);
+      const initialProgress = Number(getDatabase().prepare('SELECT progress FROM agent_tasks WHERE id = ?').get(task.id)?.progress || 12);
+      let settledMembers = 0;
+      const teamArtifacts = [];
+      const advanceTeamProgress = () => {
+        settledMembers += 1;
+        updateTask(task.id, { progress: Math.min(82, initialProgress + Math.round((settledMembers / teamSize) * 32)) });
+      };
+      const teamResult = await agentTeam.runAgentTeam({
+        task,
+        context,
+        evidence,
+        apiKey: secretVault.getSecret(task.user_id, 'openrouter'),
+        model: context.user.settings.agent_model,
+        tavilyKey: secretVault.getSecret(task.user_id, 'tavily'),
+        isCancelled: () => taskIsCancelled(task.id),
+        onAgentStart: (agent) => {
+          eventIds.set(agent.id, addEvent(task.id, 'team_agent', `${agent.name} · ${agent.specialty}`, agent.mission, 'running', { agent: agent.id, icon: agent.icon }));
+        },
+        onAgentWarning: (agent, warning) => {
+          addEvent(task.id, 'warning', `${agent.name} lavora senza web`, warning, 'completed', { agent: agent.id });
+        },
+        onAgentComplete: (agent, result) => {
+          const sources = result.sources.length
+            ? `\n\n## Fonti raccolte\n\n${result.sources.map((source) => `- ${cleanText(source.title, 240).replace(/[\[\]()*_`]/g, ' ') || 'Fonte'} — ${source.url}`).join('\n')}`
+            : '\n\n## Fonti raccolte\n\nNessuna fonte web disponibile per questo specialista.';
+          const artifactName = `agent-team-${agent.id}.md`;
+          const artifactId = persistArtifact(task, {
+            type: 'text/markdown',
+            content: `# ${agent.name} · ${agent.specialty}\n\n${result.report}${sources}\n`
+          }, artifactName);
+          teamArtifacts.push({ id: artifactId, name: artifactName, agent: agent.id });
+          const detail = `Rapporto indipendente completato · ${result.sources.length} fonti · ${result.report.length.toLocaleString('it-IT')} caratteri.`;
+          updateEvent(eventIds.get(agent.id), 'completed', detail, { agent: agent.id, specialty: agent.specialty, sources: result.sources.length });
+          advanceTeamProgress();
+        },
+        onAgentFailure: (agent, result) => {
+          updateEvent(eventIds.get(agent.id), 'failed', result.error, { agent: agent.id, specialty: agent.specialty, code: result.code });
+          advanceTeamProgress();
+        }
+      });
+      const tokens = teamResult.usage.reduce((total, usage) => total + recordAiUsage(task.user_id, usage), 0);
+      const latestCredits = Number(getDatabase().prepare('SELECT credits_used FROM agent_tasks WHERE id = ?').get(task.id)?.credits_used || 0);
+      updateTask(task.id, { credits_used: latestCredits + Math.max(1, Math.ceil(tokens / 1000)) });
+      return {
+        summary: teamResult.summary,
+        artifacts: teamArtifacts,
+        agents: teamResult.agents.map((member) => ({
+          id: member.id,
+          name: member.name,
+          specialty: member.specialty,
+          status: member.status,
+          report: cleanText(member.report, 7000),
+          error: member.error || null,
+          sources: (member.sources || []).map((source) => ({ title: source.title, url: source.url }))
+        })),
+        sources: teamResult.sources.slice(0, 12).map((source) => ({ title: source.title, url: source.url, content: cleanText(source.content, 800) }))
+      };
+    }
     case 'web_search': {
       const query = cleanText(step.input.query || task.prompt, 500);
       const results = await safeWeb.searchWeb(query, secretVault.getSecret(task.user_id, 'tavily'));
@@ -414,10 +499,12 @@ async function executeStep(task, step, plan, evidence, files) {
     case 'quality_review':
       {
         const composed = getDatabase().prepare('SELECT result FROM agent_tasks WHERE id = ?').get(task.id)?.result || '';
-        const usedWeb = evidence.some((item) => ['web_search', 'web_fetch'].includes(item.tool));
+        const teamEvidence = evidence.find((item) => item.tool === 'team_research');
+        const usedWeb = evidence.some((item) => ['web_search', 'web_fetch'].includes(item.tool)) || Number(teamEvidence?.result?.sources?.length || 0) > 0;
         const checks = [
           { name: 'Risultato presente', passed: composed.length >= 100 },
           { name: 'Fonti mantenute quando usate', passed: !usedWeb || /https?:\/\//i.test(composed) },
+          { name: 'Quorum Agent Team', passed: !teamEvidence || Number(teamEvidence.result?.summary?.completed || 0) >= Number(teamEvidence.result?.summary?.quorum || 2) },
           { name: 'Nessuna azione esterna implicita', passed: true }
         ];
         return { checks, passed: checks.every((check) => check.passed) };
@@ -502,6 +589,11 @@ async function runTask(taskId) {
         updateEvent(eventId, 'completed', step.tool === 'compose' ? 'Documento creato.' : 'Passaggio completato e registrato.', { step: index, evidence: evidenceItem });
         updateTask(task.id, { current_step: index + 1 });
       } catch (error) {
+        if (error.code === 'TASK_CANCELLED' || taskIsCancelled(task.id)) {
+          updateEvent(eventId, 'completed', 'Esecuzione interrotta in sicurezza.');
+          updateTask(task.id, { status: 'stopped', cancel_requested: 0 });
+          return;
+        }
         if (['AI_NOT_CONFIGURED', 'WEB_NOT_CONFIGURED', 'CONNECTOR_NOT_CONFIGURED'].includes(error.code)) {
           updateTask(task.id, { status: 'waiting_configuration', error: error.message });
           updateEvent(eventId, 'waiting', error.message);

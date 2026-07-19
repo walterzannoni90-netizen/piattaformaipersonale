@@ -91,8 +91,28 @@ test('release HTTP journey keeps tenant data private and fails transparently wit
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
   assert.equal(state.task.status, 'waiting_configuration');
+  assert.equal(state.task.mode, 'autonomous');
   assert.match(state.task.error, /OPENROUTER_API_KEY/);
   assert.ok(state.events.some((event) => event.type === 'python_analyze' && event.status === 'completed'));
+
+  const teamForm = new FormData();
+  teamForm.append('prompt', 'Attiva un team di specialisti per confrontare rischi e opportunità del lancio commerciale.');
+  teamForm.append('mode', 'team');
+  const teamResponse = await fetch(`${baseUrl}/api/tasks`, {
+    method: 'POST', headers: { Cookie: ownerCookie, Origin: baseUrl }, body: teamForm
+  });
+  assert.equal(teamResponse.status, 201);
+  const teamTaskId = (await teamResponse.json()).id;
+  let teamState;
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    teamState = await (await fetch(`${baseUrl}/api/tasks/${teamTaskId}/state`, { headers: { Cookie: ownerCookie } })).json();
+    if (['waiting_configuration', 'completed', 'failed', 'stopped'].includes(teamState.task.status)) break;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  assert.equal(teamState.task.mode, 'team');
+  assert.equal(teamState.task.status, 'waiting_configuration');
+  assert.match(teamState.task.error, /OPENROUTER_API_KEY/);
+  assert.ok(teamState.events.some((event) => event.type === 'team_research' && event.status === 'waiting'));
 
   const accountExport = await (await fetch(`${baseUrl}/api/account/export`, { headers: { Cookie: ownerCookie } })).json();
   assert.equal(accountExport.account.email, 'owner@example.test');

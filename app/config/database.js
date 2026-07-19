@@ -584,6 +584,7 @@ function initializeSchema() {
       project_id TEXT,
       name TEXT NOT NULL,
       prompt TEXT NOT NULL,
+      mode TEXT DEFAULT 'autonomous',
       cron_expression TEXT NOT NULL,
       timezone TEXT DEFAULT 'Europe/Rome',
       is_active INTEGER DEFAULT 1,
@@ -609,6 +610,9 @@ function initializeSchema() {
   addTaskColumn('error', 'TEXT');
   addTaskColumn('needs_approval', 'INTEGER DEFAULT 0');
   addTaskColumn('cancel_requested', 'INTEGER DEFAULT 0');
+
+  const scheduleColumns = db.prepare('PRAGMA table_info(task_schedules)').all().map((column) => column.name);
+  if (!scheduleColumns.includes('mode')) db.exec("ALTER TABLE task_schedules ADD COLUMN mode TEXT DEFAULT 'autonomous'");
 
   const leadColumns = db.prepare('PRAGMA table_info(leads)').all().map((column) => column.name);
   if (!leadColumns.includes('phone_normalized')) db.exec('ALTER TABLE leads ADD COLUMN phone_normalized TEXT');

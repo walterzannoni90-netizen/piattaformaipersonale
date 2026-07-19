@@ -26,6 +26,7 @@ Questa checklist è un gate operativo: non contrassegnare una voce senza evidenz
 - [ ] SMTP di piattaforma invia correttamente il reset password.
 - [ ] SPF, DKIM e DMARC del dominio mittente sono verificati.
 - [ ] OpenRouter e Tavily funzionano con chiavi limitate e budget controllato.
+- [ ] Agent Team è stato provato con i roster 2/4/6, quorum incompleto, Tavily assente e budget massimo per task.
 - [ ] `ALLOW_PUBLIC_REGISTRATION` viene attivata solo dopo aver verificato onboarding, condizioni e controllo dei costi.
 - [ ] Webhook Meta usa token privato e firma valida.
 - [ ] Webhook Stripe rifiuta firme assenti o errate.
@@ -37,6 +38,7 @@ Questa checklist è un gate operativo: non contrassegnare una voce senza evidenz
 - [ ] CI, build, test e audit dipendenze sono verdi sul commit di rilascio.
 - [ ] Upload contraffatti, file grandi, SSRF e traversal sono stati ritestati.
 - [ ] Stop, retry, riavvio processo e task pianificati sono stati provati.
+- [ ] Cancellazione durante Agent Team e carico concorrente tra più tenant sono stati provati sull’infrastruttura definitiva.
 - [ ] Approvazioni e invii esterni sono verificati con account sandbox.
 - [ ] Rate limit e log non contengono segreti o contenuti sensibili non necessari.
 - [ ] È definito un canale privato per le vulnerabilità.
