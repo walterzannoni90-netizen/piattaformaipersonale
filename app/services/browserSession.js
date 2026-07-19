@@ -4,15 +4,21 @@ const crypto = require('crypto');
 const { validateBrowserCommand, requiresBrowserApproval, browserApprovalHash } = require('./browserPolicy');
 
 class BrowserSessionManager {
-  constructor({ maxSessionsPerUser = 2, sessionTtlMs = 15 * 60 * 1000 } = {}) {
+  constructor({ maxSessionsPerUser = 2, sessionTtlMs = 15 * 60 * 1000, clock = Date.now } = {}) {
     this.maxSessionsPerUser = Math.max(1, Math.min(Number(maxSessionsPerUser) || 2, 5));
     this.sessionTtlMs = Math.max(60_000, Math.min(Number(sessionTtlMs) || 900_000, 3_600_000));
+    if (typeof clock !== 'function') throw new Error('Clock non valido');
+    this.clock = clock;
     this.sessions = new Map();
+  }
+
+  now() {
+    return Number(this.clock());
   }
 
   create({ userId, taskId }) {
     const normalizedUserId = String(userId);
-    const now = Date.now();
+    const now = this.now();
     const active = [...this.sessions.values()].filter((session) => {
       if (session.userId !== normalizedUserId || session.closedAt) return false;
       if (session.expiresAt <= now) {
@@ -39,7 +45,8 @@ class BrowserSessionManager {
   get({ sessionId, userId }) {
     const session = this.sessions.get(String(sessionId));
     if (!session || session.userId !== String(userId)) return null;
-    if (!session.closedAt && session.expiresAt <= Date.now()) session.closedAt = Date.now();
+    const now = this.now();
+    if (!session.closedAt && session.expiresAt <= now) session.closedAt = now;
     return snapshot(session);
   }
 
@@ -48,7 +55,7 @@ class BrowserSessionManager {
     if (!session || session.userId !== String(userId) || session.taskId !== String(taskId)) {
       throw new Error('Sessione browser non disponibile');
     }
-    if (session.closedAt || session.expiresAt <= Date.now()) throw new Error('Sessione browser scaduta');
+    if (session.closedAt || session.expiresAt <= this.now()) throw new Error('Sessione browser scaduta');
 
     const normalized = validateBrowserCommand(command);
     const approvalRequired = requiresBrowserApproval(normalized);
@@ -59,9 +66,10 @@ class BrowserSessionManager {
   recordCommand({ sessionId, userId, command, status, artifactId = null }) {
     const session = this.sessions.get(String(sessionId));
     if (!session || session.userId !== String(userId)) throw new Error('Sessione browser non disponibile');
-    if (session.closedAt || session.expiresAt <= Date.now()) throw new Error('Sessione browser scaduta');
+    const now = this.now();
+    if (session.closedAt || session.expiresAt <= now) throw new Error('Sessione browser scaduta');
     session.commands.push(Object.freeze({
-      at: Date.now(),
+      at: now,
       action: String(command.action),
       status: String(status),
       artifactId: artifactId == null ? null : String(artifactId)
@@ -73,11 +81,11 @@ class BrowserSessionManager {
   close({ sessionId, userId }) {
     const session = this.sessions.get(String(sessionId));
     if (!session || session.userId !== String(userId)) return false;
-    session.closedAt = session.closedAt || Date.now();
+    session.closedAt = session.closedAt || this.now();
     return true;
   }
 
-  cleanup(now = Date.now()) {
+  cleanup(now = this.now()) {
     let removed = 0;
     for (const [id, session] of this.sessions) {
       if ((session.closedAt || session.expiresAt) + this.sessionTtlMs <= now) {
