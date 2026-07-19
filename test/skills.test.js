@@ -70,16 +70,20 @@ test('WES Skills are versioned, tenant-isolated, pinned to tasks and integrity c
     'skill-schedule', 'skill-owner', 'Scheduled skill task', 'Esegui il playbook commerciale pianificato.', 'autonomous',
     JSON.stringify([created.id]), '0 9 * * *', 'Europe/Rome', '2000-01-01T09:00:00.000Z'
   );
+
+  const orchestrator = require('../app/services/agentOrchestrator');
+  const originalStartTask = orchestrator.startTask;
+  orchestrator.startTask = () => undefined;
+  t.after(() => { orchestrator.startTask = originalStartTask; });
+
   const scheduleService = require('../app/services/scheduleService');
   await scheduleService.processDueSchedules();
   const scheduledTask = db.prepare('SELECT id FROM agent_tasks WHERE user_id = ? AND title = ?').get('skill-owner', 'Scheduled skill task');
   assert.ok(scheduledTask);
   assert.equal(skills.getVerifiedTaskSkills(scheduledTask.id, 'skill-owner')[0].version, 3);
-  require('../app/services/agentOrchestrator').stopTask(scheduledTask.id, 'skill-owner');
 
   db.prepare('UPDATE task_skill_bindings SET instructions_snapshot = ? WHERE task_id = ?').run('tampered snapshot', 'skill-task-v3');
   assert.throws(() => skills.getVerifiedTaskSkills('skill-task-v3', 'skill-owner'),
     (error) => error.code === 'TASK_SKILL_INTEGRITY_FAILED');
   scheduleService.stop();
-  await require('../app/services/agentOrchestrator').shutdown(2_000);
 });
