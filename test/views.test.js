@@ -15,7 +15,7 @@ const globals = {
 
 test('workspace and task views render safely', async () => {
   const workspace = await ejs.renderFile(path.join(views, 'workspace.ejs'), {
-    ...globals, title: 'Workspace', page: 'workspace', counts: { total: 0, running: 0, done: 0 }, projects: [], schedules: [], tasks: []
+    ...globals, title: 'Workspace', page: 'workspace', counts: { total: 0, running: 0, done: 0 }, projects: [], schedules: [], tasks: [], skills: [], projectSkillMap: {}, skillLimits: { task: 3 }
   });
   assert.match(workspace, /WES Autonomous Intelligence/);
   assert.match(workspace, /Agent Team/);
@@ -26,12 +26,31 @@ test('workspace and task views render safely', async () => {
     task: { id: 'safe', title: 'Test', prompt: '<script>alert(1)</script>', status: 'running', progress: 25, current_step: 0, mode: 'team', project_name: null, error: null, result: null },
     parsedPlan: [{ title: 'Step', description: 'Safe', tool: 'team_research' }],
     events: [{ id: 'event-safe', type: 'team_agent', title: 'Scout · Ricerca verificabile', detail: 'Rapporto indipendente completato', status: 'completed' }],
-    artifacts: [], approvals: [], files: []
+    artifacts: [], approvals: [], files: [], appliedSkills: [{ id: 'skill-safe', name: 'Safe Skill', version: 2, checksum: 'a'.repeat(64) }]
   });
   assert.doesNotMatch(task, /<script>alert\(1\)<\/script>/);
   assert.match(task, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.match(task, /Mission Control/);
   assert.match(task, /Scout · Ricerca verificabile/);
+  assert.match(task, /Skill lock/);
+});
+
+test('Skills Studio renders version and integrity controls', async () => {
+  const skill = {
+    id: 'skill-safe', name: 'Market Intelligence', description: 'Ricerca verificabile', instructions: 'Istruzioni sicure e sufficientemente lunghe.',
+    category: 'research', source: 'custom', version: 2, version_count: 2, checksum: 'b'.repeat(64), is_active: true
+  };
+  const output = await ejs.renderFile(path.join(views, 'skills.ejs'), {
+    ...globals, currentPath: '/workspace/skills', title: 'Skills Studio', page: 'skills', skills: [skill],
+    templates: [{ id: 'market', name: 'Market', category: 'research', description: 'Blueprint', meta: { label: 'Research', icon: 'binoculars' } }],
+    categories: { general: { label: 'General', icon: 'sparkles' }, research: { label: 'Research', icon: 'binoculars' } },
+    limits: { library: 30, task: 8 }
+  });
+  assert.match(output, /WES Capability Engine/);
+  assert.match(output, /Capability firewall/);
+  assert.match(output, /Market Intelligence/);
+  assert.match(output, /Snapshot verificabile/);
+  assert.doesNotMatch(output, /<script>alert/);
 });
 
 test('operational CRM views render real controls without placeholder alerts', async () => {
@@ -75,8 +94,10 @@ test('public autonomous product pages render without fabricated case-study marku
   const cases = await ejs.renderFile(path.join(publicViews, 'casi-uso.ejs'), { ...globals, currentPath: '/casi-uso', title: 'Casi' });
   assert.match(home, /Non chiedergli come/);
   assert.match(home, /WES Agent Team/);
+  assert.match(home, /WES Skills/);
   assert.match(services, /Analisi dati con Python/);
   assert.match(services, /Agent Team parallelo/);
+  assert.match(services, /WES Skills versionate/);
   assert.match(cases, /Questi sono esempi di flussi supportati/);
   assert.doesNotMatch(cases, /\+340%|testimonial-card|case-study-result/i);
   const closedHome = await ejs.renderFile(path.join(publicViews, 'home.ejs'), {

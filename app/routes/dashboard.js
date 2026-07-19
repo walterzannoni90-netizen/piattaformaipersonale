@@ -372,7 +372,11 @@ router.get('/api/account/export', (req, res) => {
       files: db.prepare('SELECT id, project_id, task_id, original_name, mime_type, size_bytes, sha256, created_at FROM workspace_files WHERE user_id = ? ORDER BY created_at ASC').all(userId),
       approvals: db.prepare('SELECT id, task_id, action_type, title, description, payload, status, decided_at, created_at FROM task_approvals WHERE user_id = ? ORDER BY created_at ASC').all(userId),
       messages: db.prepare('SELECT id, task_id, role, content, created_at FROM task_messages WHERE user_id = ? ORDER BY created_at ASC').all(userId),
-      schedules: db.prepare('SELECT id, project_id, name, prompt, mode, cron_expression, timezone, is_active, last_run, next_run, created_at FROM task_schedules WHERE user_id = ? ORDER BY created_at ASC').all(userId)
+      schedules: db.prepare('SELECT id, project_id, name, prompt, mode, skill_ids, cron_expression, timezone, is_active, last_run, next_run, created_at FROM task_schedules WHERE user_id = ? ORDER BY created_at ASC').all(userId),
+      skills: db.prepare('SELECT id, name, slug, description, instructions, category, source, version, checksum, is_active, created_at, updated_at FROM agent_skills WHERE user_id = ? ORDER BY created_at ASC').all(userId),
+      skill_versions: db.prepare('SELECT skill_id, version, name, description, instructions, category, checksum, created_at FROM agent_skill_versions WHERE user_id = ? ORDER BY created_at ASC').all(userId),
+      project_skills: db.prepare('SELECT project_id, skill_id, position, created_at FROM project_skill_bindings WHERE user_id = ? ORDER BY created_at ASC').all(userId),
+      task_skills: db.prepare('SELECT task_id, skill_id, skill_version, name_snapshot, description_snapshot, instructions_snapshot, category_snapshot, checksum, position, created_at FROM task_skill_bindings WHERE user_id = ? ORDER BY created_at ASC').all(userId)
     },
     billing: db.prepare('SELECT plan, status, current_period_start, current_period_end, trial_end, cancelled_at, created_at, updated_at FROM subscriptions WHERE user_id = ?').all(userId),
     usage: db.prepare('SELECT date, conversations_count, leads_count, messages_count, follow_ups_sent, appointments_scheduled, api_calls FROM usage_stats WHERE user_id = ? ORDER BY date ASC').all(userId),

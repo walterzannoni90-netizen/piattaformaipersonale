@@ -11,6 +11,7 @@ const scheduleService = require('../services/scheduleService');
 const { renderMarkdown } = require('../services/markdown');
 const emailService = require('../services/email');
 const whatsappService = require('../services/whatsapp');
+const skillsService = require('../services/skills');
 
 const router = express.Router();
 router.use(authenticate);
@@ -47,16 +48,37 @@ function enforceTaskQuota(db, userId) {
 
 router.get('/workspace', (req, res) => {
   const db = getDatabase();
-  const tasks = db.prepare(`SELECT t.*, p.name AS project_name FROM agent_tasks t LEFT JOIN projects p ON p.id = t.project_id
+  const tasks = db.prepare(`SELECT t.*, p.name AS project_name,
+    (SELECT COUNT(*) FROM task_skill_bindings b WHERE b.task_id = t.id) AS skill_count
+    FROM agent_tasks t LEFT JOIN projects p ON p.id = t.project_id
     WHERE t.user_id = ? ORDER BY t.created_at DESC LIMIT 30`).all(req.user.id);
   const projects = db.prepare('SELECT * FROM projects WHERE user_id = ? AND archived = 0 ORDER BY updated_at DESC').all(req.user.id);
   const schedules = db.prepare('SELECT * FROM task_schedules WHERE user_id = ? ORDER BY created_at DESC LIMIT 20').all(req.user.id);
+  schedules.forEach((schedule) => {
+    try { schedule.skill_count = skillsService.resolveSelection(req.user.id, schedule.project_id, skillsService.parseSkillIds(schedule.skill_ids)).length; }
+    catch { schedule.skill_count = 0; }
+  });
+  const skills = skillsService.listSkills(req.user.id);
+  const projectSkillMap = skillsService.getProjectSkillMap(req.user.id);
+  const skillLimits = skillsService.limitsForUser(req.user.id);
   const counts = {
     total: db.prepare('SELECT COUNT(*) as count FROM agent_tasks WHERE user_id = ?').get(req.user.id).count,
     running: db.prepare("SELECT COUNT(*) as count FROM agent_tasks WHERE user_id = ? AND status IN ('planning','running','waiting_approval')").get(req.user.id).count,
     done: db.prepare("SELECT COUNT(*) as count FROM agent_tasks WHERE user_id = ? AND status = 'completed'").get(req.user.id).count
   };
-  res.render('dashboard/workspace', { title: 'WES Workspace', page: 'workspace', tasks, projects, schedules, counts });
+  res.render('dashboard/workspace', { title: 'WES Workspace', page: 'workspace', tasks, projects, schedules, counts, skills, projectSkillMap, skillLimits });
+});
+
+router.get('/workspace/skills', (req, res) => {
+  const skills = skillsService.listSkills(req.user.id, { includeArchived: true });
+  res.render('dashboard/skills', {
+    title: 'WES Skills Studio',
+    page: 'skills',
+    skills,
+    templates: skillsService.templates(),
+    categories: skillsService.CATEGORIES,
+    limits: skillsService.limitsForUser(req.user.id)
+  });
 });
 
 router.get('/workspace/task/:id', (req, res) => {
@@ -75,9 +97,10 @@ router.get('/workspace/task/:id', (req, res) => {
     delete approval.payload;
   }
   const files = db.prepare('SELECT id, original_name, mime_type, size_bytes, created_at FROM workspace_files WHERE task_id = ? AND user_id = ? ORDER BY created_at ASC').all(task.id, req.user.id);
+  const appliedSkills = skillsService.getTaskSkills(task.id, req.user.id);
   let parsedPlan = [];
   try { parsedPlan = JSON.parse(task.plan || '[]'); } catch {}
-  res.render('dashboard/task', { title: task.title, page: 'workspace', task, events, artifacts, approvals, files, parsedPlan, resultHtml: renderMarkdown(task.result) });
+  res.render('dashboard/task', { title: task.title, page: 'workspace', task, events, artifacts, approvals, files, appliedSkills, parsedPlan, resultHtml: renderMarkdown(task.result) });
 });
 
 router.post('/api/tasks', upload.array('files', 5), (req, res, next) => {
@@ -85,6 +108,7 @@ router.post('/api/tasks', upload.array('files', 5), (req, res, next) => {
   const prompt = orchestrator.cleanText(req.body.prompt, 8000);
   const projectId = orchestrator.cleanText(req.body.project_id, 80) || null;
   const mode = req.body.mode === 'team' ? 'team' : 'autonomous';
+  const skillIds = skillsService.parseSkillIds(req.body.skill_ids);
   if (prompt.length < 10) return res.status(422).json({ success: false, error: 'Descrivi meglio il risultato che vuoi ottenere.' });
   if (projectId && !ownedProject(db, projectId, req.user.id)) return res.status(404).json({ success: false, error: 'Progetto non trovato.' });
   try { (req.files || []).forEach(fileStore.validateUpload); } catch (error) { return res.status(422).json({ success: false, error: error.message }); }
@@ -96,6 +120,7 @@ router.post('/api/tasks', upload.array('files', 5), (req, res, next) => {
   try {
     db.prepare('INSERT INTO agent_tasks (id, user_id, project_id, title, prompt, status, progress, mode, plan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
       .run(id, req.user.id, projectId, title, prompt, 'planning', 1, mode, '[]');
+    skillsService.snapshotTaskSkills({ taskId: id, userId: req.user.id, projectId, skillIds });
     for (const file of req.files || []) {
       const stored = fileStore.saveUpload({ userId: req.user.id, taskId: id, file });
       storedPaths.push(stored.storagePath);
@@ -107,6 +132,7 @@ router.post('/api/tasks', upload.array('files', 5), (req, res, next) => {
   } catch (error) {
     storedPaths.forEach((storagePath) => { try { fileStore.removeFile(storagePath); } catch {} });
     try { db.prepare('DELETE FROM agent_tasks WHERE id = ? AND user_id = ?').run(id, req.user.id); } catch {}
+    if (error.status) return res.status(error.status).json({ success: false, error: error.message, code: error.code });
     next(error);
   }
 });
@@ -199,12 +225,96 @@ router.post('/api/projects', (req, res) => {
   const name = orchestrator.cleanText(req.body.name, 80);
   const description = orchestrator.cleanText(req.body.description, 500);
   const instructions = orchestrator.cleanText(req.body.instructions, 5000);
+  const skillIds = skillsService.parseSkillIds(req.body.skill_ids);
   if (name.length < 2) return res.status(422).json({ error: 'Inserisci un nome per il progetto.' });
   const count = Number(db.prepare('SELECT COUNT(*) AS count FROM projects WHERE user_id = ? AND archived = 0').get(req.user.id).count);
   if (count >= 50) return res.status(429).json({ error: 'Limite di 50 progetti raggiunto.' });
+  try { skillsService.resolveSelection(req.user.id, null, skillIds); } catch (error) { return res.status(error.status || 422).json({ error: error.message, code: error.code }); }
   const id = uuidv4();
   db.prepare('INSERT INTO projects (id, user_id, name, description, instructions) VALUES (?, ?, ?, ?, ?)').run(id, req.user.id, name, description, instructions);
+  skillsService.setProjectSkills(req.user.id, id, skillIds);
   res.status(201).json({ success: true, project: { id, name, description, instructions } });
+});
+
+router.post('/api/projects/:id/skills', (req, res) => {
+  try {
+    const selected = skillsService.setProjectSkills(req.user.id, req.params.id, req.body.skill_ids);
+    return res.json({ success: true, skills: selected.map((skill) => ({ id: skill.id, name: skill.name, version: skill.version })) });
+  } catch (error) {
+    return res.status(error.status || 500).json({ error: error.status ? error.message : 'Competenze del progetto non aggiornate.', code: error.code });
+  }
+});
+
+function auditSkill(userId, action, skill) {
+  getDatabase().prepare("INSERT INTO logs (id, user_id, level, action, details) VALUES (?, ?, 'info', ?, ?)")
+    .run(uuidv4(), userId, action, JSON.stringify({ skill_id: skill.id, version: skill.version, source: skill.source }));
+}
+
+function skillFailure(res, error, fallback) {
+  return res.status(error.status || 500).json({ error: error.status ? error.message : fallback, code: error.code });
+}
+
+router.post('/api/skills', (req, res) => {
+  try {
+    const skill = skillsService.createSkill(req.user.id, req.body);
+    auditSkill(req.user.id, 'skill_created', skill);
+    return res.status(201).json({ success: true, skill });
+  } catch (error) { return skillFailure(res, error, 'Skill non creata.'); }
+});
+
+router.patch('/api/skills/:id', (req, res) => {
+  try {
+    const skill = skillsService.updateSkill(req.user.id, req.params.id, req.body, req.body.expected_version);
+    auditSkill(req.user.id, skill.version > Number(req.body.expected_version) ? 'skill_version_created' : 'skill_unchanged', skill);
+    return res.json({ success: true, skill });
+  } catch (error) { return skillFailure(res, error, 'Skill non aggiornata.'); }
+});
+
+router.post('/api/skills/:id/archive', (req, res) => {
+  try {
+    const skill = skillsService.archiveSkill(req.user.id, req.params.id);
+    auditSkill(req.user.id, 'skill_archived', skill);
+    return res.json({ success: true, skill });
+  } catch (error) { return skillFailure(res, error, 'Skill non archiviata.'); }
+});
+
+router.post('/api/skills/templates/:templateId/install', (req, res) => {
+  try {
+    const skill = skillsService.installTemplate(req.user.id, req.params.templateId);
+    auditSkill(req.user.id, 'skill_template_installed', skill);
+    return res.status(201).json({ success: true, skill });
+  } catch (error) { return skillFailure(res, error, 'Blueprint non installato.'); }
+});
+
+router.post('/api/skills/import', (req, res) => {
+  try {
+    const skill = skillsService.importSkill(req.user.id, req.body.package || req.body);
+    auditSkill(req.user.id, 'skill_imported', skill);
+    return res.status(201).json({ success: true, skill });
+  } catch (error) { return skillFailure(res, error, 'Skill non importata.'); }
+});
+
+router.get('/api/skills/:id', (req, res) => {
+  const skill = skillsService.getSkill(req.user.id, req.params.id, { includeArchived: true });
+  if (!skill) return res.status(404).json({ error: 'Skill non trovata.', code: 'SKILL_NOT_FOUND' });
+  return res.json({ success: true, skill });
+});
+
+router.get('/api/skills/:id/export', (req, res) => {
+  try {
+    const packageData = skillsService.exportSkill(req.user.id, req.params.id);
+    const filename = `${String(packageData.name).replace(/[^a-zA-Z0-9À-ž _-]/g, '').trim().replace(/\s+/g, '-').toLowerCase() || 'wes-skill'}.json`;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.send(JSON.stringify(packageData, null, 2));
+  } catch (error) { return skillFailure(res, error, 'Skill non esportata.'); }
+});
+
+router.get('/api/skills/:id/versions', (req, res) => {
+  try {
+    return res.json({ success: true, versions: skillsService.listVersions(req.user.id, req.params.id) });
+  } catch (error) { return skillFailure(res, error, 'Cronologia non disponibile.'); }
 });
 
 router.post('/api/agent-connectors/:service', (req, res) => {
@@ -296,6 +406,7 @@ router.post('/api/schedules', (req, res) => {
   const prompt = orchestrator.cleanText(req.body.prompt, 8000);
   const frequency = req.body.frequency;
   const mode = req.body.mode === 'team' ? 'team' : 'autonomous';
+  const skillIds = skillsService.parseSkillIds(req.body.skill_ids);
   const projectId = orchestrator.cleanText(req.body.project_id, 80) || null;
   const hour = Number(req.body.hour);
   const minute = Number(req.body.minute || 0);
@@ -303,6 +414,7 @@ router.post('/api/schedules', (req, res) => {
   const timezone = ['Europe/Rome', 'Europe/London', 'America/New_York', 'Asia/Dubai'].includes(req.body.timezone) ? req.body.timezone : 'Europe/Rome';
   if (name.length < 2 || prompt.length < 10) return res.status(422).json({ error: 'Nome e obiettivo della pianificazione sono obbligatori.' });
   if (projectId && !ownedProject(db, projectId, req.user.id)) return res.status(404).json({ error: 'Progetto non trovato.' });
+  try { skillsService.resolveSelection(req.user.id, projectId, skillIds); } catch (error) { return res.status(error.status || 422).json({ error: error.message, code: error.code }); }
   if (!Number.isInteger(hour) || hour < 0 || hour > 23 || !Number.isInteger(minute) || minute < 0 || minute > 59) return res.status(422).json({ error: 'Orario non valido.' });
   let cronExpression;
   if (frequency === 'daily') cronExpression = `${minute} ${hour} * * *`;
@@ -315,8 +427,8 @@ router.post('/api/schedules', (req, res) => {
   if (count >= (limits[user.plan] || 3)) return res.status(429).json({ error: 'Limite pianificazioni attive raggiunto.' });
   const next = scheduleService.nextRun(cronExpression, timezone);
   const id = uuidv4();
-  db.prepare(`INSERT INTO task_schedules (id, user_id, project_id, name, prompt, mode, cron_expression, timezone, next_run)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(id, req.user.id, projectId, name, prompt, mode, cronExpression, timezone, next?.toISOString() || null);
+  db.prepare(`INSERT INTO task_schedules (id, user_id, project_id, name, prompt, mode, skill_ids, cron_expression, timezone, next_run)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(id, req.user.id, projectId, name, prompt, mode, JSON.stringify(skillIds), cronExpression, timezone, next?.toISOString() || null);
   res.status(201).json({ success: true, id, next_run: next?.toISOString() });
 });
 

@@ -14,10 +14,12 @@ test('database initializes the complete schema and persists writes', async (t) =
   const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map((row) => row.name);
   for (const table of ['users', 'agents', 'leads', 'conversations', 'appointments', 'automations', 'integrations', 'logs',
     'agent_tasks', 'task_events', 'task_artifacts', 'projects', 'project_memories', 'workspace_files', 'task_approvals',
-    'task_schedules', 'inbound_requests', 'processed_webhook_events']) {
+    'task_schedules', 'agent_skills', 'agent_skill_versions', 'project_skill_bindings', 'task_skill_bindings',
+    'inbound_requests', 'processed_webhook_events']) {
     assert.ok(tables.includes(table), `missing table ${table}`);
   }
   assert.ok(db.prepare('PRAGMA table_info(task_schedules)').all().some((column) => column.name === 'mode'));
+  assert.ok(db.prepare('PRAGMA table_info(task_schedules)').all().some((column) => column.name === 'skill_ids'));
   db.prepare('INSERT INTO users (id, email, password, company_name) VALUES (?, ?, ?, ?)')
     .run('test-user', 'test@example.com', 'hash', 'Test Company');
   assert.equal(db.prepare('SELECT company_name FROM users WHERE id = ?').get('test-user').company_name, 'Test Company');

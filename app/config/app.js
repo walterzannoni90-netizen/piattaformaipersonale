@@ -22,6 +22,7 @@ module.exports = {
         '20 task autonomi al giorno',
         '2 task contemporanei',
         'Agent Team con 2 specialisti',
+        '8 WES Skills private · 3 per task',
         'Workspace privato con file',
         'Python per fogli, documenti e dati',
         'Ricerca web con fonti',
@@ -35,7 +36,9 @@ module.exports = {
         agents: 1,
         conversations: 1000,
         api_calls: 5000,
-        integrations: ['whatsapp', 'email']
+        integrations: ['whatsapp', 'email'],
+        skills_library: 8,
+        skills_per_task: 3
       }
     },
     pro: {
@@ -47,6 +50,7 @@ module.exports = {
         '5 task contemporanei',
         'Tutto dello Starter',
         'Agent Team con 4 specialisti paralleli',
+        '30 WES Skills private · 8 per task',
         'Memoria avanzata per progetto',
         'CRM e automazioni complete',
         'WhatsApp Cloud API e SMTP verificati',
@@ -60,7 +64,9 @@ module.exports = {
         agents: 3,
         conversations: 5000,
         api_calls: 20000,
-        integrations: ['whatsapp', 'email']
+        integrations: ['whatsapp', 'email'],
+        skills_library: 30,
+        skills_per_task: 8
       }
     },
     enterprise: {
@@ -72,6 +78,7 @@ module.exports = {
         '10 task contemporanei',
         'Tutto del Pro',
         'Agent Team con 6 specialisti paralleli',
+        '100 WES Skills private · 12 per task',
         'Connettori personalizzati su progetto',
         'Branding e distribuzione su progetto',
         'Ambienti e policy dedicate',
@@ -86,7 +93,9 @@ module.exports = {
         agents: -1,
         conversations: -1,
         api_calls: -1,
-        integrations: ['whatsapp', 'email']
+        integrations: ['whatsapp', 'email'],
+        skills_library: 100,
+        skills_per_task: 12
       }
     }
   },

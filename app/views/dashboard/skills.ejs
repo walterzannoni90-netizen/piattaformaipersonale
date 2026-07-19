@@ -1,0 +1,93 @@
+<%- include('../partials/header') %>
+<%- include('../partials/dashboard-nav') %>
+<% const activeSkills = skills.filter(skill => skill.is_active); const totalVersions = skills.reduce((sum, skill) => sum + Number(skill.version_count || 1), 0); %>
+
+<section class="skills-shell -m-6 min-h-[calc(100vh-73px)] p-5 lg:p-9">
+  <div class="mx-auto max-w-7xl">
+    <header class="skills-hero">
+      <div>
+        <span class="skills-eyebrow"><i class="fas fa-puzzle-piece"></i> WES Capability Engine</span>
+        <h2>Trasforma il tuo metodo<br>in una <em>Skill operativa.</em></h2>
+        <p>Playbook privati, versionati e applicabili a WES Autonomo o a un intero Agent Team. Il metodo resta tuo; ogni esecuzione resta verificabile.</p>
+        <div class="skills-actions">
+          <button type="button" data-open-skill-modal><i class="fas fa-plus"></i> Crea una Skill</button>
+          <button type="button" class="secondary" id="importSkillButton"><i class="fas fa-file-import"></i> Importa .json</button>
+          <input id="importSkillFile" type="file" class="hidden" accept="application/json,.json">
+        </div>
+      </div>
+      <div class="skill-engine-card">
+        <div class="engine-orbit orbit-one"><i class="fas fa-fingerprint"></i></div>
+        <div class="engine-orbit orbit-two"><i class="fas fa-shield-halved"></i></div>
+        <div class="engine-core"><i class="fas fa-bolt"></i><b>SKILL<br>LOCK</b><span>SHA-256</span></div>
+        <div class="engine-label label-one">Playbook</div><div class="engine-label label-two">Version</div><div class="engine-label label-three">Execute</div>
+      </div>
+    </header>
+
+    <div class="skills-metrics">
+      <div><i class="fas fa-cubes"></i><span><b><%= activeSkills.length %>/<%= limits.library %></b>Skills attive</span></div>
+      <div><i class="fas fa-code-branch"></i><span><b><%= totalVersions %></b>Versioni immutabili</span></div>
+      <div><i class="fas fa-layer-group"></i><span><b><%= limits.task %></b>Skills per task</span></div>
+      <div class="secure"><i class="fas fa-user-shield"></i><span><b>Human-gated</b>Permessi invariati</span></div>
+    </div>
+
+    <section class="skill-safety-strip">
+      <i class="fas fa-shield-check"></i><div><b>Capability firewall</b><p>Una Skill modifica il metodo di lavoro, mai i permessi. Invii, pubblicazioni, cancellazioni e pagamenti restano bloccati dietro approvazione esplicita.</p></div><span>ENFORCED</span>
+    </section>
+
+    <section class="blueprint-section">
+      <div class="skills-section-head"><div><span>WES VERIFIED</span><h3>Blueprint pronti da installare</h3><p>Parti da metodi curati e personalizzali: ogni modifica crea una nuova versione.</p></div></div>
+      <div class="blueprint-grid">
+        <% templates.forEach(template => { const installed = activeSkills.some(skill => skill.source === 'template:' + template.id); %>
+          <article class="blueprint-card <%= installed ? 'installed' : '' %>">
+            <div class="blueprint-icon"><i class="fas fa-<%= template.meta.icon %>"></i></div>
+            <span><%= template.meta.label %></span><h4><%= template.name %></h4><p><%= template.description %></p>
+            <button type="button" data-install-template="<%= template.id %>" <%= installed ? 'disabled' : '' %>><i class="fas fa-<%= installed ? 'check' : 'plus' %>"></i> <%= installed ? 'Installata' : 'Installa blueprint' %></button>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="skill-library">
+      <div class="skills-section-head library-head"><div><span>PRIVATE LIBRARY</span><h3>Le tue Skills</h3><p>Ogni task conserva una copia con impronta verificabile della versione utilizzata.</p></div><div class="skill-filters"><button type="button" class="active" data-skill-filter="active">Attive</button><button type="button" data-skill-filter="all">Tutte</button></div></div>
+      <div class="skill-library-grid" id="skillLibraryGrid">
+        <% if (!skills.length) { %><button type="button" class="skills-empty" data-open-skill-modal><i class="fas fa-wand-magic-sparkles"></i><b>Costruisci la tua prima capability</b><span>Scrivi il metodo una volta. WES lo applicherà in ogni missione scelta.</span></button><% } %>
+        <% skills.forEach(skill => { const meta = categories[skill.category] || categories.general; %>
+          <article class="skill-card <%= skill.is_active ? '' : 'archived' %>" data-skill-state="<%= skill.is_active ? 'active' : 'archived' %>">
+            <header><div class="skill-card-icon"><i class="fas fa-<%= meta.icon %>"></i></div><div class="skill-version"><i class="fas fa-code-branch"></i> v<%= skill.version %></div></header>
+            <span class="skill-category"><%= meta.label %></span><h4><%= skill.name %></h4><p><%= skill.description || 'Playbook privato del workspace.' %></p>
+            <div class="skill-integrity"><i class="fas fa-fingerprint"></i><span><b><%= skill.checksum.slice(0, 12) %></b>Snapshot verificabile · <%= skill.version_count %> version<%= Number(skill.version_count) === 1 ? 'e' : 'i' %></span></div>
+            <footer>
+              <% if (skill.is_active) { %><button type="button" data-edit-skill="<%= skill.id %>"><i class="fas fa-pen"></i> Modifica</button><a href="/api/skills/<%= skill.id %>/export"><i class="fas fa-arrow-down"></i> Esporta</a><button type="button" data-skill-history="<%= skill.id %>" data-skill-name="<%= skill.name %>" aria-label="Cronologia"><i class="fas fa-clock-rotate-left"></i></button><button type="button" class="danger" data-archive-skill="<%= skill.id %>"><i class="fas fa-box-archive"></i></button><% } else { %><span><i class="fas fa-box-archive"></i> Archiviata</span><button type="button" data-skill-history="<%= skill.id %>" data-skill-name="<%= skill.name %>"><i class="fas fa-clock-rotate-left"></i> Cronologia</button><% } %>
+            </footer>
+          </article>
+        <% }) %>
+      </div>
+    </section>
+  </div>
+</section>
+
+<div id="skillModal" class="agent-modal hidden" role="dialog" aria-modal="true" aria-labelledby="skillModalTitle">
+  <form id="skillForm" class="agent-modal-card skill-modal-card">
+    <button type="button" data-close-skill-modal class="modal-close" aria-label="Chiudi">&times;</button>
+    <div class="wes-orb"><i class="fas fa-puzzle-piece"></i></div><span class="modal-kicker">PRIVATE CAPABILITY</span>
+    <h3 id="skillModalTitle">Crea una WES Skill</h3><p>Descrivi il processo, i criteri e il formato di consegna. Non inserire password o chiavi API.</p>
+    <input type="hidden" name="skill_id"><input type="hidden" name="expected_version">
+    <div class="skill-form-grid"><label>Nome<input name="name" maxlength="80" minlength="3" required placeholder="Es. Audit campagne advertising"></label><label>Categoria<select name="category"><% Object.entries(categories).forEach(([key, meta]) => { %><option value="<%= key %>"><%= meta.label %></option><% }) %></select></label></div>
+    <label>Descrizione<textarea name="description" maxlength="500" placeholder="Quando usarla e quale risultato produce"></textarea></label>
+    <label>Istruzioni operative<textarea name="instructions" minlength="20" maxlength="12000" required placeholder="1. Controlla gli input…&#10;2. Applica questi criteri…&#10;3. Consegna il risultato in questo formato…"></textarea><small><span id="skillInstructionCount">0</span>/12.000 · Nessun codice viene eseguito da questa Skill</small></label>
+    <button type="submit" class="run-agent justify-center"><span>Salva versione</span><i class="fas fa-check"></i></button>
+  </form>
+</div>
+
+<div id="skillHistoryModal" class="agent-modal hidden" role="dialog" aria-modal="true" aria-labelledby="skillHistoryTitle">
+  <div class="agent-modal-card skill-history-card">
+    <button type="button" data-close-skill-history class="modal-close" aria-label="Chiudi">&times;</button>
+    <div class="wes-orb"><i class="fas fa-code-branch"></i></div><span class="modal-kicker">IMMUTABLE HISTORY</span>
+    <h3 id="skillHistoryTitle">Cronologia Skill</h3><p>Ogni versione conserva una propria impronta SHA-256.</p>
+    <div id="skillVersionList" class="skill-version-list"></div>
+  </div>
+</div>
+
+<script src="/js/skills.js"></script>
+        </div></main></div>
+<%- include('../partials/footer') %>

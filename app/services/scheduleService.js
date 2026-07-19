@@ -2,6 +2,7 @@ const { Cron } = require('croner');
 const { v4: uuidv4 } = require('uuid');
 const { getDatabase } = require('../config/database');
 const orchestrator = require('./agentOrchestrator');
+const skillsService = require('./skills');
 
 let timer = null;
 let processing = false;
@@ -59,6 +60,19 @@ async function processDueSchedules() {
       const id = uuidv4();
       db.prepare(`INSERT INTO agent_tasks (id, user_id, project_id, title, prompt, status, progress, mode, plan)
         VALUES (?, ?, ?, ?, ?, 'planning', 1, ?, '[]')`).run(id, schedule.user_id, schedule.project_id || null, schedule.name, schedule.prompt, schedule.mode === 'team' ? 'team' : 'autonomous');
+      try {
+        skillsService.snapshotTaskSkills({
+          taskId: id,
+          userId: schedule.user_id,
+          projectId: schedule.project_id || null,
+          skillIds: skillsService.parseSkillIds(schedule.skill_ids)
+        });
+      } catch (error) {
+        db.prepare('DELETE FROM agent_tasks WHERE id = ? AND user_id = ?').run(id, schedule.user_id);
+        db.prepare('INSERT INTO logs (id, user_id, level, action, details) VALUES (?, ?, ?, ?, ?)')
+          .run(uuidv4(), schedule.user_id, 'warning', 'scheduled_task_skipped', JSON.stringify({ scheduleId: schedule.id, reason: error.message, code: error.code }));
+        continue;
+      }
       db.prepare('INSERT INTO task_events (id, task_id, type, title, detail, status) VALUES (?, ?, ?, ?, ?, ?)')
         .run(uuidv4(), id, 'schedule', 'Task avviato da pianificazione', schedule.name, 'completed');
       orchestrator.startTask(id);

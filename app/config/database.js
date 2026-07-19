@@ -514,6 +514,78 @@ function initializeSchema() {
   `);
 
   db.exec(`
+    CREATE TABLE IF NOT EXISTS agent_skills (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      description TEXT,
+      instructions TEXT NOT NULL,
+      category TEXT DEFAULT 'general',
+      source TEXT DEFAULT 'custom',
+      version INTEGER DEFAULT 1,
+      checksum TEXT NOT NULL,
+      is_active INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(user_id, slug)
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS agent_skill_versions (
+      id TEXT PRIMARY KEY,
+      skill_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      version INTEGER NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      instructions TEXT NOT NULL,
+      category TEXT NOT NULL,
+      checksum TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (skill_id) REFERENCES agent_skills(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(skill_id, version)
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS project_skill_bindings (
+      project_id TEXT NOT NULL,
+      skill_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      position INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      PRIMARY KEY (project_id, skill_id),
+      FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+      FOREIGN KEY (skill_id) REFERENCES agent_skills(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS task_skill_bindings (
+      task_id TEXT NOT NULL,
+      skill_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      skill_version INTEGER NOT NULL,
+      name_snapshot TEXT NOT NULL,
+      description_snapshot TEXT,
+      instructions_snapshot TEXT NOT NULL,
+      category_snapshot TEXT NOT NULL,
+      checksum TEXT NOT NULL,
+      position INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      PRIMARY KEY (task_id, skill_id),
+      FOREIGN KEY (task_id) REFERENCES agent_tasks(id) ON DELETE CASCADE,
+      FOREIGN KEY (skill_id) REFERENCES agent_skills(id) ON DELETE RESTRICT,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.exec(`
     CREATE TABLE IF NOT EXISTS project_memories (
       id TEXT PRIMARY KEY,
       project_id TEXT NOT NULL,
@@ -585,6 +657,7 @@ function initializeSchema() {
       name TEXT NOT NULL,
       prompt TEXT NOT NULL,
       mode TEXT DEFAULT 'autonomous',
+      skill_ids TEXT DEFAULT '[]',
       cron_expression TEXT NOT NULL,
       timezone TEXT DEFAULT 'Europe/Rome',
       is_active INTEGER DEFAULT 1,
@@ -613,6 +686,7 @@ function initializeSchema() {
 
   const scheduleColumns = db.prepare('PRAGMA table_info(task_schedules)').all().map((column) => column.name);
   if (!scheduleColumns.includes('mode')) db.exec("ALTER TABLE task_schedules ADD COLUMN mode TEXT DEFAULT 'autonomous'");
+  if (!scheduleColumns.includes('skill_ids')) db.exec("ALTER TABLE task_schedules ADD COLUMN skill_ids TEXT DEFAULT '[]'");
 
   const leadColumns = db.prepare('PRAGMA table_info(leads)').all().map((column) => column.name);
   if (!leadColumns.includes('phone_normalized')) db.exec('ALTER TABLE leads ADD COLUMN phone_normalized TEXT');
@@ -660,6 +734,10 @@ function initializeSchema() {
   db.exec('CREATE INDEX IF NOT EXISTS idx_task_events_task ON task_events(task_id)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_task_events_task_created ON task_events(task_id, created_at)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_agent_skills_user_active ON agent_skills(user_id, is_active, updated_at)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_agent_skill_versions_skill ON agent_skill_versions(skill_id, version)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_project_skills_project ON project_skill_bindings(project_id, position)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_task_skills_task ON task_skill_bindings(task_id, position)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_memories_project ON project_memories(project_id)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_workspace_files_user ON workspace_files(user_id)');
   db.exec('CREATE INDEX IF NOT EXISTS idx_approvals_task ON task_approvals(task_id)');
