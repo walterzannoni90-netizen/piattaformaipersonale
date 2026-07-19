@@ -44,6 +44,7 @@ test('unified runtime converts and executes a persisted legacy plan', async () =
 });
 
 test('unified runtime records missing tool handlers as a failed execution', async () => {
+  const events = [];
   const result = await runUnifiedTaskRuntime({
     task: task(),
     legacyPlan: {
@@ -52,11 +53,14 @@ test('unified runtime records missing tool handlers as a failed execution', asyn
     },
     handlers: {},
     maxReplans: 0,
-    evaluate: async () => ({ accepted: true })
+    evaluate: async () => ({ accepted: true }),
+    onEvent: async (event) => events.push(event)
   });
 
   assert.equal(result.status, 'failed');
   assert.equal(result.state.missing.status, 'failed');
   assert.match(result.state.missing.error, /Handler non disponibile/);
-  assert.equal(result.state.missing.errorCode, 'handler_not_available');
+  const failureEvent = events.find((event) => event.type === 'step_failed');
+  assert.ok(failureEvent);
+  assert.equal(failureEvent.code, 'handler_not_available');
 });
