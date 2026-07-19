@@ -37,7 +37,7 @@ test('persists snapshot progress and task status', () => {
   store.save('task-1', sample());
   assert.equal(db.row.progress, 50);
   assert.equal(db.row.status, 'running');
-  assert.equal(db.row.current_step, 'B');
+  assert.equal(db.row.current_step, 1);
 });
 
 test('recovers interrupted running steps as pending', () => {
