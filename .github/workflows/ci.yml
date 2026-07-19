@@ -28,7 +28,10 @@ jobs:
       - run: pip install --requirement requirements.txt
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - name: Browser session tests
+        run: node --test test/browser-session.test.js
+      - name: Full test suite
+        run: npm test
       - run: npm audit --omit=dev --audit-level=high
       - run: git diff --exit-code -- app/public/css/tailwind.css
 
