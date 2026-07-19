@@ -28,7 +28,16 @@ jobs:
       - run: pip install --requirement requirements.txt
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - name: Run test suite
+        run: npm run test:ci
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.xml
+          if-no-files-found: warn
+          retention-days: 7
       - run: npm audit --omit=dev --audit-level=high
       - run: git diff --exit-code -- app/public/css/tailwind.css
 
