@@ -3,11 +3,6 @@
 const { normalizeLegacyPlan } = require('./plannerOrchestrator');
 const { runAutonomyRuntime } = require('./autonomyRuntime');
 
-/**
- * Single compatibility bridge between persisted legacy task plans and the
- * resilient autonomy runtime. It keeps the migration boundary explicit so
- * agentOrchestrator can delegate execution without maintaining a second loop.
- */
 async function runUnifiedTaskRuntime({
   task,
   legacyPlan,
@@ -20,12 +15,23 @@ async function runUnifiedTaskRuntime({
   browser,
   onEvent,
   signal,
-  maxReplans = 2
+  maxReplans = 2,
+  productionRuntime,
+  productionOptions = {}
 }) {
   if (!task || !task.id) throw new Error('Task obbligatorio');
+
+  if (productionRuntime && typeof productionRuntime.execute === 'function') {
+    return productionRuntime.execute(task, {
+      ...productionOptions,
+      signal,
+      legacyPlan,
+      handlers
+    });
+  }
+
   if (!legacyPlan || !Array.isArray(legacyPlan.steps)) throw new Error('Piano obbligatorio');
   if (!handlers || typeof handlers !== 'object') throw new Error('Handler strumenti obbligatori');
-
   const plan = normalizeLegacyPlan({ task, legacyPlan });
 
   return runAutonomyRuntime({
