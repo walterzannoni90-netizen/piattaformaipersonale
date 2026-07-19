@@ -1,6 +1,7 @@
 <%- include('../partials/header') %>
 <%- include('../partials/dashboard-nav') %>
 <% const teamEvents = events.filter(event => event.type === 'team_agent'); %>
+<% const taskSkills = typeof appliedSkills !== 'undefined' && Array.isArray(appliedSkills) ? appliedSkills : []; %>
 <section id="taskPage" data-task-id="<%= task.id %>" data-task-status="<%= task.status %>" data-task-step="<%= task.current_step %>" data-task-progress="<%= task.progress %>" data-event-count="<%= events.length %>" data-artifact-count="<%= artifacts.length %>" class="agent-shell -m-6 min-h-[calc(100vh-73px)] p-5 lg:p-8">
   <div class="mx-auto max-w-7xl">
     <a href="/workspace" class="text-sm text-slate-400 hover:text-white"><i class="fas fa-arrow-left mr-2"></i>Tutti i task</a>
@@ -12,6 +13,7 @@
       </div>
     </div>
     <div class="task-progress"><span style="width:<%= task.progress %>%"></span></div>
+    <% if (taskSkills.length) { %><div class="task-skill-rail"><span><i class="fas fa-fingerprint"></i> Skill lock</span><div><% taskSkills.forEach(skill => { %><span title="Snapshot verificato: <%= skill.checksum.slice(0, 12) %>"><i class="fas fa-puzzle-piece"></i><%= skill.name %><b>v<%= skill.version %></b></span><% }) %></div><small>Queste versioni restano immutabili per tutta l’esecuzione.</small></div><% } %>
     <div class="task-layout mt-6">
       <div class="task-canvas">
         <div class="agent-thinking <%= task.status %>"><div class="wes-orb"><i class="fas fa-<%= task.status === 'completed' ? 'check' : task.status === 'failed' ? 'triangle-exclamation' : task.status.startsWith('waiting') ? 'pause' : 'sparkles' %>"></i></div><div><b><%= task.status === 'completed' ? 'Lavoro completato' : task.status === 'failed' ? 'WES ha interrotto il lavoro' : task.status === 'waiting_approval' ? 'Serve la tua approvazione' : task.status === 'waiting_configuration' ? 'Serve una configurazione' : task.status === 'stopped' ? 'Task interrotto' : 'WES sta lavorando' %></b><span><%= task.error || (task.status === 'completed' ? 'Il risultato è pronto nel workspace.' : 'Puoi lasciare questa pagina: il task continua nel workspace.') %></span></div><% if (['planning','running'].includes(task.status)) { %><div class="thinking-dots"><i></i><i></i><i></i></div><% } %></div>
@@ -41,7 +43,7 @@
         </div>
         <% if (task.result) { %><h3 class="mt-8">Risultato</h3><article class="task-result markdown-output"><%- resultHtml %></article><% } %>
         <h3 class="mt-8">Attività live</h3>
-        <div class="event-list"><% events.forEach(event => { %><div class="event <%= event.status %>"><i class="fas fa-<%= event.type === 'plan' ? 'list-check' : event.type === 'error' ? 'triangle-exclamation' : event.type === 'web_search' ? 'globe' : event.type === 'python_analyze' ? 'code' : event.type === 'team_agent' ? 'people-group' : 'brain' %>"></i><div><b><%= event.title %></b><p><%= event.detail %></p></div><span><%= event.status %></span></div><% }) %></div>
+        <div class="event-list"><% events.forEach(event => { %><div class="event <%= event.status %>"><i class="fas fa-<%= event.type === 'plan' ? 'list-check' : event.type === 'error' ? 'triangle-exclamation' : event.type === 'web_search' ? 'globe' : event.type === 'python_analyze' ? 'code' : event.type === 'team_agent' ? 'people-group' : event.type === 'skill' ? 'puzzle-piece' : 'brain' %>"></i><div><b><%= event.title %></b><p><%= event.detail %></p></div><span><%= event.status %></span></div><% }) %></div>
       </div>
       <aside class="artifact-panel"><h3>Output</h3><p>I risultati creati da WES sono privati e scaricabili solo dal proprietario.</p><% if (!artifacts.length) { %><div class="artifact-empty"><i class="fas fa-folder-open"></i><span>Nessun artefatto ancora</span></div><% } %><% artifacts.forEach(a => { %><a href="/api/artifacts/<%= a.id %>/download" class="artifact"><i class="fas fa-file-lines"></i><span><%= a.name %><small><%= a.type %></small></span><i class="fas fa-download"></i></a><% }) %><% if (files.length) { %><h3 class="mt-6">File di partenza</h3><% files.forEach(file => { %><a href="/api/workspace-files/<%= file.id %>/download" class="artifact"><i class="fas fa-paperclip"></i><span><%= file.original_name %><small><%= Math.ceil(file.size_bytes / 1024) %> KB</small></span><i class="fas fa-download"></i></a><% }) %><% } %><div class="safety-card"><i class="fas fa-shield-check"></i><div><b>Sei sempre al comando</b><p>Invii, pubblicazioni, cancellazioni e pagamenti richiedono la tua approvazione.</p></div></div></aside>
     </div>

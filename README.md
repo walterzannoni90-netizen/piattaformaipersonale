@@ -8,6 +8,7 @@ Non è una semplice chat e non dichiara capacità inesistenti. La versione corre
 
 - task autonomi con piano, timeline, stop, retry e ripresa dopo riavvio;
 - Agent Team con 2–6 specialisti indipendenti, esecuzione parallela limitata, quorum, Red Team, fonti aggregate e consumo tracciato;
+- WES Skills private con blueprint, versioni immutabili, import/export JSON, impronta SHA-256 e snapshot per task;
 - progetti con istruzioni permanenti e memoria dei risultati;
 - allegati privati con controllo proprietario, hash SHA-256 e firma del formato;
 - analisi Python di CSV, TSV, XLSX, PDF, DOCX, PPTX, TXT, Markdown, JSON e immagini;
@@ -29,6 +30,8 @@ Non è una semplice chat e non dichiara capacità inesistenti. La versione corre
 flowchart TD
     UI[Workspace EJS] --> API[Express API]
     API --> ORCH[Agent orchestrator]
+    API --> SKILLS[WES Skills registry]
+    SKILLS --> ORCH
     ORCH --> TEAM[Agent Team 2–6]
     TEAM --> AI
     TEAM --> WEB
@@ -119,6 +122,14 @@ Dal composer è possibile scegliere **WES Autonomo** oppure **Agent Team**. In m
 
 Il roster è limitato a 2 specialisti nello Starter, 4 nel Pro e 6 nell’Enterprise. `AGENT_TEAM_CONCURRENCY` limita le chiamate simultanee e `AGENT_TEAM_MAX_WORKERS` impone un tetto globale. Ogni chiamata viene registrata nelle statistiche d’uso, un guasto parziale resta visibile e nessun membro del team può eseguire azioni esterne: email, WhatsApp, appuntamenti e modifiche CRM continuano a usare l’approvazione esatta dell’orchestratore principale.
 
+### WES Skills
+
+**Skills Studio** permette a ogni account di trasformare procedure aziendali in playbook riutilizzabili. Una Skill può essere creata da zero, installata da un blueprint verificato o importata nel formato `wes.skill/v1`. L’import controlla schema e impronta SHA-256; non esegue codice e non importa segreti.
+
+Ogni modifica genera una nuova versione con controllo ottimistico dei conflitti. Quando parte un task, WES salva uno snapshot completo della versione scelta: aggiornamenti successivi della libreria non cambiano un’esecuzione già iniziata. Lo snapshot viene ricontrollato prima della pianificazione e della consegna. Le Skills possono essere selezionate nel composer, ereditate da un progetto e applicate ai task pianificati; in modalità Agent Team vengono fornite a ogni specialista.
+
+Una Skill guida il metodo, non i permessi. Non può aggiungere strumenti, autorizzare invii o aggirare i gate dell’orchestratore. I limiti attuali sono 8/30/100 Skills attive e 3/8/12 Skills per task nei piani Starter/Pro/Enterprise.
+
 ### Tavily
 
 Serve per la ricerca autonoma. La lettura di URL pubblici applica controllo protocollo/porta, DNS pubblico, blocco reti private, redirect limitati, timeout e limite di risposta.
@@ -144,6 +155,7 @@ La base corrente gestisce esclusivamente webhook firmati. Checkout, catalogo, im
 - CSP senza CDN e senza `unsafe-eval`;
 - segreti applicativi cifrati e mai rimostrati;
 - query e download sempre filtrati per proprietario;
+- Skills, versioni e associazioni filtrate per proprietario, con snapshot SHA-256 ricontrollato a ogni task;
 - file con limite 10 MB, allowlist MIME/estensione e firma binaria;
 - Python senza shell arbitraria, rete disabilitata e limiti di risorse;
 - fetch web protetto da SSRF, redirect e DNS rebinding;
@@ -190,6 +202,10 @@ Questa architettura usa un singolo file SQLite e deve essere eseguita con una so
 | `POST` | `/api/tasks/:id/retry` | riprende un task fermo/configurabile |
 | `POST` | `/api/projects` | crea un progetto con memoria |
 | `POST` | `/api/schedules` | pianifica task ricorrenti |
+| `POST` | `/api/skills` | crea una Skill privata |
+| `PATCH` | `/api/skills/:id` | crea una nuova versione della Skill |
+| `POST` | `/api/skills/import` | importa un pacchetto `wes.skill/v1` verificato |
+| `GET` | `/api/skills/:id/export` | esporta la versione corrente senza segreti |
 | `POST` | `/api/appointments` | crea un appuntamento con controllo conflitti |
 | `POST` | `/api/conversations/:id/messages` | risposta manuale WhatsApp |
 | `POST` | `/api/integrations/email` | verifica e collega SMTP |

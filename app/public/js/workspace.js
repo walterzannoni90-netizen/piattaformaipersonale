@@ -4,6 +4,43 @@ document.addEventListener('DOMContentLoaded', () => {
   const filesInput = document.getElementById('taskFiles');
   const selectedFiles = document.getElementById('selectedFiles');
   const taskMode = document.getElementById('taskMode');
+  const skillPicker = document.getElementById('taskSkillPicker');
+  const skillInputs = [...document.querySelectorAll('input[name="task_skill"]')];
+  const skillLimit = Number(skillPicker?.dataset.limit || 3);
+  let inheritedSkills = new Set();
+  const selectedSkillIds = () => skillInputs.filter(input => input.checked).map(input => input.value);
+  const updateSkillPicker = () => {
+    const count = selectedSkillIds().length;
+    const counter = document.getElementById('selectedSkillCount');
+    if (counter) counter.textContent = String(count);
+    skillPicker?.classList.toggle('has-selection', count > 0);
+  };
+  const applyProjectSkills = () => {
+    const select = document.getElementById('taskProject');
+    let defaults = [];
+    try { defaults = JSON.parse(select?.selectedOptions?.[0]?.dataset.skills || '[]'); } catch {}
+    const nextInherited = new Set(defaults);
+    skillInputs.forEach(input => {
+      const wasInherited = inheritedSkills.has(input.value);
+      const isInherited = nextInherited.has(input.value);
+      if (wasInherited && !isInherited) input.checked = false;
+      if (isInherited) input.checked = true;
+      input.disabled = isInherited;
+      input.closest('label')?.classList.toggle('inherited', isInherited);
+      input.closest('label')?.setAttribute('title', isInherited ? 'Skill predefinita dal progetto' : '');
+    });
+    inheritedSkills = nextInherited;
+    updateSkillPicker();
+  };
+  skillInputs.forEach(input => input.addEventListener('change', () => {
+    if (selectedSkillIds().length > skillLimit) {
+      input.checked = false;
+      showToast(`Puoi selezionare al massimo ${skillLimit} Skills per task.`, 'error');
+    }
+    updateSkillPicker();
+  }));
+  document.getElementById('taskProject')?.addEventListener('change', applyProjectSkills);
+  applyProjectSkills();
   const setTaskMode = (mode) => {
     const selected = mode === 'team' ? 'team' : 'autonomous';
     if (taskMode) taskMode.value = selected;
@@ -38,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     body.append('prompt', prompt.value);
     body.append('project_id', document.getElementById('taskProject')?.value || '');
     body.append('mode', taskMode?.value || 'autonomous');
+    body.append('skill_ids', JSON.stringify(selectedSkillIds()));
     [...(filesInput?.files || [])].forEach(file => body.append('files', file));
     try {
       const response = await fetch('/api/tasks', { method: 'POST', body, credentials: 'same-origin', headers: { Accept: 'application/json' } });
@@ -76,15 +114,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('projectForm')?.addEventListener('submit', async function (event) {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(this));
+    data.skill_ids = [...this.querySelectorAll('input[name="project_skill"]:checked')].map(input => input.value);
+    delete data.project_skill;
     const result = await apiCall('/api/projects', 'POST', data);
     if (result.success) location.reload();
     else showToast(result.error || 'Progetto non creato', 'error');
   });
 
   const scheduleModal = document.getElementById('scheduleModal');
+  scheduleModal?.querySelectorAll('input[name="schedule_skill"]').forEach(input => input.addEventListener('change', () => {
+    const count = scheduleModal.querySelectorAll('input[name="schedule_skill"]:checked').length;
+    if (count > skillLimit) { input.checked = false; showToast(`Puoi selezionare al massimo ${skillLimit} Skills.`, 'error'); }
+  }));
   document.getElementById('openScheduleModal')?.addEventListener('click', () => {
     document.getElementById('scheduleProjectId').value = document.getElementById('taskProject')?.value || '';
     document.getElementById('scheduleMode').value = taskMode?.value || 'autonomous';
+    const selected = new Set(selectedSkillIds());
+    scheduleModal.querySelectorAll('input[name="schedule_skill"]').forEach(input => { input.checked = selected.has(input.value); });
     scheduleModal.classList.remove('hidden');
   });
   document.querySelector('[data-close-schedule]')?.addEventListener('click', () => scheduleModal.classList.add('hidden'));
@@ -92,6 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('scheduleForm')?.addEventListener('submit', async function (event) {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(this));
+    data.skill_ids = [...this.querySelectorAll('input[name="schedule_skill"]:checked')].map(input => input.value);
+    delete data.schedule_skill;
     const result = await apiCall('/api/schedules', 'POST', data);
     if (result.success) location.reload();
     else showToast(result.error || 'Pianificazione non creata', 'error');

@@ -24,7 +24,10 @@ test('Agent Team runs independent specialists in bounded parallel and deduplicat
   const lifecycle = [];
   const result = await runAgentTeam({
     task,
-    context: { user: { plan: 'pro', company_name: 'WES Test', sector: 'Servizi' }, memories: [] },
+    context: {
+      user: { plan: 'pro', company_name: 'WES Test', sector: 'Servizi' }, memories: [],
+      skills: [{ name: 'Commercial Proof', version: 2, category: 'sales', instructions: 'Confronta prove, obiezioni e prossimo passo senza autorizzare invii.' }]
+    },
     concurrency: 2,
     search: async (query) => {
       searches += 1;
@@ -51,6 +54,8 @@ test('Agent Team runs independent specialists in bounded parallel and deduplicat
   assert.equal(lifecycle.filter((entry) => entry.startsWith('start:')).length, 4);
   assert.equal(lifecycle.filter((entry) => entry.startsWith('done:')).length, 4);
   assert.ok(prompts.every((messages) => /contenuti non attendibili/.test(messages[0].content)));
+  assert.ok(prompts.every((messages) => /senza ampliare strumenti o permessi/.test(messages[0].content)));
+  assert.ok(prompts.every((messages) => /Commercial Proof/.test(messages[1].content)));
 });
 
 test('Agent Team degrades transparently while preserving a two-agent quorum', async () => {

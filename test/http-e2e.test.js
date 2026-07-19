@@ -61,6 +61,21 @@ test('release HTTP journey keeps tenant data private and fails transparently wit
   assert.equal(dashboard.status, 200);
   assert.match(await dashboard.text(), /Owner Company/);
 
+  const skillResponse = await fetch(`${baseUrl}/api/skills`, {
+    method: 'POST',
+    headers: { Cookie: ownerCookie, Origin: baseUrl, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'E2E Data Auditor', category: 'data', description: 'Verifica il brief allegato.',
+      instructions: 'Controlla struttura, dati mancanti e limiti. Consegna evidenze e raccomandazioni separate.'
+    })
+  });
+  assert.equal(skillResponse.status, 201);
+  const skill = (await skillResponse.json()).skill;
+  assert.equal(skill.version, 1);
+  const skillsStudio = await fetch(`${baseUrl}/workspace/skills`, { headers: { Cookie: ownerCookie } });
+  assert.equal(skillsStudio.status, 200);
+  assert.match(await skillsStudio.text(), /E2E Data Auditor/);
+
   const leadResponse = await fetch(`${baseUrl}/api/leads`, {
     method: 'POST',
     headers: { Cookie: ownerCookie, Origin: baseUrl, 'Content-Type': 'application/json' },
@@ -71,6 +86,7 @@ test('release HTTP journey keeps tenant data private and fails transparently wit
 
   const form = new FormData();
   form.append('prompt', 'Analizza con Python il documento allegato e prepara un report Markdown verificabile.');
+  form.append('skill_ids', JSON.stringify([skill.id]));
   const fixture = Buffer.from([
     '# Brief operativo E2E',
     '',
@@ -94,6 +110,9 @@ test('release HTTP journey keeps tenant data private and fails transparently wit
   assert.equal(state.task.mode, 'autonomous');
   assert.match(state.task.error, /OPENROUTER_API_KEY/);
   assert.ok(state.events.some((event) => event.type === 'python_analyze' && event.status === 'completed'));
+  const taskPage = await fetch(`${baseUrl}/workspace/task/${taskId}`, { headers: { Cookie: ownerCookie } });
+  assert.equal(taskPage.status, 200);
+  assert.match(await taskPage.text(), /E2E Data Auditor/);
 
   const teamForm = new FormData();
   teamForm.append('prompt', 'Attiva un team di specialisti per confrontare rischi e opportunità del lancio commerciale.');
@@ -118,6 +137,8 @@ test('release HTTP journey keeps tenant data private and fails transparently wit
   assert.equal(accountExport.account.email, 'owner@example.test');
   assert.ok(accountExport.crm.leads.some((lead) => lead.id === leadId));
   assert.ok(accountExport.workspace.tasks.some((task) => task.id === taskId));
+  assert.ok(accountExport.workspace.skills.some((item) => item.id === skill.id));
+  assert.ok(accountExport.workspace.task_skills.some((item) => item.task_id === taskId && item.skill_id === skill.id));
   assert.equal(Object.hasOwn(accountExport.account, 'password'), false);
 
   const blockedOrigin = await fetch(`${baseUrl}/api/projects`, {
@@ -128,6 +149,8 @@ test('release HTTP journey keeps tenant data private and fails transparently wit
   assert.equal(blockedOrigin.status, 403);
 
   const otherCookie = await register('other@example.test', 'Other Company');
+  const privateSkill = await fetch(`${baseUrl}/api/skills/${skill.id}`, { headers: { Cookie: otherCookie } });
+  assert.equal(privateSkill.status, 404);
   const privateLead = await fetch(`${baseUrl}/dashboard/lead/${leadId}`, { headers: { Cookie: otherCookie } });
   assert.equal(privateLead.status, 404);
 });

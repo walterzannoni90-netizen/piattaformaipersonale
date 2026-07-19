@@ -34,6 +34,7 @@ const navItem = (active) => active
                 <a href="/workspace" class="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-semibold <%= page === 'workspace' ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-950/50 border border-violet-400/20' : 'bg-white text-slate-950 hover:bg-violet-50 border border-white' %> transition">
                     <i class="fas fa-sparkles w-5 text-center"></i><span>Nuovo task AI</span><i class="fas fa-plus ml-auto text-[10px]"></i>
                 </a>
+                <a href="/workspace/skills" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'skills') %>"><i class="fas fa-puzzle-piece w-5 text-center"></i><span>Skills Studio</span><span class="ml-auto text-[8px] font-bold tracking-widest text-violet-400">NEW</span></a>
                 <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium <%= navItem(page === 'dashboard') %>"><i class="fas fa-gauge-high w-5 text-center"></i><span>Panoramica</span></a>
 
                 <div class="px-3 pt-5 pb-2 text-[10px] font-bold text-slate-600 uppercase tracking-[.2em]">Operations</div>
