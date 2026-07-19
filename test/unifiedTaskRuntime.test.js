@@ -51,11 +51,12 @@ test('unified runtime records missing tool handlers as a failed execution', asyn
       steps: [{ id: 'missing', title: 'Manca', tool: 'unknown_tool', input: {}, maxAttempts: 1 }]
     },
     handlers: {},
+    maxReplans: 0,
     evaluate: async () => ({ accepted: true })
   });
 
   assert.equal(result.status, 'failed');
   assert.equal(result.state.missing.status, 'failed');
-  assert.match(result.state.missing.error.message, /Handler non disponibile/);
-  assert.equal(result.state.missing.error.code, 'handler_not_available');
+  assert.match(result.state.missing.error, /Handler non disponibile/);
+  assert.equal(result.state.missing.errorCode, 'handler_not_available');
 });
