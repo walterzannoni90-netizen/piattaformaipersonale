@@ -99,7 +99,12 @@ router.get('/workspace/task/:id', (req, res) => {
   const files = db.prepare('SELECT id, original_name, mime_type, size_bytes, created_at FROM workspace_files WHERE task_id = ? AND user_id = ? ORDER BY created_at ASC').all(task.id, req.user.id);
   const appliedSkills = skillsService.getTaskSkills(task.id, req.user.id);
   let parsedPlan = [];
-  try { parsedPlan = JSON.parse(task.plan || '[]'); } catch {}
+  try {
+    const storedPlan = JSON.parse(task.plan || '[]');
+    // Il piano può essere un array legacy di passaggi oppure uno snapshot
+    // del runtime unico: la vista lavora sempre sull'elenco dei passaggi.
+    parsedPlan = Array.isArray(storedPlan) ? storedPlan : (Array.isArray(storedPlan?.steps) ? storedPlan.steps : []);
+  } catch {}
   res.render('dashboard/task', { title: task.title, page: 'workspace', task, events, artifacts, approvals, files, appliedSkills, parsedPlan, resultHtml: renderMarkdown(task.result) });
 });
 

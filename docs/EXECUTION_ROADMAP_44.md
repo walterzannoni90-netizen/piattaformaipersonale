@@ -12,9 +12,9 @@ Questo documento trasforma il backlog di prodotto in gate verificabili. Un punto
 
 ## Gate A — Runtime unico e recovery
 
-- [ ] 1. Delegare `agentOrchestrator.runTask` a `runtimeCoordinator`.
-- [ ] 2. Rimuovere il ciclo legacy dopo una fase di compatibilità controllata.
-- [ ] 3. Migrare task legacy, snapshot, approval e task interrotti in modo idempotente.
+- [x] 1. Delegare `agentOrchestrator.runTask` a `runtimeCoordinator`.
+- [x] 2. Rimuovere il ciclo legacy dopo una fase di compatibilità controllata.
+- [x] 3. Migrare task legacy, snapshot, approval e task interrotti in modo idempotente.
 - [ ] 4. Collegare Playwright reale al browser runtime.
 - [ ] 5. Aggiungere comprensione visuale con verifica prima/dopo.
 - [ ] 6. Rendere persistenti e isolate le sessioni browser.

@@ -20,9 +20,31 @@ function clean(value, max = 2000) {
   return String(value || '').replace(/[\u0000-\u001F]/g, '').trim().slice(0, max);
 }
 
+// Errori che non ha senso ritentare: la causa è esterna all'esecuzione
+// (configurazione mancante, qualità insufficiente, stato esterno incerto).
+const NON_RETRYABLE_CODES = new Set([
+  'approval_required',
+  'AI_NOT_CONFIGURED',
+  'WEB_NOT_CONFIGURED',
+  'CONNECTOR_NOT_CONFIGURED',
+  'EXTERNAL_ACTION_UNCERTAIN',
+  'QUALITY_CHECK_FAILED',
+  'TASK_CANCELLED'
+]);
+
+// Errori per cui un piano correttivo automatico non può aiutare:
+// richiedono un intervento umano o una configurazione, non un nuovo tentativo.
+const NON_REPLANNABLE_CODES = new Set([
+  'AI_NOT_CONFIGURED',
+  'WEB_NOT_CONFIGURED',
+  'CONNECTOR_NOT_CONFIGURED',
+  'EXTERNAL_ACTION_UNCERTAIN',
+  'QUALITY_CHECK_FAILED'
+]);
+
 function defaultRetryPolicy({ error, attempt, step }) {
   if (step.approvalRequired) return false;
-  if (['approval_required', 'CONNECTOR_NOT_CONFIGURED', 'EXTERNAL_ACTION_UNCERTAIN', 'TASK_CANCELLED'].includes(error?.code)) return false;
+  if (NON_RETRYABLE_CODES.has(error?.code)) return false;
   return attempt < step.maxAttempts;
 }
 
@@ -59,6 +81,7 @@ async function runResilientPlan({
   if (typeof execute !== 'function') throw new Error('Executor obbligatorio');
   let activePlan = plan;
   let replans = Number(activePlan.metadata?.replanCount || 0);
+  let lastFailure = null;
 
   const emit = async (type, payload = {}) => {
     const event = { type, at: new Date().toISOString(), plan: clone(activePlan), ...payload };
@@ -109,6 +132,7 @@ async function runResilientPlan({
       const attempt = activePlan.state[step.id]?.attempts || 0;
       const retry = retryPolicy({ error, attempt, step, plan: clone(activePlan) });
       if (retry && activePlan.state[step.id]?.status === 'failed') activePlan.state[step.id].status = 'pending';
+      if (!retry) lastFailure = { message: clean(error?.message || error), code: error?.code || null };
       await emit(retry ? 'step_retry_scheduled' : 'step_failed', {
         step: clone(step),
         attempt,
@@ -116,7 +140,7 @@ async function runResilientPlan({
         code: error?.code || null
       });
 
-      if (!retry && typeof replan === 'function' && replans < maxReplans && !step.approvalRequired) {
+      if (!retry && typeof replan === 'function' && replans < maxReplans && !step.approvalRequired && !NON_REPLANNABLE_CODES.has(error?.code)) {
         const replacement = await replan({
           plan: clone(activePlan),
           failedStep: clone(step),
@@ -132,12 +156,16 @@ async function runResilientPlan({
   }
 
   refreshPlanStatus(activePlan);
-  await emit(`execution_${activePlan.status}`);
+  await emit(`execution_${activePlan.status}`, activePlan.status === 'failed' && lastFailure
+    ? { error: lastFailure.message, code: lastFailure.code }
+    : {});
   return activePlan;
 }
 
 module.exports = {
   runResilientPlan,
   mergeReplan,
-  defaultRetryPolicy
+  defaultRetryPolicy,
+  NON_RETRYABLE_CODES,
+  NON_REPLANNABLE_CODES
 };
