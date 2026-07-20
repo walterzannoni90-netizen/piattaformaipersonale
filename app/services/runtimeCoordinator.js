@@ -58,7 +58,11 @@ async function runDurableTask({
       legacyPlan,
       handlers,
       checkpoint: async (plan, event) => {
-        persistence.save(plan, event);
+        // Il task non deve risultare "completed" prima della consegna
+        // effettiva (artefatti, evento di delivery, memoria di progetto):
+        // lo stato finale viene persistito solo da completeDelivery.
+        const snapshot = event?.type === 'execution_completed' ? { ...plan, status: 'running' } : plan;
+        persistence.save(snapshot, event);
         if (typeof checkpoint === 'function') await checkpoint(plan, event);
       },
       approve,

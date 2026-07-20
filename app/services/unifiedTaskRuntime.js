@@ -20,7 +20,8 @@ async function runUnifiedTaskRuntime({
   operationalContext = {},
   productionRuntime,
   productionOptions = {},
-  productionIntegrationHub
+  productionIntegrationHub,
+  productionIntegrationOptions = {}
 }) {
   if (!task || !task.id) throw new Error('Task obbligatorio');
 
@@ -36,6 +37,7 @@ async function runUnifiedTaskRuntime({
     }
     return productionIntegrationHub.execute(task, {
       ...productionOptions,
+      ...productionIntegrationOptions,
       signal,
       legacyPlan,
       handlers

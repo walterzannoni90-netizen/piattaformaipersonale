@@ -32,6 +32,15 @@ function runtimeStatus(plan, event) {
   return mapStatus(plan.status);
 }
 
+function evidenceSnapshot(result) {
+  try {
+    const serialized = JSON.stringify(result);
+    return serialized.length <= 60_000 ? result : { truncated: true, preview: serialized.slice(0, 60_000) };
+  } catch {
+    return { unavailable: true };
+  }
+}
+
 function eventPresentation(event) {
   const step = event?.step || null;
   const title = clean(step?.title || event?.type || 'Runtime event', 180);
@@ -44,6 +53,11 @@ function eventPresentation(event) {
     approvalHash: event?.approvalHash || null,
     resultFingerprint: event?.result === undefined ? null : fingerprint(event.result)
   };
+  // L'evidenza dei passaggi completati resta disponibile negli eventi
+  // per consentire la ripresa del task con il contesto già raccolto.
+  if (event?.type === 'step_completed' && step) {
+    metadata.evidence = { step: clean(step.title, 500), tool: step.tool, result: evidenceSnapshot(event.result) };
+  }
   const messages = {
     execution_started: 'Esecuzione del piano avviata.',
     step_started: `Passaggio avviato${metadata.attempt ? ` · tentativo ${metadata.attempt}` : ''}.`,

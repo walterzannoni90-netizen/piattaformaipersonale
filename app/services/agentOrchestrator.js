@@ -10,6 +10,7 @@ const { runPythonOperation } = require('./pythonRunner');
 const secretVault = require('./secretVault');
 const agentTeam = require('./agentTeam');
 const skillsService = require('./skills');
+const { runDurableTask } = require('./runtimeCoordinator');
 
 const running = new Set();
 const queued = [];
@@ -564,6 +565,48 @@ async function executeStep(task, step, plan, evidence, files) {
   }
 }
 
+const WAITING_CONFIG_CODES = new Set(['AI_NOT_CONFIGURED', 'WEB_NOT_CONFIGURED', 'CONNECTOR_NOT_CONFIGURED']);
+
+// Verifica che il connettore richiesto da un'azione esterna sia configurato.
+// Viene eseguita prima di creare qualsiasi approvazione, così un task non
+// chiede mai un consenso per un'azione che non potrebbe comunque eseguire.
+function assertExternalConnectorConfigured(task, step) {
+  if (step.tool === 'send_email' && !secretVault.hasSecret(task.user_id, 'email') && !(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)) {
+    const error = new Error('Collega un account SMTP prima di eseguire l’invio email.');
+    error.code = 'CONNECTOR_NOT_CONFIGURED';
+    throw error;
+  }
+  if (step.tool === 'send_whatsapp' && !secretVault.hasSecret(task.user_id, 'whatsapp') && process.env.WHATSAPP_OWNER_USER_ID !== task.user_id) {
+    const error = new Error('Collega WhatsApp Cloud API prima di eseguire l’invio.');
+    error.code = 'CONNECTOR_NOT_CONFIGURED';
+    throw error;
+  }
+}
+
+// Interpreta il piano persistito: array legacy di passaggi oppure snapshot
+// del runtime unico. In entrambi i casi restituisce solo i passaggi che
+// devono ancora essere eseguiti, rendendo la ripresa idempotente.
+function parseStoredPlan(task) {
+  try {
+    const parsed = JSON.parse(task.plan || '[]');
+    if (Array.isArray(parsed)) {
+      const startIndex = Math.max(0, Number(task.current_step || 0));
+      return { title: task.title, steps: parsed.slice(startIndex) };
+    }
+    if (parsed && Array.isArray(parsed.steps) && parsed.state) {
+      const remaining = parsed.steps.filter((step) => parsed.state[step.id]?.status !== 'completed');
+      const remainingIds = new Set(remaining.map((step) => step.id));
+      // Le dipendenze verso passaggi già completati sono soddisfatte:
+      // vanno rimosse o il piano normalizzato le rifiuterebbe come sconosciute.
+      for (const step of remaining) {
+        if (Array.isArray(step.dependsOn)) step.dependsOn = step.dependsOn.filter((id) => remainingIds.has(id));
+      }
+      return { title: parsed.metadata?.legacyTitle || task.title, steps: remaining };
+    }
+  } catch {}
+  return { title: task.title, steps: [] };
+}
+
 async function runTask(taskId) {
   const db = getDatabase();
   let task = db.prepare('SELECT * FROM agent_tasks WHERE id = ?').get(taskId);
@@ -585,32 +628,55 @@ async function runTask(taskId) {
       updateEvent(eventId, 'completed', `${plan.steps.length} passaggi verificabili pronti.`);
       if (planned.configurationError) addEvent(task.id, 'warning', 'Modalità limitata', planned.configurationError, 'completed');
     } else {
-      plan = { title: task.title, steps: JSON.parse(task.plan || '[]') };
+      const stored = parseStoredPlan(task);
+      plan = { title: stored.title, steps: stored.steps };
       updateTask(task.id, { status: 'running', needs_approval: 0 });
     }
     task = db.prepare('SELECT * FROM agent_tasks WHERE id = ?').get(task.id);
+    if (taskIsCancelled(task.id)) {
+      updateTask(task.id, { status: 'stopped', cancel_requested: 0 });
+      addEvent(task.id, 'stop', 'Task interrotto', 'Esecuzione fermata in sicurezza.', 'completed');
+      return;
+    }
     const evidence = loadCompletedEvidence(task.id);
-    let deliverable = task.result || '';
-    for (let index = Number(task.current_step || 0); index < plan.steps.length; index += 1) {
-      if (taskIsCancelled(task.id)) {
-        updateTask(task.id, { status: 'stopped', cancel_requested: 0 });
-        addEvent(task.id, 'stop', 'Task interrotto', 'Esecuzione fermata in sicurezza.', 'completed');
+
+    // Nessuna approvazione viene creata se il connettore non è configurato.
+    for (const step of plan.steps) {
+      if (!externalTools.has(step.tool)) continue;
+      try {
+        assertExternalConnectorConfigured(task, step);
+      } catch (error) {
+        updateTask(task.id, { status: 'waiting_configuration', error: error.message });
+        addEvent(task.id, step.tool, step.title, error.message, 'waiting');
         return;
       }
-      const step = plan.steps[index];
-      const progress = Math.min(92, 12 + Math.round((index / Math.max(plan.steps.length, 1)) * 78));
-      updateTask(task.id, { status: 'running', progress, current_step: index });
-      const eventId = addEvent(task.id, step.tool, step.title, step.description, 'running', { step: index });
-      try {
+    }
+
+    // Come nel flusso legacy, ogni task si chiude con un deliverable:
+    // se il piano non prevede la composizione, la aggiungiamo noi riusando
+    // un risultato già presente oppure generandolo al momento.
+    if (!plan.steps.some((step) => step.tool === 'compose')) {
+      plan.steps.push({
+        id: 'compose',
+        title: 'Creo il risultato',
+        description: 'Produco un documento completo basato sui dati raccolti.',
+        tool: 'compose',
+        input: { reuseExistingResult: true }
+      });
+    }
+
+    const handlers = {};
+    for (const tool of new Set(plan.steps.map((step) => step.tool))) {
+      handlers[tool] = async ({ step }) => {
+        if (step.tool === 'compose' && step.input?.reuseExistingResult) {
+          const current = db.prepare('SELECT result FROM agent_tasks WHERE id = ?').get(task.id)?.result || '';
+          if (current) return { deliverable: current };
+        }
         const result = await executeStep(task, step, plan.steps, evidence, files);
         if (result?.waitingApproval) {
-          updateEvent(eventId, 'waiting', 'In attesa della tua approvazione.');
-          return;
-        }
-        if (result?.deliverable) {
-          deliverable = result.deliverable;
-          task.result = deliverable;
-          updateTask(task.id, { result: deliverable });
+          const error = new Error('Approvazione richiesta');
+          error.code = 'approval_required';
+          throw error;
         }
         if (step.tool === 'quality_review' && result?.passed === false) {
           const failedChecks = (result.checks || []).filter((check) => !check.passed).map((check) => check.name).join(', ');
@@ -618,33 +684,61 @@ async function runTask(taskId) {
           error.code = 'QUALITY_CHECK_FAILED';
           throw error;
         }
-        const evidenceItem = { step: step.title, tool: step.tool, result: evidenceSnapshot(result) };
-        evidence.push(evidenceItem);
-        updateEvent(eventId, 'completed', step.tool === 'compose' ? 'Documento creato.' : 'Passaggio completato e registrato.', { step: index, evidence: evidenceItem });
-        updateTask(task.id, { current_step: index + 1 });
-      } catch (error) {
-        if (error.code === 'TASK_CANCELLED' || taskIsCancelled(task.id)) {
-          updateEvent(eventId, 'completed', 'Esecuzione interrotta in sicurezza.');
-          updateTask(task.id, { status: 'stopped', cancel_requested: 0 });
-          return;
+        return result;
+      };
+    }
+
+    // Gate A: il ciclo di esecuzione è delegato al runtime unico
+    // (runtimeCoordinator → unifiedTaskRuntime → autonomyRuntime).
+    // Retry, checkpoint, approvazioni, cancellazione e recovery sono
+    // gestiti dal runtime; questo modulo mantiene pianificazione,
+    // strumenti, eventi e consegna.
+    const outcome = await runDurableTask({
+      db,
+      task,
+      legacyPlan: { title: plan.title, steps: plan.steps },
+      handlers,
+      eventWriter: ({ taskId: eventTaskId, type, title, detail, status, metadata }) => {
+        // Contratto eventi legacy: gli eventi di un passaggio usano il nome
+        // dello strumento come tipo, così dashboard e integrazioni esistenti
+        // continuano a riconoscerli.
+        const stepEventTypes = new Set(['step_started', 'step_completed', 'step_failed', 'approval_required']);
+        const eventType = metadata?.tool && stepEventTypes.has(type) ? metadata.tool : type;
+        // Un passaggio fermo per configurazione mancante è "in attesa",
+        // non fallito: l'utente può configurare il servizio e riprendere.
+        const eventStatus = WAITING_CONFIG_CODES.has(metadata?.code) ? 'waiting' : status;
+        return addEvent(eventTaskId, eventType, title, detail, eventStatus, metadata);
+      },
+      approve: async ({ step, approvalHash: expected }) => {
+        if (!externalTools.has(step.tool)) return null;
+        const normalized = normalizeExternalAction(task, step);
+        const gate = actionApproval(task, step, normalized.payload, normalized.description);
+        if (gate.waitingApproval) return null;
+        return expected;
+      },
+      onEvent: async (event) => {
+        if (event?.type !== 'step_completed' || !event.step) return;
+        evidence.push({ step: event.step.title, tool: event.step.tool, result: evidenceSnapshot(event.result) });
+        if (event.result?.deliverable) updateTask(task.id, { result: event.result.deliverable });
+      },
+      isCancelled: () => taskIsCancelled(task.id),
+      onDeliver: async ({ task: deliveredTask, plan: deliveredPlan, deliverable }) => {
+        await addDeliverableArtifacts(deliveredTask, deliveredPlan?.metadata?.legacyTitle || plan.title, deliverable);
+        addEvent(deliveredTask.id, 'delivery', 'Risultato consegnato', 'Output salvato nel workspace e pronto da scaricare.', 'completed');
+        if (deliveredTask.project_id) {
+          db.prepare('INSERT INTO project_memories (id, project_id, user_id, kind, content, source_task_id) VALUES (?, ?, ?, ?, ?, ?)')
+            .run(uuidv4(), deliveredTask.project_id, deliveredTask.user_id, 'task_summary', cleanText(deliverable, 1800), deliveredTask.id);
         }
-        if (['AI_NOT_CONFIGURED', 'WEB_NOT_CONFIGURED', 'CONNECTOR_NOT_CONFIGURED'].includes(error.code)) {
-          updateTask(task.id, { status: 'waiting_configuration', error: error.message });
-          updateEvent(eventId, 'waiting', error.message);
-          return;
-        }
-        updateEvent(eventId, 'failed', cleanText(error.message, 1000));
-        throw error;
       }
+    });
+
+    if (outcome.status === 'cancelled') {
+      addEvent(task.id, 'stop', 'Task interrotto', 'Esecuzione fermata in sicurezza.', 'completed');
+      return;
     }
-    if (!deliverable) deliverable = await createDeliverable(task, plan.steps, evidence);
-    await addDeliverableArtifacts(task, plan.title, deliverable);
-    updateTask(task.id, { status: 'completed', progress: 100, result: deliverable, error: null, completed_at: new Date().toISOString() });
-    addEvent(task.id, 'delivery', 'Risultato consegnato', 'Output salvato nel workspace e pronto da scaricare.', 'completed');
-    if (task.project_id) {
-      db.prepare('INSERT INTO project_memories (id, project_id, user_id, kind, content, source_task_id) VALUES (?, ?, ?, ?, ?, ?)')
-        .run(uuidv4(), task.project_id, task.user_id, 'task_summary', cleanText(deliverable, 1800), task.id);
-    }
+    // Gli stati waiting_approval, waiting_configuration e failed sono già
+    // stati persistiti dal RuntimePersistenceAdapter con il dettaglio
+    // dell'ultimo evento del runtime.
   } catch (error) {
     console.error(`Agent task ${taskId} failed:`, error.message);
     updateTask(taskId, { status: 'failed', error: cleanText(error.message, 1000) });
